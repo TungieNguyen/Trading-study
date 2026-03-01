@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MACD Signal — Stock Selection Masterclass</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --paper: #fdfaf4;
+    --ink: #1a1612;
+    --ink2: #5a4e42;
+    --ink3: #9a8d80;
+    --rule: #e0d8cc;
+    --green: #2d7d46;
+    --red: #c0392b;
+    --blue: #1a4f8a;
+    --gold: #c4861a;
+    --orange: #e05c1a;
+    --purple: #6b3fa0;
+    --green-bg: #e8f5ec;
+    --red-bg: #fbeae8;
+    --blue-bg: #e8eef7;
+    --gold-bg: #fef6e4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .hero {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 60px 40px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: 'MACD';
+    position: absolute;
+    right: -20px;
+    top: -30px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 18vw;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--gold);
+  }
+  .hero-sub {
+    font-size: 1rem;
+    color: rgba(245,240,232,0.6);
+    max-width: 560px;
+    font-weight: 300;
+  }
+
+  /* FORMULA BAR */
+  .formula-bar {
+    background: var(--gold);
+    padding: 16px 40px;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .formula-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .formula-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(26,22,18,0.6);
+  }
+  .formula-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* MAIN */
+  .main { max-width: 1100px; margin: 0 auto; padding: 40px; }
+
+  /* SECTION */
+  .section { margin-bottom: 50px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .section-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.5rem;
+    color: var(--rule);
+    line-height: 1;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* COMPONENTS EXPLAINER */
+  .components {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .component-card {
+    padding: 22px;
+    border-radius: 4px;
+    border-left: 4px solid;
+    background: var(--paper);
+  }
+  .component-card.macd-line { border-color: var(--blue); }
+  .component-card.signal-line { border-color: var(--orange); }
+  .component-card.histogram { border-color: var(--green); }
+  .comp-icon {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    line-height: 1;
+  }
+  .comp-icon.blue { color: var(--blue); }
+  .comp-icon.orange { color: var(--orange); }
+  .comp-icon.green { color: var(--green); }
+  .comp-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
+  .comp-formula {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--ink3);
+    background: var(--bg);
+    padding: 4px 8px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    display: inline-block;
+  }
+  .comp-text { font-size: 0.8rem; color: var(--ink2); }
+
+  /* CHART CANVAS */
+  .chart-container {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .chart-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink2);
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--ink2);
+  }
+  .legend-line {
+    width: 20px; height: 2px;
+    border-radius: 2px;
+  }
+  canvas { width: 100%; display: block; }
+
+  /* SIGNAL CARDS */
+  .signals-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .signal-card {
+    padding: 22px;
+    border-radius: 4px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .signal-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .signal-card.buy { border-top: 3px solid var(--green); }
+  .signal-card.sell { border-top: 3px solid var(--red); }
+  .signal-card.warning { border-top: 3px solid var(--gold); }
+  .signal-card.advanced { border-top: 3px solid var(--purple); }
+  .signal-badge-big {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 2px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .badge-buy { background: var(--green-bg); color: var(--green); }
+  .badge-sell { background: var(--red-bg); color: var(--red); }
+  .badge-warn { background: var(--gold-bg); color: var(--gold); }
+  .badge-adv { background: #f0ebf8; color: var(--purple); }
+
+  .signal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+  .signal-desc { font-size: 0.82rem; color: var(--ink2); line-height: 1.55; margin-bottom: 14px; }
+  .signal-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .signal-steps li {
+    display: flex;
+    gap: 10px;
+    font-size: 0.78rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    min-width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-buy .step-num { background: var(--green); }
+  .step-sell .step-num { background: var(--red); }
+  .step-warn .step-num { background: var(--gold); }
+  .step-adv .step-num { background: var(--purple); }
+
+  /* SIGNAL DIAGRAM */
+  .signal-diagram {
+    background: var(--ink);
+    border-radius: 3px;
+    padding: 12px;
+    margin-top: 12px;
+  }
+
+  /* SELECTOR TABLE */
+  .selector-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .selector-table thead {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .selector-table th {
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+  .selector-table tr:nth-child(even) { background: var(--bg); }
+  .selector-table tr:nth-child(odd) { background: var(--paper); }
+  .selector-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  .selector-table td:first-child { font-family: 'DM Mono', monospace; font-size: 0.75rem; font-weight: 500; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 500;
+  }
+  .tag-g { background: var(--green-bg); color: var(--green); }
+  .tag-r { background: var(--red-bg); color: var(--red); }
+  .tag-y { background: var(--gold-bg); color: var(--gold); }
+  .tag-b { background: var(--blue-bg); color: var(--blue); }
+
+  /* FLOW CHART */
+  .flow {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    background: var(--paper);
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    overflow: hidden;
+  }
+  .flow-step {
+    flex: 1;
+    padding: 20px 16px;
+    border-right: 1px solid var(--rule);
+    position: relative;
+    text-align: center;
+  }
+  .flow-step:last-child { border-right: none; }
+  .flow-step::after {
+    content: '→';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink3);
+    font-size: 1rem;
+    z-index: 2;
+    background: var(--paper);
+    padding: 2px;
+  }
+  .flow-step:last-child::after { display: none; }
+  .flow-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .flow-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .flow-desc { font-size: 0.7rem; color: var(--ink2); line-height: 1.4; }
+
+  /* MISTAKES */
+  .mistakes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .mistake-card {
+    padding: 18px;
+    background: var(--red-bg);
+    border-radius: 4px;
+    border-left: 3px solid var(--red);
+  }
+  .mistake-icon { font-size: 1.4rem; margin-bottom: 8px; }
+  .mistake-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; color: var(--red); }
+  .mistake-text { font-size: 0.75rem; color: var(--ink2); line-height: 1.4; }
+
+  /* EXAMPLE STOCKS */
+  .example-stocks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .stock-card {
+    padding: 18px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  .stock-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+  .sc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .sc-ticker { font-family: 'DM Mono', monospace; font-weight: 500; font-size: 1rem; }
+  .sc-rows { display: flex; flex-direction: column; gap: 5px; }
+  .sc-row { display: flex; justify-content: space-between; font-size: 0.73rem; }
+  .sc-label { color: var(--ink3); }
+  .sc-val { font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 500; }
+
+  /* PULLOUT QUOTE */
+  .pullout {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 30px 36px;
+    border-radius: 4px;
+    margin: 24px 0;
+    position: relative;
+  }
+  .pullout::before {
+    content: '"';
+    position: absolute;
+    top: -10px;
+    left: 28px;
+    font-family: 'Syne', sans-serif;
+    font-size: 8rem;
+    color: var(--gold);
+    line-height: 1;
+    opacity: 0.3;
+  }
+  .pullout-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.5;
+    position: relative;
+    z-index: 1;
+  }
+  .pullout-text em { font-style: normal; color: var(--gold); }
+
+  @media (max-width: 768px) {
+    .main { padding: 20px; }
+    .components, .signals-grid, .mistakes, .example-stocks { grid-template-columns: 1fr; }
+    .flow { flex-direction: column; }
+    .flow-step::after { content: '↓'; right: auto; left: 50%; bottom: -12px; top: auto; transform: translateX(-50%); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">TradingView Screener Series</div>
+    <h1>Using <em>MACD Signal</em><br>to Select Stocks</h1>
+    <p class="hero-sub">A complete guide to reading MACD crossovers, histogram momentum, and divergences — mapped to real stock selection decisions.</p>
+  </div>
+</div>
+
+<!-- FORMULA BAR -->
+<div class="formula-bar">
+  <div class="formula-item">
+    <div>
+      <div class="formula-label">MACD Line</div>
+      <div class="formula-val">EMA(12) − EMA(26)</div>
+    </div>
+  </div>
+  <div class="formula-item">
+    <div>
+      <div class="formula-label">Signal Line</div>
+      <div class="formula-val">EMA(9) of MACD</div>
+    </div>
+  </div>
+  <div class="formula-item">
+    <div>
+      <div class="formula-label">Histogram</div>
+      <div class="formula-val">MACD − Signal</div>
+    </div>
+  </div>
+  <div class="formula-item">
+    <div>
+      <div class="formula-label">Default Settings</div>
+      <div class="formula-val">12 · 26 · 9</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SECTION 1: WHAT IS MACD -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">01</div>
+      <div class="section-title">Understanding the 3 MACD Components</div>
+    </div>
+    <div class="components">
+      <div class="component-card macd-line">
+        <div class="comp-icon blue">━━</div>
+        <div class="comp-title">MACD Line (Fast)</div>
+        <div class="comp-formula">EMA(12) − EMA(26)</div>
+        <div class="comp-text">The main momentum line. When it's rising, short-term momentum is accelerating above long-term. Crosses above zero = bullish regime. This is the "gas pedal" of price momentum.</div>
+      </div>
+      <div class="component-card signal-line">
+        <div class="comp-icon orange">┄┄</div>
+        <div class="comp-title">Signal Line (Slow)</div>
+        <div class="comp-formula">EMA(9) of MACD Line</div>
+        <div class="comp-text">A smoothed average of the MACD line. When MACD crosses above Signal → BUY trigger. When MACD crosses below Signal → SELL trigger. The "confirmation" layer.</div>
+      </div>
+      <div class="component-card histogram">
+        <div class="comp-icon green">▌▌▌▌▌</div>
+        <div class="comp-title">Histogram (Momentum)</div>
+        <div class="comp-formula">MACD Line − Signal Line</div>
+        <div class="comp-text">Bar chart showing the gap between MACD and Signal. Growing green bars = accelerating bullish momentum. Shrinking bars = losing steam. The EARLIEST warning of a shift.</div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-container">
+      <div class="chart-title">
+        <span>MACD ANATOMY — Annotated Chart</span>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-line" style="background:#1a4f8a;"></div>MACD Line</div>
+          <div class="legend-item"><div class="legend-line" style="background:#e05c1a;"></div>Signal Line</div>
+          <div class="legend-item"><div class="legend-line" style="background:#2d7d46; height:8px; border-radius:1px;"></div>Histogram</div>
+        </div>
+      </div>
+      <canvas id="macdChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- SECTION 2: THE 5 KEY SIGNALS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">02</div>
+      <div class="section-title">The 5 Key MACD Signals for Stock Selection</div>
+    </div>
+
+    <div class="signals-grid">
+      <!-- BULLISH CROSS -->
+      <div class="signal-card buy">
+        <div class="signal-badge-big badge-buy">▲ BUY SIGNAL</div>
+        <div class="signal-title">Bullish Crossover</div>
+        <div class="signal-desc">The most popular MACD entry signal. MACD Line crosses <strong>above</strong> the Signal Line — momentum has shifted from bearish to bullish. Best when it occurs below the zero line (deeper value) or near support.</div>
+        <ul class="signal-steps">
+          <li class="step-buy"><div class="step-num" style="background:var(--green)">1</div><span>MACD Line crosses above Signal Line</span></li>
+          <li class="step-buy"><div class="step-num" style="background:var(--green)">2</div><span>Histogram turns from red to green</span></li>
+          <li class="step-buy"><div class="step-num" style="background:var(--green)">3</div><span>Confirm: Price above EMA50 or at support</span></li>
+          <li class="step-buy"><div class="step-num" style="background:var(--green)">4</div><span>Enter long with stop below recent swing low</span></li>
+        </ul>
+        <canvas id="chart-bullish" height="80" style="margin-top:14px;"></canvas>
+      </div>
+
+      <!-- BEARISH CROSS -->
+      <div class="signal-card sell">
+        <div class="signal-badge-big badge-sell">▼ SELL SIGNAL</div>
+        <div class="signal-title">Bearish Crossover</div>
+        <div class="signal-desc">MACD Line crosses <strong>below</strong> the Signal Line — momentum has shifted bearish. Strongest when occurring above the zero line (overbought territory). Time to exit longs or consider shorts.</div>
+        <ul class="signal-steps">
+          <li class="step-sell"><div class="step-num" style="background:var(--red)">1</div><span>MACD Line crosses below Signal Line</span></li>
+          <li class="step-sell"><div class="step-num" style="background:var(--red)">2</div><span>Histogram turns from green to red</span></li>
+          <li class="step-sell"><div class="step-num" style="background:var(--red)">3</div><span>Confirm: Price breaks below EMA20 or key support</span></li>
+          <li class="step-sell"><div class="step-num" style="background:var(--red)">4</div><span>Exit long or set tighter trailing stop</span></li>
+        </ul>
+        <canvas id="chart-bearish" height="80" style="margin-top:14px;"></canvas>
+      </div>
+
+      <!-- ZERO LINE CROSS -->
+      <div class="signal-card buy">
+        <div class="signal-badge-big badge-buy">▲ REGIME CHANGE</div>
+        <div class="signal-title">Zero Line Crossover</div>
+        <div class="signal-desc">When MACD Line itself crosses <strong>above zero</strong>, the short-term EMA has overtaken the long-term — the stock has entered a confirmed bullish regime. Use this for medium-to-long-term stock selection.</div>
+        <ul class="signal-steps">
+          <li class="step-buy"><div class="step-num" style="background:var(--blue)">1</div><span>MACD Line crosses from negative to positive (0 line)</span></li>
+          <li class="step-buy"><div class="step-num" style="background:var(--blue)">2</div><span>Both EMAs are now pointing the same direction</span></li>
+          <li class="step-buy"><div class="step-num" style="background:var(--blue)">3</div><span>Good entry for swing or position trades</span></li>
+          <li class="step-buy"><div class="step-num" style="background:var(--blue)">4</div><span>Filter out stocks with MACD below zero in screener</span></li>
+        </ul>
+      </div>
+
+      <!-- DIVERGENCE -->
+      <div class="signal-card advanced">
+        <div class="signal-badge-big badge-adv">◈ ADVANCED</div>
+        <div class="signal-title">Bullish Divergence</div>
+        <div class="signal-desc">Price makes a <strong>lower low</strong>, but MACD makes a <strong>higher low</strong>. This contradiction signals that selling momentum is weakening — a powerful reversal signal. Often precedes major trend changes.</div>
+        <ul class="signal-steps">
+          <li class="step-adv"><div class="step-num" style="background:var(--purple)">1</div><span>Price = lower low (new bottom)</span></li>
+          <li class="step-adv"><div class="step-num" style="background:var(--purple)">2</div><span>MACD histogram = higher low (hidden strength)</span></li>
+          <li class="step-adv"><div class="step-num" style="background:var(--purple)">3</div><span>Wait for MACD bullish cross to confirm entry</span></li>
+          <li class="step-adv"><div class="step-num" style="background:var(--purple)">4</div><span>Highest reward/risk setups; use with RSI divergence</span></li>
+        </ul>
+      </div>
+
+      <!-- HISTOGRAM MOMENTUM -->
+      <div class="signal-card warning" style="grid-column: span 2;">
+        <div class="signal-badge-big badge-warn">⬛ HISTOGRAM MOMENTUM</div>
+        <div class="signal-title">Histogram Shrinkage — The Earliest Warning</div>
+        <div class="signal-desc">You don't need to wait for the crossover. Watch when green histogram bars start <strong>getting shorter</strong> — this means momentum is slowing BEFORE the cross happens. It's the earliest exit signal.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:12px;">
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--green);letter-spacing:0.1em;margin-bottom:8px;">BULLISH SEQUENCE</div>
+            <ul class="signal-steps">
+              <li class="step-buy"><div class="step-num" style="background:var(--green)">1</div><span>Red bars shrinking → selling pressure easing</span></li>
+              <li class="step-buy"><div class="step-num" style="background:var(--green)">2</div><span>Histogram reaches zero = momentum balanced</span></li>
+              <li class="step-buy"><div class="step-num" style="background:var(--green)">3</div><span>First green bar = early entry signal (risky but rewarding)</span></li>
+              <li class="step-buy"><div class="step-num" style="background:var(--green)">4</div><span>Growing green bars = momentum confirmed</span></li>
+            </ul>
+          </div>
+          <div>
+            <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--red);letter-spacing:0.1em;margin-bottom:8px;">BEARISH SEQUENCE</div>
+            <ul class="signal-steps">
+              <li class="step-sell"><div class="step-num" style="background:var(--red)">1</div><span>Green bars shrinking → buying pressure weakening</span></li>
+              <li class="step-sell"><div class="step-num" style="background:var(--red)">2</div><span>Histogram near zero = warn of potential reversal</span></li>
+              <li class="step-sell"><div class="step-num" style="background:var(--red)">3</div><span>First red bar = tighten stops on existing longs</span></li>
+              <li class="step-sell"><div class="step-num" style="background:var(--red)">4</div><span>Growing red bars = confirmed exit</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: TRADINGVIEW SCREENER SETUP -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">03</div>
+      <div class="section-title">TradingView Screener: MACD Filter Setup</div>
+    </div>
+
+    <div class="pullout">
+      <div class="pullout-text">In TradingView Screener, set <em>MACD to "Bullish Cross"</em> + <em>RSI between 40–60</em> + <em>Price above EMA200</em> — this triple filter finds stocks that just started moving, in confirmed uptrends, without being overbought.</div>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="selector-table">
+        <thead>
+          <tr>
+            <th>Screener Filter</th>
+            <th>Setting</th>
+            <th>What It Finds</th>
+            <th>Trade Type</th>
+            <th>Quality</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>MACD Signal</td>
+            <td>Bullish Cross (just occurred)</td>
+            <td>Early-stage momentum reversal — first day of green histogram</td>
+            <td>Swing Trade (3–10 days)</td>
+            <td><span class="tag tag-g">HIGH QUALITY</span></td>
+          </tr>
+          <tr>
+            <td>MACD Signal</td>
+            <td>Above Signal (ongoing)</td>
+            <td>Stocks in active uptrend, MACD above signal for multiple sessions</td>
+            <td>Position Trade (weeks)</td>
+            <td><span class="tag tag-g">HIGH QUALITY</span></td>
+          </tr>
+          <tr>
+            <td>MACD Signal</td>
+            <td>Bearish Cross (just occurred)</td>
+            <td>Momentum just reversed down — early warning to exit or short</td>
+            <td>Short or Exit Signal</td>
+            <td><span class="tag tag-r">EXIT / SHORT</span></td>
+          </tr>
+          <tr>
+            <td>MACD Signal</td>
+            <td>Below Signal (ongoing)</td>
+            <td>Stock in confirmed downtrend — avoid for long entries</td>
+            <td>Avoid / Monitor</td>
+            <td><span class="tag tag-r">AVOID</span></td>
+          </tr>
+          <tr>
+            <td>MACD Value</td>
+            <td>MACD Line &gt; 0 (above zero)</td>
+            <td>Bull regime confirmed — EMA12 above EMA26</td>
+            <td>Any Long Trade</td>
+            <td><span class="tag tag-b">BULLISH REGIME</span></td>
+          </tr>
+          <tr>
+            <td>MACD Histogram</td>
+            <td>Increasing (growing green bars)</td>
+            <td>Accelerating momentum — best stocks to hold or add</td>
+            <td>Hold / Add Position</td>
+            <td><span class="tag tag-g">MOMENTUM</span></td>
+          </tr>
+          <tr>
+            <td>MACD + RSI combo</td>
+            <td>MACD Bullish + RSI 40–55</td>
+            <td>Fresh momentum, not overbought — ideal entry zone</td>
+            <td>Best Entry Setup</td>
+            <td><span class="tag tag-g">★ BEST SETUP</span></td>
+          </tr>
+          <tr>
+            <td>MACD Divergence</td>
+            <td>Price lower low + MACD higher low</td>
+            <td>Hidden accumulation — big reversal candidates</td>
+            <td>Reversal / Contrarian</td>
+            <td><span class="tag tag-y">ADVANCED</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION 4: STEP-BY-STEP PROCESS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">04</div>
+      <div class="section-title">Step-by-Step Stock Hunting Process with MACD</div>
+    </div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-icon">🗂️</div>
+        <div class="flow-title">Screen</div>
+        <div class="flow-desc">Filter MACD = "Bullish Cross" in TradingView Screener. Select your season's sectors. Set market cap &gt;$2B, volume &gt;1M.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">📊</div>
+        <div class="flow-title">Validate</div>
+        <div class="flow-desc">Open each chart. Confirm MACD cross happened near zero line. Check histogram is growing green. Price above EMA50.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">🔍</div>
+        <div class="flow-title">Confluence</div>
+        <div class="flow-desc">Add RSI (should be 40–60), Bollinger (not overbought), and volume spike 1.5×. More confluence = higher probability.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">📐</div>
+        <div class="flow-title">Risk Size</div>
+        <div class="flow-desc">Use ATR to set stop-loss distance. Risk max 1–2% of portfolio per trade. Target 2:1 reward/risk minimum.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">⚡</div>
+        <div class="flow-title">Enter</div>
+        <div class="flow-desc">Enter after MACD cross + bar close confirmation. Don't chase — if RSI is above 65 already, wait for a pullback.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-icon">🚨</div>
+        <div class="flow-title">Exit</div>
+        <div class="flow-desc">Exit when histogram starts shrinking OR MACD bearish cross occurs. Don't wait for the bottom — protect profits.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: REAL EXAMPLES -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">05</div>
+      <div class="section-title">Example Stocks by MACD Signal Type</div>
+    </div>
+    <div class="example-stocks">
+      <div class="stock-card">
+        <div class="sc-top">
+          <div class="sc-ticker">JPM</div>
+          <span class="tag tag-g">▲ BULLISH CROSS</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--ink2);margin-bottom:10px;">JPMorgan Chase · Financials · Fall Season ✓</div>
+        <div class="sc-rows">
+          <div class="sc-row"><span class="sc-label">MACD Line</span><span class="sc-val" style="color:var(--blue)">+0.82 ↗</span></div>
+          <div class="sc-row"><span class="sc-label">Signal Line</span><span class="sc-val" style="color:var(--orange)">+0.61</span></div>
+          <div class="sc-row"><span class="sc-label">Histogram</span><span class="sc-val" style="color:var(--green)">+0.21 (growing)</span></div>
+          <div class="sc-row"><span class="sc-label">RSI</span><span class="sc-val">52 — ideal entry</span></div>
+          <div class="sc-row"><span class="sc-label">Verdict</span><span class="sc-val" style="color:var(--green)">Strong buy setup</span></div>
+        </div>
+      </div>
+      <div class="stock-card">
+        <div class="sc-top">
+          <div class="sc-ticker">NVDA</div>
+          <span class="tag tag-y">⚠ MACD HIGH</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--ink2);margin-bottom:10px;">NVIDIA Corp · Technology · Spring Season</div>
+        <div class="sc-rows">
+          <div class="sc-row"><span class="sc-label">MACD Line</span><span class="sc-val" style="color:var(--blue)">+8.42 ↗</span></div>
+          <div class="sc-row"><span class="sc-label">Signal Line</span><span class="sc-val" style="color:var(--orange)">+7.10</span></div>
+          <div class="sc-row"><span class="sc-label">Histogram</span><span class="sc-val" style="color:var(--gold)">+1.32 (shrinking)</span></div>
+          <div class="sc-row"><span class="sc-label">RSI</span><span class="sc-val">62 — getting hot</span></div>
+          <div class="sc-row"><span class="sc-label">Verdict</span><span class="sc-val" style="color:var(--gold)">Hold only — wait pullback</span></div>
+        </div>
+      </div>
+      <div class="stock-card">
+        <div class="sc-top">
+          <div class="sc-ticker">PFE</div>
+          <span class="tag tag-r">▼ MACD BEARISH</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--ink2);margin-bottom:10px;">Pfizer Inc · Healthcare · Winter Watch</div>
+        <div class="sc-rows">
+          <div class="sc-row"><span class="sc-label">MACD Line</span><span class="sc-val" style="color:var(--red)">−0.45 ↘</span></div>
+          <div class="sc-row"><span class="sc-label">Signal Line</span><span class="sc-val" style="color:var(--orange)">−0.22</span></div>
+          <div class="sc-row"><span class="sc-label">Histogram</span><span class="sc-val" style="color:var(--red)">−0.23 (growing red)</span></div>
+          <div class="sc-row"><span class="sc-label">RSI</span><span class="sc-val">34 — oversold</span></div>
+          <div class="sc-row"><span class="sc-label">Verdict</span><span class="sc-val" style="color:var(--red)">Avoid — wait for base</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: COMMON MISTAKES -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num">06</div>
+      <div class="section-title">5 Common MACD Mistakes to Avoid</div>
+    </div>
+    <div class="mistakes" style="grid-template-columns:repeat(3,1fr);">
+      <div class="mistake-card">
+        <div class="mistake-icon">🪤</div>
+        <div class="mistake-title">Buying Every Cross</div>
+        <div class="mistake-text">MACD gives many false signals in choppy/sideways markets. Only act on crosses in trending stocks with volume confirmation.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-icon">⏰</div>
+        <div class="mistake-title">Using Wrong Timeframe</div>
+        <div class="mistake-text">MACD on 1-min charts is noise. Use Daily for swing trades, Weekly for position trades. Match the timeframe to your hold period.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-icon">🧭</div>
+        <div class="mistake-title">Ignoring Zero Line</div>
+        <div class="mistake-text">A bullish cross below zero in a downtrend is weaker than one above zero. Always note whether MACD is positive or negative territory.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-icon">🔇</div>
+        <div class="mistake-title">No Confluence Check</div>
+        <div class="mistake-text">MACD alone isn't enough. Always confirm with RSI not overbought and price above a key moving average before entering.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-icon">💨</div>
+        <div class="mistake-title">Chasing the Cross</div>
+        <div class="mistake-text">If RSI is already 65+ when MACD crosses, you're late. The best entries are within 1–2 bars of the crossover, not 5 bars later.</div>
+      </div>
+      <div class="mistake-card">
+        <div class="mistake-icon">📉</div>
+        <div class="mistake-title">Holding Through Red Bars</div>
+        <div class="mistake-text">When histogram starts shrinking from peak green, that's your cue. Don't wait for a full bearish cross — it's already too late then.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<script>
+// ═══ DRAW MAIN MACD CHART ═══
+function drawMacdChart() {
+  const canvas = document.getElementById('macdChart');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.parentElement.offsetWidth - 48;
+  canvas.height = 200;
+  const W = canvas.width, H = canvas.height;
+  const topH = 110, botH = 80, gap = 10;
+  const botY = topH + gap;
+
+  // Sample price data
+  const prices = [42,44,43,45,47,46,48,50,49,51,53,52,54,56,55,53,51,49,50,52,54,56,58,57,59,61,60,62,64,63];
+  const macd =   [-1.2,-1.0,-0.8,-0.5,-0.2,0.1,0.4,0.7,0.9,1.1,1.3,1.1,1.4,1.6,1.3,0.9,0.5,0.1,-0.3,-0.1,0.3,0.7,1.1,0.9,1.3,1.7,1.5,1.8,2.1,1.9];
+  const signal = [-1.4,-1.2,-1.1,-0.9,-0.7,-0.4,-0.1,0.2,0.5,0.7,0.9,0.9,1.1,1.3,1.2,1.0,0.8,0.5,0.2,0.1,0.3,0.6,0.9,0.9,1.1,1.4,1.4,1.6,1.8,1.8];
+
+  const n = prices.length;
+  const xStep = W / (n - 1);
+
+  // PRICE CHART (top)
+  const pMin = Math.min(...prices) - 2;
+  const pMax = Math.max(...prices) + 2;
+  const pScale = topH / (pMax - pMin);
+  function px(i) { return i * xStep; }
+  function py(v) { return topH - (v - pMin) * pScale; }
+
+  // Price area fill
+  ctx.beginPath();
+  ctx.moveTo(0, topH);
+  prices.forEach((p, i) => ctx.lineTo(px(i), py(p)));
+  ctx.lineTo(px(n-1), topH);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, topH);
+  grad.addColorStop(0, 'rgba(26,79,138,0.2)');
+  grad.addColorStop(1, 'rgba(26,79,138,0.0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Price line
+  ctx.beginPath();
+  prices.forEach((p, i) => i === 0 ? ctx.moveTo(px(i), py(p)) : ctx.lineTo(px(i), py(p)));
+  ctx.strokeStyle = '#1a4f8a';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Divider
+  ctx.strokeStyle = 'rgba(90,78,66,0.15)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(0, botY - 5); ctx.lineTo(W, botY - 5); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ── MACD PANEL ──
+  const mMax = Math.max(...macd.map(Math.abs)) + 0.5;
+  const mScale = (botH / 2) / mMax;
+  function mby(v) { return botY + botH/2 - v * mScale; }
+
+  // Zero line
+  ctx.strokeStyle = 'rgba(90,78,66,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, mby(0)); ctx.lineTo(W, mby(0));
+  ctx.stroke();
+
+  // Histogram bars
+  const barW = xStep * 0.6;
+  macd.forEach((m, i) => {
+    const s = signal[i];
+    const hist = m - s;
+    const x = px(i);
+    const zeroY = mby(0);
+    const barH = Math.abs(hist) * mScale;
+    ctx.fillStyle = hist >= 0 ? 'rgba(45,125,70,0.55)' : 'rgba(192,57,43,0.5)';
+    ctx.fillRect(x - barW/2, hist >= 0 ? zeroY - barH : zeroY, barW, barH);
+  });
+
+  // Annotate crossover points
+  const crossovers = [];
+  for (let i = 1; i < macd.length; i++) {
+    if (macd[i-1] <= signal[i-1] && macd[i] > signal[i]) crossovers.push({i, type:'bull'});
+    if (macd[i-1] >= signal[i-1] && macd[i] < signal[i]) crossovers.push({i, type:'bear'});
+  }
+  crossovers.forEach(c => {
+    const x = px(c.i);
+    const y = mby(macd[c.i]);
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI*2);
+    ctx.fillStyle = c.type === 'bull' ? '#2d7d46' : '#c0392b';
+    ctx.fill();
+    // Label on price chart
+    const priceY = py(prices[c.i]);
+    ctx.beginPath();
+    ctx.arc(x, priceY, 4, 0, Math.PI*2);
+    ctx.fillStyle = c.type === 'bull' ? '#2d7d46' : '#c0392b';
+    ctx.fill();
+    ctx.fillStyle = c.type === 'bull' ? '#2d7d46' : '#c0392b';
+    ctx.font = '600 10px DM Sans, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(c.type === 'bull' ? '▲ BUY' : '▼ SELL', x, priceY - 10);
+  });
+
+  // MACD Line
+  ctx.beginPath();
+  macd.forEach((m, i) => i === 0 ? ctx.moveTo(px(i), mby(m)) : ctx.lineTo(px(i), mby(m)));
+  ctx.strokeStyle = '#1a4f8a';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Signal Line
+  ctx.beginPath();
+  signal.forEach((s, i) => i === 0 ? ctx.moveTo(px(i), mby(s)) : ctx.lineTo(px(i), mby(s)));
+  ctx.strokeStyle = '#e05c1a';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels
+  ctx.fillStyle = 'rgba(90,78,66,0.5)';
+  ctx.font = '500 10px DM Mono, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('PRICE', 6, 14);
+  ctx.fillText('MACD', 6, botY + 14);
+}
+
+// ═══ DRAW MINI CHARTS ═══
+function drawMini(id, type) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.parentElement.offsetWidth - 44;
+  canvas.height = 80;
+  const W = canvas.width, H = canvas.height;
+
+  let macd, signal;
+  if (type === 'bullish') {
+    macd =   [-0.8,-0.6,-0.4,-0.1, 0.2, 0.6, 0.9, 1.2, 1.4, 1.6];
+    signal = [-1.0,-0.9,-0.8,-0.6,-0.3, 0.0, 0.3, 0.7, 1.0, 1.3];
+  } else {
+    macd =   [1.4, 1.2, 0.9, 0.6, 0.2,-0.1,-0.5,-0.8,-1.0,-1.2];
+    signal = [1.0, 1.1, 1.0, 0.9, 0.7, 0.5, 0.2,-0.1,-0.4,-0.7];
+  }
+
+  const n = macd.length;
+  const xStep = W / (n - 1);
+  const mMax = 2;
+  function px(i) { return i * xStep; }
+  function my(v) { return H/2 - v * (H/2/mMax); }
+
+  // Zero line
+  ctx.strokeStyle = 'rgba(200,200,200,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, my(0)); ctx.lineTo(W, my(0)); ctx.stroke();
+
+  // Histogram
+  const barW = xStep * 0.55;
+  macd.forEach((m, i) => {
+    const hist = m - signal[i];
+    const zeroY = my(0);
+    const bh = Math.abs(hist) * (H/2/mMax);
+    ctx.fillStyle = hist >= 0 ? 'rgba(45,125,70,0.6)' : 'rgba(192,57,43,0.55)';
+    ctx.fillRect(px(i) - barW/2, hist >= 0 ? zeroY - bh : zeroY, barW, bh);
+  });
+
+  // Cross point
+  for (let i = 1; i < macd.length; i++) {
+    if ((type === 'bullish' && macd[i-1] <= signal[i-1] && macd[i] > signal[i]) ||
+        (type === 'bearish' && macd[i-1] >= signal[i-1] && macd[i] < signal[i])) {
+      ctx.beginPath();
+      ctx.arc(px(i), my(macd[i]), 5, 0, Math.PI*2);
+      ctx.fillStyle = type === 'bullish' ? '#2d7d46' : '#c0392b';
+      ctx.fill();
+    }
+  }
+
+  // MACD line
+  ctx.beginPath();
+  macd.forEach((m, i) => i === 0 ? ctx.moveTo(px(i), my(m)) : ctx.lineTo(px(i), my(m)));
+  ctx.strokeStyle = '#1a4f8a'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Signal line
+  ctx.beginPath();
+  signal.forEach((s, i) => i === 0 ? ctx.moveTo(px(i), my(s)) : ctx.lineTo(px(i), my(s)));
+  ctx.strokeStyle = '#e05c1a'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
+
+  // Label
+  ctx.fillStyle = type === 'bullish' ? '#2d7d46' : '#c0392b';
+  ctx.font = '700 10px DM Sans, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(type === 'bullish' ? '← CROSS HERE' : '← CROSS HERE', W - 4, type === 'bullish' ? my(0.2) - 8 : my(-0.1) + 16);
+}
+
+window.addEventListener('load', () => {
+  drawMacdChart();
+  drawMini('chart-bullish', 'bullish');
+  drawMini('chart-bearish', 'bearish');
+});
+window.addEventListener('resize', () => {
+  drawMacdChart();
+  drawMini('chart-bullish', 'bullish');
+  drawMini('chart-bearish', 'bearish');
+});
+</script>
+</body>
+</html>
