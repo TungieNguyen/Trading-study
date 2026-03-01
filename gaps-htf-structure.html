@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaps & HTF Structure — Indexical Integrity</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Martian+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #07090b;
+  --bg2:     #0d1014;
+  --bg3:     #121820;
+  --border:  #1c2830;
+  --border2: #243040;
+  --green:   #00e09a;
+  --green-d: rgba(0,224,154,0.08);
+  --red:     #ff3f5a;
+  --red-d:   rgba(255,63,90,0.07);
+  --amber:   #f0a500;
+  --amber-d: rgba(240,165,0,0.07);
+  --blue:    #4ab3ff;
+  --blue-d:  rgba(74,179,255,0.07);
+  --text:    #8aa8c0;
+  --text2:   #3a5060;
+  --bright:  #dceeff;
+  --dim:     #2a3a48;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Martian Mono', monospace;
+  font-size: 12px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* noise overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:900;
+}
+
+/* ── HEADER ── */
+header {
+  padding: 40px 52px 32px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: end;
+}
+
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.eyebrow span { display:inline-block; width:28px; height:1px; background:var(--green); }
+
+h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(1.9rem, 4.5vw, 3.4rem);
+  font-weight: 400;
+  color: var(--bright);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+h1 em { color: var(--amber); font-style: italic; }
+
+.header-sub {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text2);
+  max-width: 520px;
+  letter-spacing: 0.02em;
+}
+
+.header-badge {
+  border: 1px solid var(--green);
+  color: var(--green);
+  padding: 8px 18px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+
+/* ── NAV ── */
+nav {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 52px;
+  overflow-x: auto;
+  gap: 2px;
+}
+
+.tab {
+  padding: 13px 18px;
+  font-family: 'Martian Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none; background: none;
+  color: var(--text2);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+/* ── MAIN ── */
+main { padding: 44px 52px; max-width: 1180px; margin: 0 auto; }
+
+.section { display:none; animation: up 0.4s ease both; }
+.section.active { display:block; }
+
+@keyframes up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── TYPOGRAPHY HELPERS ── */
+.sec-h {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.9rem;
+  font-weight: 400;
+  color: var(--bright);
+  margin-bottom: 4px;
+}
+.sec-sub {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 32px;
+}
+
+/* ── CALLOUT ── */
+.callout {
+  border-left: 3px solid var(--amber);
+  background: var(--amber-d);
+  padding: 22px 28px;
+  margin-bottom: 32px;
+}
+.callout p {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--bright);
+  line-height: 1.7;
+}
+
+/* ── INFO PANELS ── */
+.panel {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 24px 26px;
+}
+.panel-label {
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--text2); margin-bottom: 8px;
+}
+.panel-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.1rem; color: var(--bright); margin-bottom: 12px;
+}
+.panel-body { font-size: 11.5px; color: var(--text); line-height: 1.75; }
+
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--border); border:1px solid var(--border); margin-bottom:28px; }
+.grid-2 .panel { border:none; }
+
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; background:var(--border); border:1px solid var(--border); margin-bottom:28px; }
+.grid-3 .panel { border:none; }
+
+/* ── CHART CANVAS ── */
+.chart-wrap {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 20px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.chart-label {
+  font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text2); margin-bottom: 12px;
+}
+canvas { display:block; width:100%; }
+
+/* ── GAP CARD ── */
+.gap-cards { display:grid; grid-template-columns: repeat(4,1fr); gap:2px; background:var(--border); border:1px solid var(--border); margin-bottom:28px; }
+.gap-card {
+  background: var(--bg2);
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.gap-card:hover, .gap-card.active { background: var(--bg3); }
+
+.gc-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.gc-name {
+  font-family: 'Instrument Serif', serif;
+  font-size: 0.95rem; color: var(--bright);
+}
+.gc-type {
+  font-size: 9px; letter-spacing: 0.1em; padding: 2px 7px; border: 1px solid;
+}
+.indexical  { color: var(--green); border-color: rgba(0,224,154,0.3); }
+.semi-idx   { color: var(--blue);  border-color: rgba(74,179,255,0.3); }
+.convention { color: var(--amber); border-color: rgba(240,165,0,0.3); }
+
+.gc-body { padding: 14px 18px; }
+.gc-desc { font-size: 11px; color: var(--text); line-height: 1.65; margin-bottom: 10px; }
+.gc-tag  { font-size: 10px; color: var(--text2); }
+
+/* detail expand */
+.gap-detail {
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  padding: 26px;
+  margin-bottom: 28px;
+  display: none;
+  animation: up 0.3s ease;
+}
+.gap-detail.active { display:block; }
+.gd-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-top:16px; }
+.gd-col-h { font-size: 9px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text2); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.gd-col-b { font-size: 11px; color:var(--text); line-height:1.7; }
+
+/* ── HTF LADDER ── */
+.htf-ladder { display:flex; flex-direction:column; gap:2px; margin-bottom:28px; }
+.htf-row {
+  display:grid; grid-template-columns: 110px 1fr auto;
+  align-items:center; gap:20px;
+  padding: 16px 22px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  cursor:pointer;
+  transition: background 0.18s;
+}
+.htf-row:hover { background: var(--bg3); }
+.htf-tf {
+  font-size: 11px; color: var(--bright);
+  display:flex; align-items:center; gap:10px;
+}
+.htf-bar {
+  height: 3px; border-radius: 2px; background: var(--green); opacity: 0.3;
+}
+.htf-desc { font-size: 11px; color: var(--text); line-height:1.6; }
+.htf-integrity {
+  font-size: 9px; letter-spacing:0.1em; border:1px solid; padding:3px 9px; white-space:nowrap;
+}
+.hi-high  { color: var(--green); border-color: rgba(0,224,154,0.3); }
+.hi-med   { color: var(--amber); border-color: rgba(240,165,0,0.3);  }
+.hi-low   { color: var(--red);   border-color: rgba(255,63,90,0.3);  }
+
+.htf-expand {
+  display:none; border:1px solid var(--border); background:var(--bg3);
+  padding:20px 22px; margin-bottom:2px;
+  animation: up 0.3s ease;
+}
+.htf-expand.active { display:block; }
+.htf-exp-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.htf-exp-h { font-size:9px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text2); margin-bottom:6px; }
+.htf-exp-b { font-size:11px; color:var(--text); line-height:1.7; }
+
+/* ── MANIPULATION RESISTANCE ── */
+.manip-compare {
+  display:grid; grid-template-columns:1fr 40px 1fr;
+  gap:2px; background:var(--border);
+  border:1px solid var(--border);
+  margin-bottom:28px;
+}
+.mc-col { background:var(--bg2); padding:22px 24px; }
+.mc-divider {
+  background:var(--bg2); display:flex;
+  align-items:center; justify-content:center;
+  font-family:'Instrument Serif',serif;
+  font-size:1.5rem; color:var(--text2); font-style:italic;
+}
+.mc-title { font-size:9px; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:14px; }
+.mc-col.g .mc-title { color:var(--green); }
+.mc-col.r .mc-title { color:var(--red);   }
+.mc-list { list-style:none; }
+.mc-list li {
+  font-size:11px; color:var(--text); padding:7px 0;
+  border-bottom:1px solid var(--border); line-height:1.5;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.mc-list li::before { flex-shrink:0; }
+.mc-col.g .mc-list li::before { content:'↑'; color:var(--green); }
+.mc-col.r .mc-list li::before { content:'↓'; color:var(--red);   }
+
+/* ── STRUCTURAL INTEGRITY CHECKLIST ── */
+.checklist { border:1px solid var(--border); background:var(--bg2); margin-bottom:28px; }
+.cl-row {
+  display:grid; grid-template-columns:28px 1fr auto;
+  padding:14px 18px; border-bottom:1px solid var(--border);
+  align-items:start; gap:14px;
+}
+.cl-row:last-child { border-bottom:none; }
+.cl-num { font-size:9px; color:var(--green); padding-top:2px; }
+.cl-text { font-size:11px; color:var(--text); line-height:1.6; }
+.cl-text strong { color:var(--bright); font-weight:500; }
+.cl-status {
+  font-size:9px; letter-spacing:0.1em; border:1px solid;
+  padding:2px 7px; white-space:nowrap; align-self:center;
+}
+.cl-yes { color:var(--green); border-color:rgba(0,224,154,0.3); }
+.cl-no  { color:var(--red);   border-color:rgba(255,63,90,0.3); }
+
+/* ── LIVE CHART DEMO ── */
+#chartCanvas {
+  height: 260px;
+  position: relative;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width:800px) {
+  header { padding:28px; grid-template-columns:1fr; }
+  nav { padding:0 28px; }
+  main { padding:28px; }
+  .grid-2,.grid-3,.gap-cards { grid-template-columns:1fr; }
+  .gd-grid,.htf-exp-grid { grid-template-columns:1fr; }
+  .manip-compare { grid-template-columns:1fr; }
+  .mc-divider { display:none; }
+  .htf-row { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body><div style="background:#07090b;border-bottom:1px solid #1c2830;padding:10px 48px;display:flex;align-items:center;gap:24px;font-family:Martian Mono,Courier New,monospace;font-size:10px;letter-spacing:0.12em;"><a href="index.html" style="color:#3a5060;text-decoration:none;text-transform:uppercase;">← Home</a><a href="symbolic-communication.html" style="color:#3a5060;text-decoration:none;text-transform:uppercase;">Module 1</a><a href="ta-symbolic-communication.html" style="color:#3a5060;text-decoration:none;text-transform:uppercase;">Module 2</a><span style="color:#00e09a;flex:1;text-align:center;text-transform:uppercase;">Module 3 · Gaps <body> HTF</span></div>
+
+<header>
+  <div>
+    <div class="eyebrow"><span></span>Indexical Signal Theory</div>
+    <h1>Gaps & <em>High-Timeframe<br>Structure</em></h1>
+    <p class="header-sub">Why gaps resist manipulation — and what properties elevate a signal from symbolic pattern to structural ground truth.</p>
+  </div>
+  <div class="header-badge">Indexical Integrity</div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('why')">01 · Why Gaps Are Different</button>
+  <button class="tab" onclick="showTab('types')">02 · Gap Types & Integrity</button>
+  <button class="tab" onclick="showTab('htf')">03 · HTF Structure Ladder</button>
+  <button class="tab" onclick="showTab('manip')">04 · Manipulation Resistance</button>
+  <button class="tab" onclick="showTab('apply')">05 · Practical Framework</button>
+</nav>
+
+<main>
+
+<!-- ══════════ TAB 1: WHY GAPS ══════════ -->
+<section id="why" class="section active">
+  <div class="sec-h">Why Gaps Are Fundamentally Different</div>
+  <p class="sec-sub">The ontological distinction — causal trace vs. community convention</p>
+
+  <div class="callout">
+    <p>A gap is not a <em>pattern drawn on a chart</em> — it is a <em>permanent record of a moment where price had to jump</em> because no transactions occurred between two levels. It cannot be retroactively invented. It is forensic evidence of order imbalance, not a shared narrative about what price might do.</p>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-label">Gap anatomy — what a gap actually encodes</div>
+    <canvas id="gapAnatomy" height="220"></canvas>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-label">Conventional / Symbolic Pattern</div>
+      <div class="panel-title">Head & Shoulders, Fibonacci</div>
+      <div class="panel-body">
+        Exists because a community <em>agrees</em> it is meaningful.<br><br>
+        — The shape has no causal link to market mechanics<br>
+        — Can be deliberately painted by a large actor<br>
+        — Meaning is fully dependent on shared belief<br>
+        — If everyone stops believing it, it stops working immediately<br>
+        — The "signal" and the referent (future price) are connected only by convention<br><br>
+        <span style="color:var(--red)">→ Saussure's arbitrary sign: the link between signifier and signified is assigned, not caused.</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label">Indexical Signal</div>
+      <div class="panel-title">Gaps, Volume Spikes, Breakaway Moves</div>
+      <div class="panel-body">
+        Exists because <em>something real happened in the market</em> and left a physical trace.<br><br>
+        — The gap is a fossil of an actual order imbalance<br>
+        — Cannot be fabricated without spending real capital at real risk<br>
+        — Retains meaning even if no one "reads" it (the unfilled zone still exists)<br>
+        — Represents a decision by real participants under real conditions<br>
+        — The signal IS the event — not a symbol pointing to it<br><br>
+        <span style="color:var(--green)">→ Peirce's index: like smoke pointing to fire — the connection is causal, not agreed upon.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="panel">
+      <div class="panel-label">Property 01</div>
+      <div class="panel-title">Immutability</div>
+      <div class="panel-body">A gap on the daily chart in 2019 is still there in 2024. No actor can rewrite history. The price zone that was skipped over remains unfilled until price explicitly returns to it and trades through it. It is a permanent coordinate in price space.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-label">Property 02</div>
+      <div class="panel-label" style="margin-top:4px;color:var(--amber)">Cost of Fabrication</div>
+      <div class="panel-title">Capital Required to Fake</div>
+      <div class="panel-body">To paint a gap, you must move price so aggressively that no trades occur at intermediate levels. This requires enormous capital and leaves you exposed. Unlike drawing a trendline, you cannot fake a gap in a liquid market without paying for it.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-label">Property 03</div>
+      <div class="panel-title">Belief-Independence</div>
+      <div class="panel-body">A Fibonacci level disappears the moment enough traders stop using it. A gap does not. The unfilled price zone represents a genuine absence of liquidity — a structural feature of the market, not a projection of collective belief onto the chart.</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════ TAB 2: GAP TYPES ══════════ -->
+<section id="types" class="section">
+  <div class="sec-h">Gap Types & Their Indexical Integrity</div>
+  <p class="sec-sub">Not all gaps are equal — the cause determines the signal quality</p>
+
+  <div id="gap-detail" class="gap-detail"></div>
+
+  <div class="gap-cards">
+
+    <div class="gap-card" onclick="showGap('breakaway')">
+      <div class="gc-header">
+        <div class="gc-name">Breakaway Gap</div>
+        <div class="gc-type indexical">STRONG INDEX</div>
+      </div>
+      <div class="gc-body">
+        <div class="gc-desc">Occurs when price escapes a consolidation structure on high volume. Represents a definitive shift in the balance of power — sellers routed, buyers in control (or vice versa).</div>
+        <div class="gc-tag">↳ Click to expand full analysis</div>
+      </div>
+    </div>
+
+    <div class="gap-card" onclick="showGap('runaway')">
+      <div class="gc-header">
+        <div class="gc-name">Runaway / Continuation Gap</div>
+        <div class="gc-type indexical">STRONG INDEX</div>
+      </div>
+      <div class="gc-body">
+        <div class="gc-desc">Appears mid-trend on strong volume. Signals that conviction is accelerating, not fading. Often marks the halfway point of a move — institutional momentum compounding.</div>
+        <div class="gc-tag">↳ Click to expand full analysis</div>
+      </div>
+    </div>
+
+    <div class="gap-card" onclick="showGap('exhaustion')">
+      <div class="gc-header">
+        <div class="gc-name">Exhaustion Gap</div>
+        <div class="gc-type semi-idx">SEMI-INDEXICAL</div>
+      </div>
+      <div class="gc-body">
+        <div class="gc-desc">Appears near the end of a move — one final burst before reversal. The gap itself is real, but identifying it <em>as</em> an exhaustion gap requires context (volume declining, prior trend length). Hindsight risk is high.</div>
+        <div class="gc-tag">↳ Click to expand full analysis</div>
+      </div>
+    </div>
+
+    <div class="gap-card" onclick="showGap('common')">
+      <div class="gc-header">
+        <div class="gc-name">Common / Area Gap</div>
+        <div class="gc-type convention">WEAK SIGNAL</div>
+      </div>
+      <div class="gc-body">
+        <div class="gc-desc">Low-volume, intra-consolidation gaps. These fill quickly and carry minimal structural information. The most conventional of gaps — often no more meaningful than a candlestick pattern.</div>
+        <div class="gc-tag">↳ Click to expand full analysis</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    <p>The <strong>key filter</strong>: an indexically honest gap requires <em>volume confirmation</em>. A price jump with no volume is a thin-market artifact — a data glitch wearing a gap's clothes. A price jump with volume surge is forensic evidence of real, urgent order flow.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-label">What a Gap's Unfilled Zone Encodes</div>
+      <div class="panel-title">The Liquidity Void Principle</div>
+      <div class="panel-body">
+        When price gaps, it means <em>no one transacted</em> in that price range. This creates a "liquidity void" — a zone with no established two-sided market. The market has a mechanical tendency to return to these zones eventually because:<br><br>
+        1. Late participants who missed the move wait for a retrace to that level<br>
+        2. Original participants may use the return as an exit<br>
+        3. Algorithmic systems are programmed to test prior gap zones as support/resistance<br><br>
+        This is not convention — it is the mechanical consequence of how order books work.
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-label">The Fill vs. Respect Distinction</div>
+      <div class="panel-title">What Happens When Price Returns</div>
+      <div class="panel-body">
+        Not all gaps fill — and <em>how</em> price reacts to a gap zone tells you whether the original imbalance was resolved:<br><br>
+        <span style="color:var(--green)">Gap respected (bounces from zone)</span> → the original imbalance persists; structural pressure remains<br><br>
+        <span style="color:var(--red)">Gap filled cleanly</span> → the liquidity void has been addressed; the causal signal is spent<br><br>
+        <span style="color:var(--amber)">Gap filled then reclaimed</span> → complex: original signal may have been a stop hunt; reassess the structure
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════ TAB 3: HTF STRUCTURE ══════════ -->
+<section id="htf" class="section">
+  <div class="sec-h">The High-Timeframe Structure Ladder</div>
+  <p class="sec-sub">Why timeframe determines indexical integrity — click each tier to expand</p>
+
+  <div class="callout">
+    <p>The same gap that is manipulable on a 5-minute chart becomes structurally immovable on a weekly chart. <em>Timeframe is not just a zoom level — it determines who is creating the signal and what it would cost to fabricate it.</em></p>
+  </div>
+
+  <div class="htf-ladder">
+
+    <div class="htf-row" onclick="toggleHTF('weekly')">
+      <div class="htf-tf">
+        <div class="htf-bar" style="width:80px;opacity:1"></div>
+        Weekly
+      </div>
+      <div class="htf-desc">Gaps formed by events large enough to move price across an entire week's range. Institutional rebalancing, macro decisions, major earnings. Requires sovereign-level capital to fabricate.</div>
+      <div class="htf-integrity hi-high">VERY HIGH</div>
+    </div>
+    <div class="htf-expand" id="htf-weekly">
+      <div class="htf-exp-grid">
+        <div>
+          <div class="htf-exp-h">Who Creates These</div>
+          <div class="htf-exp-b">Central bank decisions, index rebalancing, major geopolitical events, quarterly institutional repositioning. These actors are not looking at your chart — they are responding to real-world imperatives. The gap is a side effect of their activity, not a signal they are constructing.</div>
+        </div>
+        <div>
+          <div class="htf-exp-h">Cost to Fabricate</div>
+          <div class="htf-exp-b">Moving a major asset's price enough to create a weekly gap would require billions of dollars of one-directional flow in liquid markets. The capital required exceeds any plausible return from the manipulation. In equities, it would likely trigger regulatory scrutiny. This is why weekly gaps carry the highest indexical integrity of any TA signal.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="htf-row" onclick="toggleHTF('daily')">
+      <div class="htf-tf">
+        <div class="htf-bar" style="width:60px;opacity:0.8"></div>
+        Daily
+      </div>
+      <div class="htf-desc">Overnight gaps between sessions. Reflect real order imbalance from events occurring outside market hours — earnings, macro data, geopolitical shifts. Very difficult to fake in regulated markets.</div>
+      <div class="htf-integrity hi-high">HIGH</div>
+    </div>
+    <div class="htf-expand" id="htf-daily">
+      <div class="htf-exp-grid">
+        <div>
+          <div class="htf-exp-h">Why Daily Gaps Are Strong</div>
+          <div class="htf-exp-b">Between close and open, no trading occurs in regulated markets (for equities). The gap represents the accumulated weight of all overnight order flow hitting the opening auction simultaneously. This is as close to a "pure" supply-demand signal as public markets provide — no intraday manipulation can create a daily gap retroactively.</div>
+        </div>
+        <div>
+          <div class="htf-exp-h">The Overnight Order Book</div>
+          <div class="htf-exp-b">Pre-market and after-hours trading in liquid equities gives a real-time signal of where daily gaps are forming and why. The gap at the open is a crystallization of that order flow. Earnings gaps — where a company's value is genuinely reappraised overnight — are among the highest-quality indexical signals available to retail traders.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="htf-row" onclick="toggleHTF('4h')">
+      <div class="htf-tf">
+        <div class="htf-bar" style="width:45px;opacity:0.6"></div>
+        4-Hour
+      </div>
+      <div class="htf-desc">Session boundary gaps. Moderate signal quality — real enough in major liquid assets, but increasingly susceptible to intraday manipulation in thinner markets.</div>
+      <div class="htf-integrity hi-med">MODERATE</div>
+    </div>
+    <div class="htf-expand" id="htf-4h">
+      <div class="htf-exp-grid">
+        <div>
+          <div class="htf-exp-h">Where 4H Gaps Work</div>
+          <div class="htf-exp-b">Major forex pairs around London/NY session opens. Equity index futures at pre-market opens. Here the volume is high enough that the gap represents genuine order flow. The 4H chart in major liquid assets often captures institutional session changes with reasonable integrity.</div>
+        </div>
+        <div>
+          <div class="htf-exp-h">Where 4H Gaps Fail</div>
+          <div class="htf-exp-b">In crypto markets, low-cap equities, or during low-liquidity periods, a single large order can create a 4H gap that is a data artifact rather than a structural signal. The gap exists but the indexical integrity is low — the "evidence" was planted cheaply. Always cross-reference with volume.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="htf-row" onclick="toggleHTF('1h')">
+      <div class="htf-tf">
+        <div class="htf-bar" style="width:30px;opacity:0.45"></div>
+        1-Hour
+      </div>
+      <div class="htf-desc">Intraday gaps increasingly mixed. Some carry real information (liquidity events, news), many are noise or deliberate manipulation in thin conditions.</div>
+      <div class="htf-integrity hi-med">LOWER</div>
+    </div>
+    <div class="htf-expand" id="htf-1h">
+      <div class="htf-exp-grid">
+        <div>
+          <div class="htf-exp-h">The Noise Problem</div>
+          <div class="htf-exp-b">On 1H, gaps are increasingly caused by: order routing artifacts, market maker adjustments, scheduled news events (which are often pre-positioned around), and deliberate stop hunts. The gap exists in the data but the original cause may be manipulative rather than informational.</div>
+        </div>
+        <div>
+          <div class="htf-exp-h">How to Filter</div>
+          <div class="htf-exp-b">On 1H, require: (a) volume multiple of 3× or more vs prior candles, (b) gap in direction of dominant HTF structure, (c) immediate follow-through rather than fill. Absent these, treat the gap as noise until it proves itself by price respecting the zone.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="htf-row" onclick="toggleHTF('lt')">
+      <div class="htf-tf">
+        <div class="htf-bar" style="width:16px;opacity:0.3"></div>
+        15m & below
+      </div>
+      <div class="htf-desc">Gaps at this level are largely indistinguishable from manipulation, HFT routing artifacts, and spread-related anomalies. Minimal indexical integrity without strong contextual filters.</div>
+      <div class="htf-integrity hi-low">LOW</div>
+    </div>
+    <div class="htf-expand" id="htf-lt">
+      <div class="htf-exp-grid">
+        <div>
+          <div class="htf-exp-h">Why Low-TF Gaps Fail</div>
+          <div class="htf-exp-b">At 15m and below, the cost of fabricating a gap is low enough that HFT firms, market makers, and even moderately capitalized actors can and do create them deliberately. The gap tells you something happened, but not whether it was genuine order flow or engineered price action. You are operating in the domain of the manipulators.</div>
+        </div>
+        <div>
+          <div class="htf-exp-h">When Low-TF Gaps Matter</div>
+          <div class="htf-exp-b">Only when they occur at exact HTF structural levels — daily/weekly gap zones, prior session highs/lows, established HTF S/R. In that case, the low-TF gap is a precision entry signal within an already-established HTF context, not a primary signal of its own. The HTF does the heavy lifting; the low-TF gap refines the entry.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ══════════ TAB 4: MANIPULATION RESISTANCE ══════════ -->
+<section id="manip" class="section">
+  <div class="sec-h">Why HTF Gaps Resist Manipulation</div>
+  <p class="sec-sub">The structural properties that protect indexical signals</p>
+
+  <div class="manip-compare">
+    <div class="mc-col g">
+      <div class="mc-title">HTF Gap / Structure — Manipulation Resistant</div>
+      <ul class="mc-list">
+        <li>The signal is already in the past — it cannot be rewritten, only addressed</li>
+        <li>Fabrication cost scales with timeframe — weekly gaps require billions</li>
+        <li>The zone persists regardless of whether anyone is "watching" it</li>
+        <li>Based on absence of liquidity — a structural market fact, not a reading</li>
+        <li>Confirmed by exchange-reported volume — hard to fake in regulated markets</li>
+        <li>Narrative-independent: the gap zone remains meaningful even if sentiment shifts</li>
+        <li>Multiple participants act independently around these zones, not following one signal</li>
+      </ul>
+    </div>
+    <div class="mc-divider">vs</div>
+    <div class="mc-col r">
+      <div class="mc-title">Conventional TA Pattern — Manipulation Vulnerable</div>
+      <ul class="mc-list">
+        <li>The pattern is forming in real time — can be engineered as it develops</li>
+        <li>Pattern painting costs only the capital needed to move a thin market briefly</li>
+        <li>Disappears the moment enough traders stop recognizing it</li>
+        <li>Based on visual agreement — a social construction</li>
+        <li>Stop placement at textbook levels is visible and predictable to institutions</li>
+        <li>Narrative-dependent: if the story changes, the pattern loses meaning</li>
+        <li>Uniform belief creates uniform stop placement — a hunting map</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec-sub" style="margin-bottom:16px">The three manipulation vectors that don't work on HTF gaps</div>
+
+  <div class="grid-3">
+    <div class="panel" style="border-left:3px solid var(--green)">
+      <div class="panel-label">Attack 01</div>
+      <div class="panel-title">Pattern Painting</div>
+      <div class="panel-body">
+        Works against: H&S, triangles, flag patterns.<br><br>
+        <span style="color:var(--green)">Fails on HTF gaps because:</span> The gap already exists in historical data. You cannot paint a gap that happened in 2021. The actor would need to travel back in time. The structural zone is a historical fact — unmanipulable after the fact.
+      </div>
+    </div>
+    <div class="panel" style="border-left:3px solid var(--green)">
+      <div class="panel-label">Attack 02</div>
+      <div class="panel-title">Stop Hunt at Obvious Levels</div>
+      <div class="panel-body">
+        Works against: Fibonacci levels, round numbers, trendlines.<br><br>
+        <span style="color:var(--green)">Partially limited on HTF gaps because:</span> The zone is wide enough and the capital required to "run through" a weekly gap zone in a liquid asset is enormous. Stop hunts work best at precise single-price levels — gap zones are ranges, not lines.
+      </div>
+    </div>
+    <div class="panel" style="border-left:3px solid var(--green)">
+      <div class="panel-label">Attack 03</div>
+      <div class="panel-title">Social / Media Manipulation</div>
+      <div class="panel-body">
+        Works against: trending patterns on fintwit, retail sentiment plays.<br><br>
+        <span style="color:var(--green)">Fails on HTF gaps because:</span> The gap zone doesn't require ongoing belief to persist. A hedge fund doesn't need Twitter to tell it that the weekly chart has an unfilled gap at $148. It can see the historical data independently.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="border-left-color:var(--red);">
+    <p><strong style="color:var(--red)">Where HTF gaps CAN be exploited:</strong> A large actor can engineer a fake breakout of a gap zone — pushing price through the zone briefly to trigger stops, then reversing before true resolution. This is the main vulnerability: the zone is real, but the test of the zone can be manufactured. The defense is: <em>require a full candle close through the zone, not just an intrabar wick.</em></p>
+  </div>
+
+</section>
+
+<!-- ══════════ TAB 5: PRACTICAL FRAMEWORK ══════════ -->
+<section id="apply" class="section">
+  <div class="sec-h">Practical Framework</div>
+  <p class="sec-sub">Conditions that confirm indexical integrity before acting</p>
+
+  <div class="callout">
+    <p>The goal is not to trade gaps mechanically — it is to use gap zones as <em>structural ground truth</em> that filters and contextualizes everything else. Other signals (momentum, entries, sentiment) are evaluated relative to the HTF gap structure, not independently.</p>
+  </div>
+
+  <div class="sec-sub" style="margin-bottom:14px">Structural Integrity Checklist — before treating a gap as a primary signal</div>
+
+  <div class="checklist">
+    <div class="cl-row">
+      <div class="cl-num">01</div>
+      <div class="cl-text"><strong>Timeframe ≥ Daily.</strong> The gap must appear on a daily chart or higher to carry sufficient indexical weight. Sub-daily gaps require extraordinary volume confirmation to be actionable as structural signals.</div>
+      <div class="cl-status cl-yes">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-num">02</div>
+      <div class="cl-text"><strong>Volume confirmation at gap creation.</strong> The candle creating the gap must show volume significantly above the 20-period average (minimum 2×, ideally 3×+). Gaps on thin volume are data artifacts, not structural signals.</div>
+      <div class="cl-status cl-yes">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-num">03</div>
+      <div class="cl-text"><strong>Causal event identifiable.</strong> Can you identify <em>why</em> the gap formed? Earnings, macro data, index event, geopolitical shock? An unexplained gap in a liquid market is suspicious — it may be engineered. A gap with a known catalyst has higher indexical integrity.</div>
+      <div class="cl-status cl-yes">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-num">04</div>
+      <div class="cl-text"><strong>Gap zone is unfilled.</strong> Has price returned to the gap zone and traded through it on meaningful volume? If yes, the liquidity void has been addressed and the structural signal is spent. Track whether the zone is "open" or "filled."</div>
+      <div class="cl-status cl-yes">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-num">05</div>
+      <div class="cl-text"><strong>Require candle close — not just wick.</strong> When price tests a gap zone, insist on a full candle close inside or through the zone before treating the test as a resolution. Wicks into gap zones are the primary tool for engineering fake breakouts without committing to the move.</div>
+      <div class="cl-status cl-yes">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-num">06</div>
+      <div class="cl-text"><strong>Context: gap direction vs. macro structure.</strong> A bullish gap below a major multi-year resistance carries less weight than a bullish gap above it. The gap should align with — or explicitly break — the higher-level structural context to be actionable.</div>
+      <div class="cl-status cl-yes">Strongly advised</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-num">07</div>
+      <div class="cl-text"><strong>Market liquidity filter.</strong> In crypto (unregulated), OTC assets, or very low-cap equities, volume data may be fabricated (wash trading). In these markets, even volume-confirmed gaps carry reduced indexical integrity. Apply a market-quality filter before using gaps as structural anchors.</div>
+      <div class="cl-status cl-no">Context-dependent</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-num">08</div>
+      <div class="cl-text"><strong>Conventional patterns subordinate to gap structure.</strong> If a Fibonacci level, trendline, or candlestick pattern conflicts with an established HTF gap zone, the gap zone takes priority. The gap is structural ground truth; the conventional pattern is a community narrative overlaid on it.</div>
+      <div class="cl-status cl-yes">Structural rule</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel" style="border-top:2px solid var(--green)">
+      <div class="panel-label">The Hierarchy in Practice</div>
+      <div class="panel-title">How to Layer These Signals</div>
+      <div class="panel-body">
+        <strong style="color:var(--bright)">Level 1 (ground truth):</strong> Weekly / monthly gap zones — structural anchors that define the macro range<br><br>
+        <strong style="color:var(--bright)">Level 2 (high confidence):</strong> Daily gap zones — directional bias within the macro structure<br><br>
+        <strong style="color:var(--bright)">Level 3 (context):</strong> Volume-confirmed 4H gaps at HTF structural levels — intermediate signals<br><br>
+        <strong style="color:var(--bright)">Level 4 (entry refinement only):</strong> Low-TF gaps at the above structural levels — precision entries, never primary signals<br><br>
+        <span style="color:var(--amber)">Conventional TA (Fibonacci, candlesticks, etc.) operates entirely within the structure defined by Levels 1–3. It is never the anchor — only a refinement tool.</span>
+      </div>
+    </div>
+    <div class="panel" style="border-top:2px solid var(--amber)">
+      <div class="panel-label">The Core Mental Model</div>
+      <div class="panel-title">Forensics, Not Prediction</div>
+      <div class="panel-body">
+        The right way to use HTF gaps is not as predictive signals but as <em>forensic evidence</em>:<br><br>
+        "This is where the market was forced to jump. That tells me where the order imbalance was. Now I observe what happens when price returns to that zone."<br><br>
+        This is fundamentally different from pattern trading, which says: "This shape predicts X."<br><br>
+        The gap says: "Something definitive happened here. Price will have to resolve it eventually — and how it resolves will reveal current market intention."<br><br>
+        <span style="color:var(--green)">The gap is a question the market must answer. The answer tells you about the present, not the past.</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<script>
+// ── Tab navigation
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── HTF expand/collapse
+function toggleHTF(id) {
+  const el = document.getElementById('htf-' + id);
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('.htf-expand').forEach(e => e.classList.remove('active'));
+  if (!wasActive) el.classList.add('active');
+}
+
+// ── Gap detail data
+const gapData = {
+  breakaway: {
+    title: 'Breakaway Gap — Full Semiotic Analysis',
+    semiotic: 'Strongest indexical signal in TA. Price has been rejected by a consolidation boundary enough times to establish it as real resistance/support, then a catalyst forces such one-sided order flow that the boundary is abandoned entirely. The gap is a scar left by a decisive battle.',
+    integrity: 'Very high. Requires genuine conviction from major participants. Cannot be painted without enormous capital at risk. Volume at the gap candle should be the highest on the chart — it represents the summation of all pending orders that had been waiting for the breakout, filled simultaneously.',
+    watch: 'The "re-test" of the breakout level is the highest-quality entry in all of TA — it is indexically justified (the level was real resistance, now structural support) without being a conventional pattern play. If the re-test holds on lower volume, the signal strengthens further. If it fails, the original gap was likely a stop hunt.'
+  },
+  runaway: {
+    title: 'Runaway / Continuation Gap — Full Semiotic Analysis',
+    semiotic: 'Indexical evidence that a trend has institutional momentum behind it. Unlike a breakaway gap (which marks a transition), the runaway gap occurs mid-trend — meaning the participants driving price are so convicted they are not even waiting for retrace entries.',
+    integrity: 'High, but requires the trend context to be valid. A runaway gap in the early/middle stage of a confirmed trend is strong. A "runaway" gap near potential topping structures may actually be an exhaustion gap — the two are visually identical and distinguishable only in context.',
+    watch: 'Runaway gaps often mark the approximate midpoint of a move — the so-called "measured move" principle. While this is partly conventional wisdom, the underlying logic (institutional momentum sustaining through the gap) gives it more structural basis than most measured-move rules.'
+  },
+  exhaustion: {
+    title: 'Exhaustion Gap — Full Semiotic Analysis',
+    semiotic: 'The trickiest gap type. The gap itself is real (genuine order flow), but its meaning depends entirely on context: it occurs late in a mature trend after extended price movement. The final surge of buyers/sellers creates the gap, then immediately finds no follow-through.',
+    integrity: 'Medium. The gap is indexically real — something happened. But identifying it as exhaustion requires retrospective evidence (the reversal). In real time, it looks exactly like a runaway gap. Volume clues help: exhaustion gaps often show volume declining even as price jumps — the burst is thin.',
+    watch: 'The signal is confirmed not by the gap itself but by what follows: volume drying up, price stalling, then reversing. The gap zone becomes resistance (in a prior uptrend) on any subsequent bounce. It represents the last of the imbalanced participants entering — after which the crowd that drove the trend is exhausted.'
+  },
+  common: {
+    title: 'Common / Area Gap — Full Semiotic Analysis',
+    semiotic: 'The weakest gap type. Occurs within price ranges (consolidations, ranges) on low to average volume. Often caused by spread-widening, thin market conditions, or minor news. Does not represent a significant structural imbalance — just the normal friction of a non-trending market.',
+    integrity: 'Low. In regulated liquid markets these fill quickly — usually within a few sessions. The liquidity void is small and easily addressed. They carry the least indexical weight and in many cases can be treated similarly to conventional TA signals: context-dependent and easily faded.',
+    watch: 'Common gaps become interesting only when they repeatedly occur at the same price zone, suggesting a structural boundary even within a range. Repeated common gaps near the same level are indexical evidence of supply/demand concentration — more informative than any single common gap alone.'
+  }
+};
+
+function showGap(id) {
+  const d = gapData[id];
+  const panel = document.getElementById('gap-detail');
+  panel.innerHTML = `
+    <div style="font-family:'Instrument Serif',serif;font-size:1.2rem;color:var(--bright);margin-bottom:16px;">${d.title}</div>
+    <div class="gd-grid">
+      <div>
+        <div class="gd-col-h">Semiotic Character</div>
+        <div class="gd-col-b">${d.semiotic}</div>
+      </div>
+      <div>
+        <div class="gd-col-h" style="color:var(--green)">Indexical Integrity</div>
+        <div class="gd-col-b">${d.integrity}</div>
+      </div>
+      <div>
+        <div class="gd-col-h" style="color:var(--amber)">What to Watch</div>
+        <div class="gd-col-b">${d.watch}</div>
+      </div>
+    </div>
+  `;
+  panel.classList.add('active');
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  document.querySelectorAll('.gap-card').forEach(c => c.classList.remove('active'));
+  event.currentTarget.closest('.gap-card').classList.add('active');
+}
+
+// ── Draw gap anatomy chart
+window.addEventListener('load', () => {
+  const canvas = document.getElementById('gapAnatomy');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 220 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const W = rect.width, H = 220;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background grid
+  ctx.strokeStyle = '#1c2830';
+  ctx.lineWidth = 0.5;
+  for (let y = 20; y < H; y += 30) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  const green = '#00e09a', red = '#ff3f5a', amber = '#f0a500', dim = '#3a5060';
+
+  // Candle data: [open%, high%, low%, close%] relative to H (0=top 1=bottom)
+  const candles = [
+    [0.82,0.78,0.90,0.85],
+    [0.84,0.80,0.88,0.82],
+    [0.80,0.75,0.86,0.78],
+    [0.75,0.72,0.82,0.73],
+    [0.72,0.68,0.78,0.70],
+    // GAP HERE
+    [0.52,0.48,0.56,0.50],
+    [0.48,0.44,0.54,0.46],
+    [0.44,0.40,0.50,0.42],
+    [0.42,0.38,0.46,0.40],
+    [0.40,0.36,0.44,0.37],
+    [0.37,0.33,0.41,0.35],
+  ];
+
+  const padding = 40;
+  const totalW = W - padding * 2;
+  const cw = totalW / candles.length;
+  const bw = cw * 0.5;
+
+  candles.forEach((c, i) => {
+    const x = padding + i * cw + cw / 2;
+    const [op, hi, lo, cl] = c;
+    const bull = cl < op; // lower% = higher price
+    const color = bull ? green : red;
+
+    const yHi = hi * (H - 30) + 15;
+    const yLo = lo * (H - 30) + 15;
+    const yO  = op * (H - 30) + 15;
+    const yC  = cl * (H - 30) + 15;
+    const yTop = Math.min(yO, yC), yBot = Math.max(yO, yC);
+
+    // wick
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x, yHi); ctx.lineTo(x, yLo); ctx.stroke();
+
+    // body
+    ctx.fillStyle = color;
+    const bodyH = Math.max(yBot - yTop, 2);
+    ctx.fillRect(x - bw/2, yTop, bw, bodyH);
+  });
+
+  // Gap zone highlight
+  const gapBot = candles[4][2] * (H - 30) + 15; // low of last pre-gap candle
+  const gapTop = candles[5][1] * (H - 30) + 15; // high of first post-gap candle
+
+  ctx.fillStyle = 'rgba(240,165,0,0.08)';
+  ctx.fillRect(0, gapTop, W, gapBot - gapTop);
+
+  ctx.strokeStyle = amber; ctx.lineWidth = 1; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(0, gapBot); ctx.lineTo(W, gapBot); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, gapTop); ctx.lineTo(W, gapTop); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels
+  ctx.fillStyle = amber;
+  ctx.font = '9px Martian Mono';
+  ctx.letterSpacing = '0.1em';
+  ctx.fillText('GAP ZONE (liquidity void)', 10, gapTop - 6);
+  ctx.fillText('← no transactions occurred here →', 10, (gapTop + gapBot)/2 + 4);
+
+  // Volume bars at bottom
+  const vols = [0.3,0.25,0.28,0.32,0.35, 0.95,0.8,0.5,0.4,0.35,0.3];
+  const vH = 30, vBase = H - 4;
+  candles.forEach((c, i) => {
+    const x = padding + i * cw;
+    const bull = c[3] < c[0];
+    ctx.fillStyle = i === 5 ? amber : (bull ? 'rgba(0,224,154,0.4)' : 'rgba(255,63,90,0.4)');
+    ctx.fillRect(x + cw * 0.1, vBase - vols[i] * vH, cw * 0.8, vols[i] * vH);
+  });
+  ctx.fillStyle = amber;
+  ctx.font = '8px Martian Mono';
+  ctx.fillText('VOL SPIKE ↑', padding + 5 * cw + 2, vBase - 0.95 * vH - 3);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symbolic Communication — Trading Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1209;
+  --paper: #f5f0e8;
+  --amber: #c8831a;
+  --rust: #a03e20;
+  --sage: #4a6741;
+  --mist: #7a8fa6;
+  --cream: #ede7d3;
+  --dark-bg: #0a0d0f;
+  --dark-text: #c8d8e8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Mono', 'Courier New', monospace;
+  min-height: 100vh;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:100; opacity:0.5;
+}
+
+header {
+  padding: 64px 60px 48px;
+  border-bottom: 2px solid var(--ink);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--mist);
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+h1 em { color: var(--amber); font-style: italic; }
+
+.intro {
+  font-size: 13px;
+  color: #3a3020;
+  line-height: 1.7;
+  max-width: 600px;
+  margin-bottom: 24px;
+}
+
+.series-tag {
+  display: inline-block;
+  border: 1px solid var(--ink);
+  padding: 6px 14px;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* Main grid */
+.modules {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 60px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.module-card {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 0;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  overflow: hidden;
+  position: relative;
+}
+
+.module-card::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: var(--ink);
+  transition: width 0.3s ease;
+  z-index: 0;
+}
+
+.module-card:hover::after { width: 100%; }
+.module-card:hover .mc-num,
+.module-card:hover .mc-content *,
+.module-card:hover .mc-arrow { color: var(--paper) !important; }
+.module-card:hover .mc-tag { border-color: var(--paper) !important; }
+
+.mc-num {
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  font-style: italic;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  transition: background 0.3s;
+}
+
+.module-card:hover .mc-num { background: var(--amber); }
+
+.mc-content {
+  padding: 28px 32px;
+  border-left: 2px solid var(--ink);
+  position: relative;
+  z-index: 1;
+}
+
+.mc-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--mist);
+  margin-bottom: 8px;
+  transition: color 0.2s;
+}
+
+.mc-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+
+.mc-desc {
+  font-size: 12px;
+  color: #3a3020;
+  line-height: 1.65;
+  margin-bottom: 14px;
+  max-width: 560px;
+  transition: color 0.2s;
+}
+
+.mc-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mc-tag {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border: 1px solid currentColor;
+  padding: 3px 9px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.tag-amber { color: var(--amber); }
+.tag-sage  { color: var(--sage); }
+.tag-rust  { color: var(--rust); }
+.tag-mist  { color: var(--mist); }
+
+.mc-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  font-size: 1.6rem;
+  color: var(--mist);
+  border-left: 2px solid var(--ink);
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+/* Connection lines between cards */
+.connector {
+  display: flex;
+  align-items: center;
+  padding: 0 80px;
+  height: 24px;
+  gap: 0;
+}
+.connector-line {
+  flex: 1;
+  height: 1px;
+  background: var(--ink);
+  opacity: 0.2;
+}
+.connector-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+  margin: 0 8px;
+}
+
+/* Learning path */
+.path-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 60px 80px;
+}
+
+.path-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--mist);
+}
+
+.path-title::before, .path-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ink);
+  opacity: 0.15;
+}
+
+.path-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  border: 2px solid var(--ink);
+}
+
+.path-step {
+  background: var(--cream);
+  padding: 22px 24px;
+  border-right: 2px solid var(--ink);
+}
+
+.path-step:last-child { border-right: none; }
+
+.ps-num {
+  font-size: 10px;
+  color: var(--amber);
+  letter-spacing: 0.2em;
+  margin-bottom: 6px;
+}
+
+.ps-head {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.ps-body {
+  font-size: 11px;
+  color: #3a3020;
+  line-height: 1.6;
+}
+
+footer {
+  border-top: 2px solid var(--ink);
+  padding: 24px 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-text {
+  font-size: 10px;
+  color: var(--mist);
+  letter-spacing: 0.1em;
+}
+
+@media (max-width: 700px) {
+  header, .modules, .path-section, footer { padding-left: 24px; padding-right: 24px; }
+  .module-card { grid-template-columns: 60px 1fr; }
+  .mc-arrow { display: none; }
+  .path-steps { grid-template-columns: 1fr; }
+  .path-step { border-right: none; border-bottom: 2px solid var(--ink); }
+  .path-step:last-child { border-bottom: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Personal Study Series · Semiotics × Markets</div>
+  <h1>Symbolic<br><em>Communication</em><br>in Trading</h1>
+  <p class="intro">A three-part study guide exploring how signs, patterns, and chart structures function as symbolic systems — from the foundations of semiotics to the manipulation mechanics of technical analysis.</p>
+  <span class="series-tag">3 Modules · Interactive</span>
+</header>
+
+<div class="modules">
+
+  <a class="module-card" href="symbolic-communication.html">
+    <div class="mc-num">1</div>
+    <div class="mc-content">
+      <div class="mc-eyebrow">Foundation · Semiotics</div>
+      <div class="mc-title">Symbolic Communication</div>
+      <div class="mc-desc">The foundational theory: how signs work, the semiotic triangle, Peirce's classification of icons/indices/symbols, and how meaning is constructed through shared agreement. The conceptual base for everything that follows.</div>
+      <div class="mc-tags">
+        <span class="mc-tag tag-amber">Saussure</span>
+        <span class="mc-tag tag-amber">Peirce</span>
+        <span class="mc-tag tag-amber">Semiotic Triangle</span>
+        <span class="mc-tag tag-sage">Icon · Index · Symbol</span>
+        <span class="mc-tag tag-mist">Cassirer · Barthes</span>
+      </div>
+    </div>
+    <div class="mc-arrow">→</div>
+  </a>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-dot"></div>
+    <div class="connector-line"></div>
+  </div>
+
+  <a class="module-card" href="ta-symbolic-communication.html">
+    <div class="mc-num">2</div>
+    <div class="mc-content">
+      <div class="mc-eyebrow">Application · Technical Analysis</div>
+      <div class="mc-title">TA Patterns as Symbolic Communication</div>
+      <div class="mc-desc">How chart patterns function as sign systems — and how they become vectors for manipulation. Pattern-by-pattern semiotic deconstruction, the design-vs-manipulation duality, psychology of pattern belief, and the self-fulfilling prophecy loop.</div>
+      <div class="mc-tags">
+        <span class="mc-tag tag-rust">Pattern Semiotics</span>
+        <span class="mc-tag tag-rust">Stop Hunts</span>
+        <span class="mc-tag tag-amber">Reflexivity</span>
+        <span class="mc-tag tag-sage">H&S · Fibonacci · Volume</span>
+        <span class="mc-tag tag-mist">Behavioural Finance</span>
+      </div>
+    </div>
+    <div class="mc-arrow">→</div>
+  </a>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-dot"></div>
+    <div class="connector-line"></div>
+  </div>
+
+  <a class="module-card" href="gaps-htf-structure.html">
+    <div class="mc-num">3</div>
+    <div class="mc-content">
+      <div class="mc-eyebrow">Advanced · Indexical Integrity</div>
+      <div class="mc-title">Gaps & High-Timeframe Structure</div>
+      <div class="mc-desc">Why gaps resist manipulation where conventional patterns fail. The ontological difference between indexical signals and conventional symbols. The HTF structure ladder — how timeframe determines who creates the signal and what it costs to fabricate it.</div>
+      <div class="mc-tags">
+        <span class="mc-tag tag-sage">Indexical Signals</span>
+        <span class="mc-tag tag-sage">Gap Types</span>
+        <span class="mc-tag tag-amber">HTF Ladder</span>
+        <span class="mc-tag tag-rust">Liquidity Voids</span>
+        <span class="mc-tag tag-mist">Structural Ground Truth</span>
+      </div>
+    </div>
+    <div class="mc-arrow">→</div>
+  </a>
+
+</div>
+
+<div class="path-section">
+  <div class="path-title">Suggested Learning Path</div>
+  <div class="path-steps">
+    <div class="path-step">
+      <div class="ps-num">Step 01</div>
+      <div class="ps-head">Build the vocabulary</div>
+      <div class="ps-body">Start with Module 1. Understand Peirce's icon/index/symbol distinction — this is the conceptual lens for everything in the other modules. Focus on why the index (causal connection) is fundamentally different from the symbol (convention).</div>
+    </div>
+    <div class="path-step">
+      <div class="ps-num">Step 02</div>
+      <div class="ps-head">Apply it to TA</div>
+      <div class="ps-body">Move to Module 2. Go through each pattern card and ask: is this iconic, indexical, or purely conventional? Notice how the manipulation risk scales with how conventional (agreed-upon) the pattern is. Read the self-fulfilling prophecy loop carefully.</div>
+    </div>
+    <div class="path-step">
+      <div class="ps-num">Step 03</div>
+      <div class="ps-head">Build structural ground</div>
+      <div class="ps-body">Module 3 is the practical framework. Use the HTF Structure Ladder to understand why timeframe matters. Apply the 8-point integrity checklist to any gap you're considering. Return to Modules 1–2 to test your understanding of why the principles hold.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-text">Personal Study Guide · Symbolic Communication in Trading</div>
+  <div class="footer-text">3 Modules · Built for offline use</div>
+</footer>
+
+</body>
+</html>

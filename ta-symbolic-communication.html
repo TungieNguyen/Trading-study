@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TA Patterns as Symbolic Communication</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,500;0,600;1,300;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0d0f;
+  --bg2: #111518;
+  --bg3: #161c20;
+  --border: #1e2830;
+  --green: #00c896;
+  --red: #ff4757;
+  --amber: #ffa502;
+  --cyan: #00d2ff;
+  --text: #c8d8e8;
+  --text-dim: #546878;
+  --text-bright: #e8f4ff;
+  --accent: #1a3a4a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  min-height: 100vh;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Scanline effect */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Header */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 36px 48px 28px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 24px;
+  animation: fadeIn 0.6s ease;
+}
+
+.header-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: var(--green);
+}
+
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 300;
+  color: var(--text-bright);
+  line-height: 1.1;
+}
+
+h1 em {
+  color: var(--amber);
+  font-style: italic;
+}
+
+.header-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 10px;
+  letter-spacing: 0.05em;
+  max-width: 500px;
+}
+
+.header-verdict {
+  text-align: right;
+}
+
+.verdict-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.verdict-pill {
+  display: inline-block;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  padding: 6px 16px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+/* Tabs */
+nav {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px;
+  overflow-x: auto;
+  animation: fadeIn 0.7s ease;
+}
+
+.tab {
+  padding: 14px 20px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+/* Main */
+main {
+  padding: 40px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section { display: none; animation: fadeIn 0.4s ease; }
+.section.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Section header */
+.sec-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  font-weight: 300;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+}
+
+.sec-sub {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+/* ============ SECTION 1: FRAMEWORK ============ */
+.framework-intro {
+  border: 1px solid var(--border);
+  padding: 28px 32px;
+  background: var(--bg2);
+  margin-bottom: 32px;
+  border-left: 3px solid var(--cyan);
+}
+
+.framework-intro p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: var(--text-bright);
+  line-height: 1.7;
+  font-style: italic;
+}
+
+.semiotic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.sem-cell {
+  background: var(--bg2);
+  padding: 24px 22px;
+  transition: background 0.2s;
+}
+
+.sem-cell:hover { background: var(--bg3); }
+
+.sem-type {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 10px;
+}
+
+.sem-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  color: var(--text-bright);
+  margin-bottom: 10px;
+}
+
+.sem-body {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.sem-example {
+  font-size: 11px;
+  color: var(--amber);
+  padding: 6px 10px;
+  border: 1px solid rgba(255,165,2,0.2);
+  background: rgba(255,165,2,0.04);
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.info-block {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 24px;
+}
+
+.ib-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.ib-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  color: var(--text-bright);
+  margin-bottom: 12px;
+}
+
+.ib-body {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* ============ SECTION 2: PATTERNS ============ */
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.pattern-card {
+  background: var(--bg2);
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  overflow: hidden;
+}
+
+.pattern-card.active, .pattern-card:hover { background: var(--bg3); }
+
+.pc-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pc-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: var(--text-bright);
+}
+
+.pc-signal {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border: 1px solid;
+}
+
+.signal-bull { color: var(--green); border-color: rgba(0,200,150,0.3); }
+.signal-bear { color: var(--red); border-color: rgba(255,71,87,0.3); }
+.signal-neutral { color: var(--amber); border-color: rgba(255,165,2,0.3); }
+
+.pc-body { padding: 18px 22px; }
+
+/* Mini candlestick chart */
+.mini-chart {
+  height: 60px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  margin-bottom: 14px;
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.candle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.wick {
+  width: 1px;
+  background: var(--text-dim);
+}
+
+.body {
+  width: 70%;
+  min-height: 3px;
+  border-radius: 1px;
+}
+
+.body.bull { background: var(--green); }
+.body.bear { background: var(--red); }
+
+.pc-semiotic {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.pc-manipulate {
+  font-size: 11px;
+  padding: 8px 10px;
+  background: rgba(255,71,87,0.06);
+  border-left: 2px solid var(--red);
+  color: #ff8a94;
+  line-height: 1.5;
+}
+
+.detail-panel {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 28px;
+  margin-bottom: 32px;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.detail-panel.active { display: block; }
+
+.dp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.dp-col-title {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dp-col-body {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+/* ============ SECTION 3: DESIGN VS MANIPULATION ============ */
+.dvm-header {
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.dvm-col {
+  background: var(--bg2);
+  padding: 20px 22px;
+}
+
+.dvm-col.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-style: italic;
+  color: var(--text-dim);
+}
+
+.dvm-col-title {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.dvm-col.green .dvm-col-title { color: var(--green); }
+.dvm-col.red .dvm-col-title { color: var(--red); }
+
+.dvm-items { list-style: none; }
+
+.dvm-items li {
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.dvm-items li::before {
+  content: '—';
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.dvm-col.green .dvm-items li::before { color: var(--green); content: '✓'; }
+.dvm-col.red .dvm-items li::before { color: var(--red); content: '✗'; }
+
+.manipulation-types {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.manip-card {
+  background: var(--bg2);
+  padding: 22px;
+}
+
+.manip-icon {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.manip-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: var(--text-bright);
+  margin-bottom: 8px;
+}
+
+.manip-how {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.manip-example {
+  font-size: 10px;
+  color: var(--red);
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* ============ SECTION 4: PSYCHOLOGY ============ */
+.psych-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.psych-card {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 22px;
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.psych-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--border);
+  line-height: 1;
+  padding-top: 4px;
+}
+
+.psych-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: var(--text-bright);
+  margin-bottom: 8px;
+}
+
+.psych-body {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.psych-tag {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  border: 1px solid rgba(255,165,2,0.25);
+  padding: 2px 8px;
+}
+
+/* Self-fulfilling dial */
+.sff-container {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.sff-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  color: var(--text-bright);
+  margin-bottom: 6px;
+}
+
+.sff-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+.sff-steps {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+}
+
+.sff-step {
+  flex: 1;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  margin-right: -1px;
+  position: relative;
+}
+
+.sff-step-num {
+  font-size: 10px;
+  color: var(--green);
+  margin-bottom: 6px;
+}
+
+.sff-step-text {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.sff-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  color: var(--border);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* ============ SECTION 5: VERDICT ============ */
+.verdict-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.verdict-card {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 28px;
+}
+
+.vc-icon { font-size: 2rem; margin-bottom: 12px; }
+
+.vc-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  color: var(--text-bright);
+  margin-bottom: 12px;
+}
+
+.vc-body {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+
+.final-statement {
+  border: 1px solid var(--amber);
+  background: rgba(255,165,2,0.04);
+  padding: 28px 32px;
+  margin-bottom: 32px;
+}
+
+.fs-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 12px;
+}
+
+.fs-body {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--text-bright);
+  line-height: 1.8;
+  font-weight: 300;
+}
+
+.principles-list {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+.principle-row {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  align-items: start;
+}
+
+.principle-row:last-child { border-bottom: none; }
+
+.pr-num {
+  font-size: 10px;
+  color: var(--green);
+  padding-top: 2px;
+  letter-spacing: 0.1em;
+}
+
+.pr-text {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.pr-text strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Tag strip at bottom */
+.tag-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 20px 0 0;
+}
+
+.ts-tag {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 4px 10px;
+}
+
+@media (max-width: 720px) {
+  header { padding: 24px; grid-template-columns: 1fr; }
+  nav { padding: 0 24px; }
+  main { padding: 24px; }
+  .semiotic-grid, .manipulation-types { grid-template-columns: 1fr; }
+  .two-col, .pattern-grid, .psych-grid, .verdict-grid, .dp-row { grid-template-columns: 1fr; }
+  .dvm-header { grid-template-columns: 1fr; }
+  .dvm-col.center { display: none; }
+  .sff-steps { flex-direction: column; }
+}
+</style>
+</head>
+<body><div style="background:#0a0d0f;border-bottom:1px solid #1c2830;padding:10px 48px;display:flex;align-items:center;gap:24px;font-family:Martian Mono,Courier New,monospace;font-size:10px;letter-spacing:0.12em;"><a href="index.html" style="color:#3a5060;text-decoration:none;text-transform:uppercase;">← Home</a><a href="symbolic-communication.html" style="color:#3a5060;text-decoration:none;text-transform:uppercase;">Module 1</a><span style="color:#ffa502;flex:1;text-align:center;text-transform:uppercase;">Module 2 · TA Patterns</span><a href="gaps-htf-structure.html" style="color:#3a5060;text-decoration:none;text-transform:uppercase;">Module 3 →</a></div>
+
+<header>
+  <div>
+    <div class="header-eyebrow">Semiotics × Markets</div>
+    <h1>TA Patterns as<br><em>Symbolic Communication</em></h1>
+    <p class="header-sub">How chart patterns function as signs, why they sometimes work, and how they become vectors for manipulation — a semiotic deconstruction.</p>
+  </div>
+  <div class="header-verdict">
+    <div class="verdict-label">Verdict</div>
+    <div class="verdict-pill">Both — simultaneously</div>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('framework')">01 · Framework</button>
+  <button class="tab" onclick="showTab('patterns')">02 · Pattern Semiotics</button>
+  <button class="tab" onclick="showTab('dvm')">03 · Design vs Manipulation</button>
+  <button class="tab" onclick="showTab('psych')">04 · Psychology</button>
+  <button class="tab" onclick="showTab('verdict')">05 · Verdict</button>
+</nav>
+
+<main>
+
+<!-- ===== TAB 1: FRAMEWORK ===== -->
+<section id="framework" class="section active">
+  <div class="sec-title">Technical Patterns as Sign Systems</div>
+  <p class="sec-sub">Applying Peirce & Saussure to the chart</p>
+
+  <div class="framework-intro">
+    <p>A candlestick chart is not a neutral picture of price — it is a <strong>semiotic surface</strong>: a structured system of signs that traders collectively read, share, and trade against. Like written language, it only works because a community agrees on what the marks mean.</p>
+  </div>
+
+  <div class="semiotic-grid">
+    <div class="sem-cell">
+      <div class="sem-type">Peirce Type I</div>
+      <div class="sem-title">Icon</div>
+      <div class="sem-body">The candlestick shape visually resembles what it encodes. A long red body <em>looks like</em> decisive selling pressure. A doji's equal wicks <em>look like</em> balance. The visual form mirrors the market tension it represents.</div>
+      <div class="sem-example">↳ Hammer, shooting star — the shape itself suggests the direction</div>
+    </div>
+    <div class="sem-cell">
+      <div class="sem-type">Peirce Type II</div>
+      <div class="sem-title">Index</div>
+      <div class="sem-body">Many patterns are causal traces of actual order flow. A volume spike <em>is caused by</em> large orders. A gap-down is an <em>index</em> of overnight selling. These carry real informational weight — they point to something that happened.</div>
+      <div class="sem-example">↳ Volume bars, gaps, breakaway gaps on earnings</div>
+    </div>
+    <div class="sem-cell">
+      <div class="sem-type">Peirce Type III</div>
+      <div class="sem-title">Symbol</div>
+      <div class="sem-body">Most complex patterns (head & shoulders, triangles) are purely conventional. Their predictive power — if any — comes from <em>shared agreement</em> among traders, not intrinsic meaning. They work if enough people believe they work.</div>
+      <div class="sem-example">↳ H&S, cup & handle, Fibonacci retracements</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="info-block">
+      <div class="ib-label">The Saussurean View</div>
+      <div class="ib-title">Signifier / Signified in TA</div>
+      <div class="ib-body">The candlestick pattern (signifier) is linked to a market meaning (signified — e.g. "reversal ahead") by community convention. But unlike language, the relationship is contested: different traders, algorithms, and schools read the same pattern differently. The "code" is not fully shared, which is why patterns fail.</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">The Key Difference from Language</div>
+      <div class="ib-title">Markets Talk Back</div>
+      <div class="ib-body">In ordinary language, the symbol doesn't change the referent. But in markets, the <em>act of reading and trading a symbol changes the price itself</em>. This reflexivity — absent in most symbolic systems — is what makes TA simultaneously a genuine communication system and a setup for manipulation.</div>
+    </div>
+  </div>
+
+  <div class="tag-strip">
+    <span class="ts-tag">semiotics</span>
+    <span class="ts-tag">price action</span>
+    <span class="ts-tag">reflexivity</span>
+    <span class="ts-tag">collective belief</span>
+    <span class="ts-tag">Soros · reflexivity theory</span>
+  </div>
+</section>
+
+<!-- ===== TAB 2: PATTERN SEMIOTICS ===== -->
+<section id="patterns" class="section">
+  <div class="sec-title">Pattern-by-Pattern Deconstruction</div>
+  <p class="sec-sub">What each pattern <em>is</em> as a sign — and how each can be faked</p>
+
+  <div id="pattern-detail" class="detail-panel">
+    <div id="detail-content"></div>
+  </div>
+
+  <div class="pattern-grid">
+
+    <div class="pattern-card" onclick="showDetail('hs')">
+      <div class="pc-header">
+        <div class="pc-name">Head & Shoulders</div>
+        <div class="pc-signal signal-bear">BEARISH</div>
+      </div>
+      <div class="pc-body">
+        <div class="mini-chart">
+          <div class="candle"><div class="wick" style="height:10px"></div><div class="body bull" style="height:10px"></div></div>
+          <div class="candle"><div class="wick" style="height:8px"></div><div class="body bull" style="height:16px"></div></div>
+          <div class="candle"><div class="wick" style="height:6px"></div><div class="body bull" style="height:30px"></div></div>
+          <div class="candle"><div class="wick" style="height:10px"></div><div class="body bear" style="height:14px"></div></div>
+          <div class="candle"><div class="wick" style="height:8px"></div><div class="body bull" style="height:18px"></div></div>
+          <div class="candle"><div class="wick" style="height:10px"></div><div class="body bear" style="height:12px"></div></div>
+          <div class="candle"><div class="wick" style="height:8px"></div><div class="body bear" style="height:8px"></div></div>
+        </div>
+        <div class="pc-semiotic"><strong style="color:var(--text)">Semiotic type:</strong> Conventional symbol. Three peaks encode "exhausted buyers, lower highs." Works by community recognition of distribution phase.</div>
+        <div class="pc-manipulate">⚠ Manipulation: Institutions deliberately form the pattern to trigger retail short sellers, then push price above the neckline — a "fake" H&S that liquidates shorts before the real move.</div>
+      </div>
+    </div>
+
+    <div class="pattern-card" onclick="showDetail('triangle')">
+      <div class="pc-header">
+        <div class="pc-name">Ascending Triangle</div>
+        <div class="pc-signal signal-bull">BULLISH</div>
+      </div>
+      <div class="pc-body">
+        <div class="mini-chart">
+          <div class="candle"><div class="wick" style="height:20px"></div><div class="body bull" style="height:14px"></div></div>
+          <div class="candle"><div class="wick" style="height:16px"></div><div class="body bear" style="height:10px"></div></div>
+          <div class="candle"><div class="wick" style="height:18px"></div><div class="body bull" style="height:16px"></div></div>
+          <div class="candle"><div class="wick" style="height:14px"></div><div class="body bear" style="height:8px"></div></div>
+          <div class="candle"><div class="wick" style="height:20px"></div><div class="body bull" style="height:18px"></div></div>
+          <div class="candle"><div class="wick" style="height:18px"></div><div class="body bear" style="height:6px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:28px"></div></div>
+        </div>
+        <div class="pc-semiotic"><strong style="color:var(--text)">Semiotic type:</strong> Index + symbol. Flat resistance + rising lows is a genuine causal trace of buyers absorbing supply. Also widely taught, making it partly self-fulfilling.</div>
+        <div class="pc-manipulate">⚠ Manipulation: A large player holds the resistance line intentionally, lets the pattern form publicly, then dumps into the breakout buyers — "stop-hunt" into resistance.</div>
+      </div>
+    </div>
+
+    <div class="pattern-card" onclick="showDetail('doji')">
+      <div class="pc-header">
+        <div class="pc-name">Doji / Indecision</div>
+        <div class="pc-signal signal-neutral">NEUTRAL</div>
+      </div>
+      <div class="pc-body">
+        <div class="mini-chart">
+          <div class="candle"><div class="wick" style="height:6px"></div><div class="body bull" style="height:14px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:18px"></div></div>
+          <div class="candle"><div class="wick" style="height:3px"></div><div class="body bull" style="height:20px"></div></div>
+          <div class="candle"><div class="wick" style="height:20px"></div><div class="body bull" style="height:1px"></div><div class="wick" style="height:20px"></div></div>
+          <div class="candle"><div class="wick" style="height:6px"></div><div class="body bear" style="height:12px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bear" style="height:16px"></div></div>
+        </div>
+        <div class="pc-semiotic"><strong style="color:var(--text)">Semiotic type:</strong> Primarily iconic — the shape (almost no body, long wicks) visually mirrors the tug-of-war it represents. This is one of TA's most semiologically honest patterns.</div>
+        <div class="pc-manipulate">⚠ Manipulation: Wash trading can create artificial dojis near key levels to pause momentum and let smart money position before a directional move.</div>
+      </div>
+    </div>
+
+    <div class="pattern-card" onclick="showDetail('fib')">
+      <div class="pc-header">
+        <div class="pc-name">Fibonacci Retracements</div>
+        <div class="pc-signal signal-neutral">LEVELS</div>
+      </div>
+      <div class="pc-body">
+        <div class="mini-chart" style="position:relative">
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:10px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:20px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:32px"></div></div>
+          <div class="candle"><div class="wick" style="height:6px"></div><div class="body bear" style="height:12px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bear" style="height:18px"></div></div>
+          <div class="candle"><div class="wick" style="height:10px"></div><div class="body bull" style="height:8px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:14px"></div></div>
+        </div>
+        <div class="pc-semiotic"><strong style="color:var(--text)">Semiotic type:</strong> Pure conventional symbol. The 61.8% "golden ratio" has no inherent market meaning. It works <em>solely</em> because enough participants treat it as significant — a self-referential sign system.</div>
+        <div class="pc-manipulate">⚠ Manipulation: Algos programmed to hunt stop clusters at 61.8% levels are well-documented. The symbol's visibility makes it the easiest to exploit.</div>
+      </div>
+    </div>
+
+    <div class="pattern-card" onclick="showDetail('engulf')">
+      <div class="pc-header">
+        <div class="pc-name">Bullish Engulfing</div>
+        <div class="pc-signal signal-bull">BULLISH</div>
+      </div>
+      <div class="pc-body">
+        <div class="mini-chart">
+          <div class="candle"><div class="wick" style="height:8px"></div><div class="body bear" style="height:20px"></div></div>
+          <div class="candle"><div class="wick" style="height:6px"></div><div class="body bear" style="height:16px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bear" style="height:22px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bear" style="height:14px"></div></div>
+          <div class="candle"><div class="wick" style="height:8px"></div><div class="body bull" style="height:36px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:18px"></div></div>
+        </div>
+        <div class="pc-semiotic"><strong style="color:var(--text)">Semiotic type:</strong> Partly indexical — a large green candle engulfing the previous red is a real trace of aggressive buying entering the market. More honest than purely conventional patterns.</div>
+        <div class="pc-manipulate">⚠ Manipulation: An actor with enough capital can print an engulfing candle through a single large buy, triggering algorithmic and retail buyers, then distribute into the resulting rally.</div>
+      </div>
+    </div>
+
+    <div class="pattern-card" onclick="showDetail('volume')">
+      <div class="pc-header">
+        <div class="pc-name">Volume Divergence</div>
+        <div class="pc-signal signal-bear">WARNING</div>
+      </div>
+      <div class="pc-body">
+        <div class="mini-chart">
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:20px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:26px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:30px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:32px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:28px"></div></div>
+          <div class="candle"><div class="wick" style="height:4px"></div><div class="body bull" style="height:24px"></div></div>
+        </div>
+        <div class="pc-semiotic"><strong style="color:var(--text)">Semiotic type:</strong> Strong indexical sign. Volume is a real causal trace of actual transactions. Rising price on declining volume genuinely indicates waning conviction — this is among TA's most honest indicators.</div>
+        <div class="pc-manipulate">⚠ Manipulation: Wash trading in crypto/low-cap stocks fabricates volume to create false conviction signals, making this indexical sign unreliable in unregulated markets.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== TAB 3: DESIGN vs MANIPULATION ===== -->
+<section id="dvm" class="section">
+  <div class="sec-title">Design vs. Manipulation</div>
+  <p class="sec-sub">The same pattern — two radically different functions</p>
+
+  <div class="dvm-header">
+    <div class="dvm-col green">
+      <div class="dvm-col-title">As Communication Design</div>
+      <ul class="dvm-items">
+        <li>Compresses complex order-flow data into readable visual signals</li>
+        <li>Creates shared vocabulary enabling fast cross-cultural market communication</li>
+        <li>Some patterns carry genuine causal (indexical) information about supply/demand</li>
+        <li>Reduces cognitive load — traders can scan thousands of charts quickly</li>
+        <li>Pattern consensus creates coordinated price discovery at key levels</li>
+        <li>Works like a designed sign system: consistent, learnable, shared</li>
+      </ul>
+    </div>
+    <div class="dvm-col center">vs</div>
+    <div class="dvm-col red">
+      <div class="dvm-col-title">As Manipulation Vector</div>
+      <ul class="dvm-items">
+        <li>Patterns can be deliberately <em>painted</em> by large players to trigger predictable retail behavior</li>
+        <li>The more widely taught a pattern, the more powerful the trap it becomes</li>
+        <li>Reflexivity: the sign changes the referent (belief moves price, which "confirms" the pattern)</li>
+        <li>Stop-loss clusters around textbook levels are well-known to institutional desks</li>
+        <li>Algorithmic pattern recognition allows systematic exploitation at scale</li>
+        <li>No regulatory framework governs "pattern painting" in most asset classes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="manipulation-types">
+    <div class="manip-card">
+      <div class="manip-icon">🎭</div>
+      <div class="manip-name">Pattern Painting</div>
+      <div class="manip-how">A large player deliberately creates the visual structure of a known pattern — e.g. three touches of a support line — to trigger algorithmically-detected breakouts, then reverses.</div>
+      <div class="manip-example">Common in low-liquidity crypto and small-cap equities</div>
+    </div>
+    <div class="manip-card">
+      <div class="manip-icon">🎯</div>
+      <div class="manip-name">Stop Hunt</div>
+      <div class="manip-how">Institutional desks know that retail places stops just below "obvious" support (pattern necklines, round numbers, Fib levels). Price is briefly pushed below to trigger the stops, then reversed to fill large positions at better prices.</div>
+      <div class="manip-example">The "fake breakdown" is the most common institutional tactic</div>
+    </div>
+    <div class="manip-card">
+      <div class="manip-icon">📊</div>
+      <div class="manip-name">Volume Fabrication</div>
+      <div class="manip-how">Wash trading (selling to yourself) creates artificial volume signals. This corrupts the most indexically honest indicator in TA, making volume divergence signals meaningless in affected markets.</div>
+      <div class="manip-example">Estimated 70-90% of crypto exchange volume was wash-traded at peaks</div>
+    </div>
+    <div class="manip-card">
+      <div class="manip-icon">📢</div>
+      <div class="manip-name">Social Amplification</div>
+      <div class="manip-how">A large player positions, then publishes "analysis" showing a bullish pattern to retail audiences. Retail buying completes the move; the player distributes. The sign becomes a self-fulfilling prophecy — deliberately triggered.</div>
+      <div class="manip-example">Classic pump-and-dump updated for social media / fintwit era</div>
+    </div>
+    <div class="manip-card">
+      <div class="manip-icon">🤖</div>
+      <div class="manip-name">Algo Exploitation</div>
+      <div class="manip-how">Algos programmed to "front-run the pattern" enter before retail, buy the breakout, and immediately sell into the retail buyers who followed the signal. The pattern works — just not for the people who trade it.</div>
+      <div class="manip-example">HFT firms run pattern-recognition strategies specifically to exploit TA traders</div>
+    </div>
+    <div class="manip-card">
+      <div class="manip-icon">🪞</div>
+      <div class="manip-name">Reflexive Trap</div>
+      <div class="manip-how">Because enough people believe in a pattern, trading it <em>does</em> briefly create the predicted move — but the move is too weak or too brief for most traders to profit, and the belief is then used against them.</div>
+      <div class="manip-example">Fibonacci levels "work" just enough to keep traders using them</div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ===== TAB 4: PSYCHOLOGY ===== -->
+<section id="psych" class="section">
+  <div class="sec-title">The Psychology of Pattern Belief</div>
+  <p class="sec-sub">Why traders keep reading symbols even when they fail</p>
+
+  <div class="sff-container">
+    <div class="sff-title">The Self-Fulfilling Prophecy Loop</div>
+    <div class="sff-sub">How conventional symbols acquire temporary real power — and why they eventually break</div>
+    <div class="sff-steps">
+      <div class="sff-step">
+        <div class="sff-step-num">01</div>
+        <div class="sff-step-text">A pattern is taught widely (books, courses, YouTube). Community adopts it as meaningful.</div>
+      </div>
+      <div class="sff-arrow">→</div>
+      <div class="sff-step">
+        <div class="sff-step-num">02</div>
+        <div class="sff-step-text">Enough traders act on the signal simultaneously, moving price in the predicted direction.</div>
+      </div>
+      <div class="sff-arrow">→</div>
+      <div class="sff-step">
+        <div class="sff-step-num">03</div>
+        <div class="sff-step-text">"Proof" accumulates — the pattern appears to work, reinforcing belief and adoption.</div>
+      </div>
+      <div class="sff-arrow">→</div>
+      <div class="sff-step">
+        <div class="sff-step-num">04</div>
+        <div class="sff-step-text">Large players learn the pattern's followers and begin exploiting the predictable behavior.</div>
+      </div>
+      <div class="sff-arrow">→</div>
+      <div class="sff-step">
+        <div class="sff-step-num">05</div>
+        <div class="sff-step-text">Pattern degrades — but believers attribute failure to "execution error," not symbol failure.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="psych-grid">
+    <div class="psych-card">
+      <div class="psych-num">01</div>
+      <div>
+        <div class="psych-title">Apophenia & Pattern Hunger</div>
+        <div class="psych-body">The human brain is hardwired to find patterns — even in random data. TA exploits this: any sequence of candles can be read as a "story." Traders unconsciously impose narrative onto noise, especially after losses (seeking control).</div>
+        <span class="psych-tag">cognitive bias</span>
+      </div>
+    </div>
+    <div class="psych-card">
+      <div class="psych-num">02</div>
+      <div>
+        <div class="psych-title">Confirmation Bias Amplification</div>
+        <div class="psych-body">Once a trader has learned and believes in a pattern, they selectively remember the times it worked and forget the failures. TA communities reinforce this: charts showing winning patterns circulate widely; losing ones disappear.</div>
+        <span class="psych-tag">survivorship bias</span>
+      </div>
+    </div>
+    <div class="psych-card">
+      <div class="psych-num">03</div>
+      <div>
+        <div class="psych-title">Shared Code = Social Identity</div>
+        <div class="psych-body">TA pattern vocabulary becomes tribal identity. To question whether a "double top" works is to question the community itself. The symbol system acquires social value independent of predictive value — making believers resistant to disconfirmation.</div>
+        <span class="psych-tag">in-group dynamics</span>
+      </div>
+    </div>
+    <div class="psych-card">
+      <div class="psych-num">04</div>
+      <div>
+        <div class="psych-title">The Ambiguity Illusion</div>
+        <div class="psych-body">Patterns are recognized <em>after the fact</em> far more easily than in real time. The "head and shoulders" is obvious in hindsight but ambiguous as it forms — traders project the completed pattern onto incomplete data, a form of retroactive storytelling.</div>
+        <span class="psych-tag">hindsight bias</span>
+      </div>
+    </div>
+    <div class="psych-card">
+      <div class="psych-num">05</div>
+      <div>
+        <div class="psych-title">Variable Ratio Reinforcement</div>
+        <div class="psych-body">Patterns that work ~40–60% of the time are the most psychologically addictive — like slot machines. This reinforcement schedule creates the most persistent behavior even when the expected value is negative.</div>
+        <span class="psych-tag">behavioral psychology</span>
+      </div>
+    </div>
+    <div class="psych-card">
+      <div class="psych-num">06</div>
+      <div>
+        <div class="psych-title">Authority & Ritual</div>
+        <div class="psych-body">The elaborate vocabulary of TA (Ichimoku clouds, Elliott Waves, Gann angles) functions like religious symbolism — complex, authoritative, requiring initiation to understand. Complexity signals depth, even when predictive power is absent.</div>
+        <span class="psych-tag">semiotics of expertise</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TAB 5: VERDICT ===== -->
+<section id="verdict" class="section">
+  <div class="sec-title">The Verdict</div>
+  <p class="sec-sub">A semiotic honest assessment</p>
+
+  <div class="final-statement">
+    <div class="fs-label">Core Finding</div>
+    <div class="fs-body">TA patterns function as genuine symbolic communication <em>and</em> as manipulation vectors — not in opposition but simultaneously. The same property that makes a pattern useful (shared recognition) is precisely what makes it exploitable. The sign works by creating a predictable crowd; the crowd is what sophisticated actors trade against.</div>
+  </div>
+
+  <div class="verdict-grid">
+    <div class="verdict-card">
+      <div class="vc-icon">✅</div>
+      <div class="vc-title">Where TA Works as Design</div>
+      <div class="vc-body">Indexical patterns grounded in real order flow (volume, gaps, high-timeframe structure) carry genuine informational content. They are less vulnerable to manipulation because the sign is caused by market reality, not just convention. Trend identification, support/resistance (as supply-demand zones, not magic numbers), and volume analysis retain utility when used with context rather than as mechanical signals.</div>
+    </div>
+    <div class="verdict-card">
+      <div class="vc-icon">⚠️</div>
+      <div class="vc-title">Where TA Fails or Gets Weaponized</div>
+      <div class="vc-body">Purely conventional patterns (Fibonacci, Elliott Wave, complex candlestick formations) derive their "power" entirely from shared belief. In liquid, well-capitalized markets, this belief is systematically exploited by institutions who know retail stop placement. The more a pattern is taught and used uniformly, the more it becomes a roadmap for predatory actors rather than a signal for honest traders.</div>
+    </div>
+  </div>
+
+  <div class="sec-sub" style="margin-bottom:16px;">Principles for navigating this reality</div>
+  <div class="principles-list">
+    <div class="principle-row">
+      <div class="pr-num">01</div>
+      <div class="pr-text"><strong>Prefer indexical over symbolic patterns.</strong> Volume, gaps, and liquidity structure are causal traces of real order flow. Fibonacci and complex formations are community conventions — treat them accordingly.</div>
+    </div>
+    <div class="principle-row">
+      <div class="pr-num">02</div>
+      <div class="pr-text"><strong>Know who is on the other side.</strong> Every "textbook" setup has a counterparty who knows the same textbook. In liquid markets, that counterparty is often better capitalized and algorithmically faster than you.</div>
+    </div>
+    <div class="principle-row">
+      <div class="pr-num">03</div>
+      <div class="pr-text"><strong>Treat widespread belief as a risk factor.</strong> The more viral a pattern becomes (social media, courses, viral charts), the more likely it is being front-run or actively exploited. Edge exists where information asymmetry exists — not in shared symbols.</div>
+    </div>
+    <div class="principle-row">
+      <div class="pr-num">04</div>
+      <div class="pr-text"><strong>Use context, not mechanical rules.</strong> A pattern is not a signal in isolation — it is a prompt to ask why the market is forming that shape. The answer requires understanding of broader supply/demand, narrative, and positioning — not pattern matching alone.</div>
+    </div>
+    <div class="principle-row">
+      <div class="pr-num">05</div>
+      <div class="pr-text"><strong>Understand that you are part of the symbol system.</strong> Your stop loss, your entry trigger, your pattern recognition — all of it is visible to actors with order flow data. The symbolic communication is not just between chart and trader; it includes your behavior as a legible signal to others.</div>
+    </div>
+  </div>
+
+  <div class="tag-strip">
+    <span class="ts-tag">market microstructure</span>
+    <span class="ts-tag">reflexivity</span>
+    <span class="ts-tag">information asymmetry</span>
+    <span class="ts-tag">behavioral finance</span>
+    <span class="ts-tag">semiotics</span>
+    <span class="ts-tag">not financial advice</span>
+  </div>
+</section>
+
+</main>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+const details = {
+  hs: {
+    title: 'Head & Shoulders — Deep Dive',
+    semiotic: 'A purely conventional sign. Its "meaning" (distribution, trend reversal) is assigned by the TA community, not inherent in the shape. Requires shared belief to function.',
+    works: 'When genuine institutional distribution is occurring over multiple weeks, price often does form lower highs — making the pattern an imperfect but real trace of supply overwhelming demand.',
+    fails: 'In liquid markets, the neckline is the most telegraphed entry point in TA. Stop clusters sit just above the right shoulder and just below the neckline — both are prime hunting grounds. Many H&S patterns resolve in the opposite direction after triggering the "obvious" break.'
+  },
+  triangle: {
+    title: 'Ascending Triangle — Deep Dive',
+    semiotic: 'A hybrid sign: the rising lows are genuinely indexical (buyers defending higher and higher levels), but the flat resistance + "breakout" framing is conventional and widely taught.',
+    works: 'In illiquid or early-trend conditions where the resistance is genuinely being absorbed, the triangle can reflect real accumulation. Works best when volume confirms the structure.',
+    fails: 'The flat resistance becomes a known stop-hunt zone. Algos are specifically programmed to sell into triangle breakouts in liquid markets, then reverse. The broader the adoption, the higher the failure rate.'
+  },
+  doji: {
+    title: 'Doji — Deep Dive',
+    semiotic: 'One of TA\'s most semiologically honest patterns. The iconic form (tiny body, long wicks) genuinely mirrors the market dynamic it represents — buyers and sellers roughly equal.',
+    works: 'At high-timeframe resistance/support levels after a strong directional move, the doji often does indicate genuine pause. It\'s a useful prompt to reduce conviction — not a reversal signal by itself.',
+    fails: 'Context-free doji reading is meaningless. A doji mid-trend is noise. Over-reliance on single-candle reading ignores that any candle\'s significance depends entirely on what surrounds it.'
+  },
+  fib: {
+    title: 'Fibonacci Retracements — Deep Dive',
+    semiotic: 'The purest example of a conventional symbol in TA. The 61.8% golden ratio has no intrinsic market meaning. Its significance is entirely self-referential — it works because enough people treat it as significant.',
+    works: 'Because major algorithmic systems and institutional desks use Fib levels, price often does react at 61.8% and 38.2% — not because of the golden ratio, but because of coordinated collective action around the symbol.',
+    fails: 'This is exactly why Fib levels are heavily exploited. Stop clusters at these levels are so predictable that dedicated "Fib-hunting" strategies exist. Every Fib level is also a potential stop-hunt level.'
+  },
+  engulf: {
+    title: 'Bullish Engulfing — Deep Dive',
+    semiotic: 'More indexical than most candlestick patterns — a large real body engulfing the prior candle does represent a genuine and significant shift in momentum at that moment in time.',
+    works: 'On high timeframes (daily/weekly), after prolonged downtrends, at known support — the engulfing pattern can genuinely represent institutional demand appearing. Volume confirmation strengthens the signal considerably.',
+    fails: 'A single large actor can print an engulfing candle in a low-liquidity market. The pattern then triggers retail and algorithmic buyers, into whom the original actor distributes. Most effective for manipulation in crypto and small-caps.'
+  },
+  volume: {
+    title: 'Volume Divergence — Deep Dive',
+    semiotic: 'The most indexically legitimate indicator in TA. Volume is a direct, causal trace of real transaction activity. Rising price on declining volume genuinely indicates fewer participants driving the move — a real warning signal.',
+    works: 'In regulated equity markets with reliable volume data, volume divergence has a better empirical track record than most pattern-based signals. It reflects actual market participation, not just price convention.',
+    fails: 'In crypto markets, wash trading has historically fabricated 70-90% of exchange volume. This corrupts the most honest signal in TA, rendering volume analysis near-useless in unregulated venues without data cleaning.'
+  }
+};
+
+function showDetail(id) {
+  const d = details[id];
+  if (!d) return;
+  const panel = document.getElementById('pattern-detail');
+  document.getElementById('detail-content').innerHTML = `
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--text-bright);margin-bottom:16px;">${d.title}</div>
+    <div class="dp-row">
+      <div>
+        <div class="dp-col-title">Semiotic Character</div>
+        <div class="dp-col-body">${d.semiotic}</div>
+      </div>
+      <div>
+        <div class="dp-col-title" style="color:var(--green)">When It Works</div>
+        <div class="dp-col-body">${d.works}</div>
+      </div>
+      <div>
+        <div class="dp-col-title" style="color:var(--red)">When It's Exploited</div>
+        <div class="dp-col-body">${d.fails}</div>
+      </div>
+    </div>
+  `;
+  panel.classList.add('active');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+</body>
+</html>

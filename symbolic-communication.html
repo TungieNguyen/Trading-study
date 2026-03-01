@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Symbolic Communication</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1209;
+    --paper: #f5f0e8;
+    --amber: #c8831a;
+    --rust: #a03e20;
+    --sage: #4a6741;
+    --mist: #7a8fa6;
+    --cream: #ede7d3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.6;
+  }
+
+  header {
+    padding: 60px 48px 40px;
+    border-bottom: 2px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .title-block h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .title-block h1 em {
+    color: var(--amber);
+    font-style: italic;
+  }
+
+  .title-block p {
+    margin-top: 10px;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mist);
+  }
+
+  .header-deco {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    opacity: 0.08;
+    line-height: 1;
+    user-select: none;
+  }
+
+  /* Navigation tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--ink);
+    padding: 0 48px;
+    overflow-x: auto;
+    animation: fadeDown 0.9s ease both;
+  }
+
+  .tab {
+    padding: 16px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--mist);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .tab:hover { color: var(--ink); }
+  .tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--amber);
+  }
+
+  /* Main layout */
+  main {
+    padding: 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section { display: none; animation: fadeUp 0.5s ease both; }
+  .section.active { display: block; }
+
+  /* --- OVERVIEW SECTION --- */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    border: 2px solid var(--ink);
+    margin-bottom: 40px;
+  }
+
+  .overview-card {
+    padding: 32px;
+    border-right: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    background: var(--paper);
+    transition: background 0.2s;
+  }
+
+  .overview-card:nth-child(2n) { border-right: none; }
+  .overview-card:nth-last-child(-n+2) { border-bottom: none; }
+  .overview-card:hover { background: var(--cream); }
+
+  .card-num {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+  }
+
+  .card-body {
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: #3a3020;
+  }
+
+  /* Definition callout */
+  .callout {
+    border-left: 4px solid var(--amber);
+    padding: 24px 32px;
+    background: var(--cream);
+    margin-bottom: 40px;
+  }
+
+  .callout p {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* --- SEMIOTIC TRIANGLE --- */
+  .triangle-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .triangle-viz {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+  }
+
+  .triangle-viz svg { width: 100%; height: 100%; }
+
+  .triangle-node {
+    cursor: pointer;
+  }
+
+  .triangle-node circle {
+    transition: r 0.2s, fill 0.2s;
+  }
+
+  .triangle-node:hover circle {
+    r: 38;
+    fill: var(--amber);
+  }
+
+  .triangle-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+  }
+
+  .node-detail {
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .node-detail.active { display: block; }
+
+  .node-detail h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+
+  .node-detail p {
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: #3a3020;
+    margin-bottom: 12px;
+  }
+
+  .example-tag {
+    display: inline-block;
+    border: 1px solid var(--ink);
+    padding: 4px 10px;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    margin: 2px;
+  }
+
+  /* --- SYMBOL TYPES --- */
+  .symbol-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .symbol-card {
+    border: 2px solid var(--ink);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .symbol-card:hover { transform: translateY(-3px); }
+
+  .symbol-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 0;
+    background: var(--ink);
+    transition: height 0.3s;
+    z-index: 0;
+  }
+
+  .symbol-card:hover::before { height: 100%; }
+  .symbol-card:hover * { color: var(--paper) !important; position: relative; z-index: 1; }
+  .symbol-card > * { position: relative; z-index: 1; }
+
+  .sym-icon {
+    font-size: 2.2rem;
+    margin-bottom: 12px;
+  }
+
+  .sym-type {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 6px;
+  }
+
+  .sym-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+  }
+
+  .sym-desc {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: #3a3020;
+  }
+
+  .sym-ex {
+    font-size: 0.7rem;
+    color: var(--mist);
+    margin-top: 8px;
+  }
+
+  /* --- DOMAINS --- */
+  .domain-list { display: flex; flex-direction: column; gap: 2px; }
+
+  .domain-row {
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 24px;
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .domain-row:hover { background: var(--cream); }
+
+  .domain-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .domain-desc {
+    font-size: 0.77rem;
+    color: #3a3020;
+    line-height: 1.5;
+  }
+
+  .domain-examples {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .tag {
+    border: 1px solid currentColor;
+    padding: 3px 8px;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .tag.amber { color: var(--amber); }
+  .tag.sage { color: var(--sage); }
+  .tag.rust { color: var(--rust); }
+  .tag.mist { color: var(--mist); }
+
+  /* --- KEY THINKERS --- */
+  .thinkers-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .thinker-card {
+    border: 2px solid var(--ink);
+    padding: 28px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+  }
+
+  .thinker-initial {
+    width: 52px; height: 52px;
+    border: 2px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    background: var(--ink);
+    color: var(--paper);
+    flex-shrink: 0;
+  }
+
+  .thinker-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+  }
+
+  .thinker-era {
+    font-size: 0.65rem;
+    color: var(--mist);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .thinker-contrib {
+    font-size: 0.77rem;
+    line-height: 1.6;
+    color: #3a3020;
+  }
+
+  .thinker-idea {
+    font-size: 0.72rem;
+    color: var(--amber);
+    margin-top: 8px;
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Section heading */
+  .section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+
+  .section-sub {
+    font-size: 0.75rem;
+    color: var(--mist);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  /* Horizontal rule */
+  hr { border: none; border-top: 2px solid var(--ink); margin: 40px 0; }
+
+  @media (max-width: 700px) {
+    header { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 12px; }
+    .tabs { padding: 0 24px; }
+    main { padding: 32px 24px; }
+    .overview-grid { grid-template-columns: 1fr; }
+    .overview-card { border-right: none !important; }
+    .triangle-section { grid-template-columns: 1fr; }
+    .symbol-grid { grid-template-columns: 1fr 1fr; }
+    .thinkers-grid { grid-template-columns: 1fr; }
+    .domain-row { grid-template-columns: 1fr; }
+    .domain-examples { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body><div style="background:#1a1209;padding:10px 48px;display:flex;align-items:center;gap:24px;font-family:DM Mono,Courier New,monospace;font-size:10px;letter-spacing:0.12em;"><a href="index.html" style="color:#7a8fa6;text-decoration:none;text-transform:uppercase;">← Home</a><span style="color:#3a3020;flex:1;text-align:center;text-transform:uppercase;color:#c8831a;">Module 1 · Symbolic Communication</span><a href="ta-symbolic-communication.html" style="color:#7a8fa6;text-decoration:none;text-transform:uppercase;">Module 2 →</a></div>
+
+<header>
+  <div class="title-block">
+    <h1>Symbolic<br><em>Communication</em></h1>
+    <p>A field guide to signs, meanings & the world between them</p>
+  </div>
+  <div class="header-deco">∑</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" onclick="showTab('overview')">Overview</button>
+  <button class="tab" onclick="showTab('triangle')">Semiotic Triangle</button>
+  <button class="tab" onclick="showTab('types')">Symbol Types</button>
+  <button class="tab" onclick="showTab('domains')">Domains</button>
+  <button class="tab" onclick="showTab('thinkers')">Key Thinkers</button>
+</nav>
+
+<main>
+
+  <!-- OVERVIEW -->
+  <section id="overview" class="section active">
+    <div class="callout">
+      <p>Symbolic communication is the use of signs — words, gestures, images, objects, sounds — to convey meaning beyond their literal form. It is the foundation of all human language, culture, and thought.</p>
+    </div>
+
+    <div class="overview-grid">
+      <div class="overview-card">
+        <div class="card-num">01 — What</div>
+        <div class="card-title">The Core Idea</div>
+        <p class="card-body">A symbol is anything that stands for something else through convention or resemblance. The word "tree" is not a tree. A red light is not danger itself. Symbols create shared mental bridges between minds.</p>
+      </div>
+      <div class="overview-card">
+        <div class="card-num">02 — Why</div>
+        <div class="card-title">Why It Matters</div>
+        <p class="card-body">Without symbols, humans could only communicate about what is immediately present. Symbols allow abstraction: past, future, hypotheticals, emotions, gods, numbers — none of which exist in the physical world.</p>
+      </div>
+      <div class="overview-card">
+        <div class="card-num">03 — How</div>
+        <div class="card-title">The Mechanism</div>
+        <p class="card-body">Meaning emerges from <em>shared agreement</em>. A symbol only works if sender and receiver both recognize its significance. This shared code — learned through culture — is what allows communication to happen at all.</p>
+      </div>
+      <div class="overview-card">
+        <div class="card-num">04 — Where</div>
+        <div class="card-title">Everywhere</div>
+        <p class="card-body">Language, mathematics, music, art, ritual, law, flags, money, brand logos, body language, emojis — all are systems of symbolic communication. Humans are, fundamentally, symbol-making animals.</p>
+      </div>
+    </div>
+
+    <p style="font-size:0.78rem;color:var(--mist);text-align:center;letter-spacing:0.06em;">→ Explore the tabs above to go deeper into each dimension</p>
+  </section>
+
+  <!-- SEMIOTIC TRIANGLE -->
+  <section id="triangle" class="section">
+    <h2 class="section-heading">The Semiotic Triangle</h2>
+    <p class="section-sub">Ogden & Richards, 1923 — Click each node to explore</p>
+
+    <div class="triangle-section">
+      <div class="triangle-viz">
+        <svg viewBox="0 0 400 380" xmlns="http://www.w3.org/2000/svg">
+          <!-- Dashed lines -->
+          <line x1="200" y1="60" x2="60" y2="310" stroke="#1a1209" stroke-width="2" stroke-dasharray="8,4"/>
+          <line x1="200" y1="60" x2="340" y2="310" stroke="#1a1209" stroke-width="2"/>
+          <line x1="60" y1="310" x2="340" y2="310" stroke="#1a1209" stroke-width="2" stroke-dasharray="8,4"/>
+
+          <!-- Labels on edges -->
+          <text x="108" y="200" font-family="DM Mono" font-size="10" fill="#7a8fa6" transform="rotate(-58, 108, 200)">refers to</text>
+          <text x="280" y="195" font-family="DM Mono" font-size="10" fill="#7a8fa6" transform="rotate(58, 280, 195)">symbolizes</text>
+          <text x="200" y="330" font-family="DM Mono" font-size="10" fill="#7a8fa6" text-anchor="middle">— imputed relation —</text>
+
+          <!-- Top node: Thought/Reference -->
+          <g class="triangle-node" onclick="showNode('thought')">
+            <circle cx="200" cy="60" r="32" fill="#f5f0e8" stroke="#1a1209" stroke-width="2"/>
+            <text x="200" y="54" font-family="Playfair Display" font-size="13" text-anchor="middle" fill="#1a1209">Thought</text>
+            <text x="200" y="70" font-family="Playfair Display" font-size="10" text-anchor="middle" fill="#7a8fa6" font-style="italic">concept</text>
+          </g>
+
+          <!-- Bottom-left: Symbol -->
+          <g class="triangle-node" onclick="showNode('symbol')">
+            <circle cx="60" cy="310" r="32" fill="#f5f0e8" stroke="#1a1209" stroke-width="2"/>
+            <text x="60" y="305" font-family="Playfair Display" font-size="13" text-anchor="middle" fill="#1a1209">Symbol</text>
+            <text x="60" y="320" font-family="Playfair Display" font-size="10" text-anchor="middle" fill="#7a8fa6" font-style="italic">sign</text>
+          </g>
+
+          <!-- Bottom-right: Referent -->
+          <g class="triangle-node" onclick="showNode('referent')">
+            <circle cx="340" cy="310" r="32" fill="#f5f0e8" stroke="#1a1209" stroke-width="2"/>
+            <text x="340" y="305" font-family="Playfair Display" font-size="13" text-anchor="middle" fill="#1a1209">Referent</text>
+            <text x="340" y="320" font-family="Playfair Display" font-size="10" text-anchor="middle" fill="#7a8fa6" font-style="italic">object</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="triangle-info">
+        <div id="node-default">
+          <h3>The Triangle of Meaning</h3>
+          <p style="font-size:0.8rem;line-height:1.7;color:#3a3020;margin-bottom:16px;">The semiotic triangle shows how meaning is constructed. There is no direct connection between a <em>symbol</em> (the word or sign) and the <em>referent</em> (the real thing) — the link is always mediated by <em>thought</em> (the mental concept).</p>
+          <p style="font-size:0.75rem;color:var(--mist);">← Click a node to explore each corner</p>
+        </div>
+
+        <div class="node-detail" id="node-thought">
+          <h4>Thought / Concept</h4>
+          <p>The mental image or idea that mediates between sign and world. When you see the word "apple," your mind constructs a concept — colour, taste, shape, associations — before linking it to any actual apple.</p>
+          <p>This is why meaning can differ between people: the same symbol activates different conceptual associations depending on experience, culture, and context.</p>
+          <span class="example-tag">e.g. your mental model of "home"</span>
+          <span class="example-tag">the idea of "justice"</span>
+        </div>
+
+        <div class="node-detail" id="node-symbol">
+          <h4>Symbol / Sign</h4>
+          <p>The physical form — spoken word, written mark, gesture, image — that triggers meaning. The symbol itself has no inherent meaning; it only signifies through convention and agreement.</p>
+          <p>The word "dog" and the word "chien" (French) both refer to the same concept, proving the link is arbitrary.</p>
+          <span class="example-tag">spoken words</span>
+          <span class="example-tag">written text</span>
+          <span class="example-tag">gestures</span>
+          <span class="example-tag">icons</span>
+        </div>
+
+        <div class="node-detail" id="node-referent">
+          <h4>Referent / Object</h4>
+          <p>The actual thing or phenomenon in the world (or imagination) that the symbol ultimately points to. The referent is independent of the symbol — the real dog doesn't know it's called "dog."</p>
+          <p>Crucially, referents can be entirely abstract: "freedom," "the number seven," "yesterday" — things with no physical form at all.</p>
+          <span class="example-tag">physical objects</span>
+          <span class="example-tag">events</span>
+          <span class="example-tag">abstract concepts</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TYPES -->
+  <section id="types" class="section">
+    <h2 class="section-heading">Types of Symbols</h2>
+    <p class="section-sub">Peirce's triadic classification — hover to explore</p>
+
+    <div class="symbol-grid">
+      <div class="symbol-card">
+        <div class="sym-icon">🖼</div>
+        <div class="sym-type">Peirce Type I</div>
+        <div class="sym-name">Icon</div>
+        <p class="sym-desc">Resembles what it represents. The connection is one of similarity — you can see the link without being taught it.</p>
+        <p class="sym-ex">e.g. a portrait, a map, onomatopoeia, a smiley face emoji</p>
+      </div>
+      <div class="symbol-card">
+        <div class="sym-icon">👆</div>
+        <div class="sym-type">Peirce Type II</div>
+        <div class="sym-name">Index</div>
+        <p class="sym-desc">Has a direct, causal or physical link to its referent. Points to something by being connected to it in the world.</p>
+        <p class="sym-ex">e.g. smoke → fire; a fever → illness; pointing; a footprint</p>
+      </div>
+      <div class="symbol-card">
+        <div class="sym-icon">🔤</div>
+        <div class="sym-type">Peirce Type III</div>
+        <div class="sym-name">Symbol</div>
+        <p class="sym-desc">The connection is purely conventional — arbitrary, learned, and agreed upon by a community. Most language works this way.</p>
+        <p class="sym-ex">e.g. words, flags, traffic lights, currency signs</p>
+      </div>
+      <div class="symbol-card">
+        <div class="sym-icon">🤝</div>
+        <div class="sym-type">By Convention</div>
+        <div class="sym-name">Conventional Sign</div>
+        <p class="sym-desc">Broader term for any sign whose meaning depends on social agreement — overlaps with Peirce's "symbol" but emphasizes the communal contract.</p>
+        <p class="sym-ex">e.g. handshake, wedding ring, the color red in many cultures</p>
+      </div>
+      <div class="symbol-card">
+        <div class="sym-icon">✋</div>
+        <div class="sym-type">Embodied</div>
+        <div class="sym-name">Gesture & Kinesics</div>
+        <p class="sym-desc">Bodily movements as symbols. Some are universal (pain), many are culturally specific (thumbs up, A-OK). Body language is a rich symbolic system.</p>
+        <p class="sym-ex">e.g. nodding, bowing, eyebrow flash, proxemics</p>
+      </div>
+      <div class="symbol-card">
+        <div class="sym-icon">🎵</div>
+        <div class="sym-type">Acoustic</div>
+        <div class="sym-name">Sound Symbol</div>
+        <p class="sym-desc">Sounds as carriers of meaning beyond their acoustics. Can be iconic (birdsong in music = nature) or purely conventional (national anthems).</p>
+        <p class="sym-ex">e.g. alarms, fanfares, musical leitmotifs, signal sounds</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOMAINS -->
+  <section id="domains" class="section">
+    <h2 class="section-heading">Domains of Symbolic Communication</h2>
+    <p class="section-sub">Where symbol systems operate across human life</p>
+
+    <div class="domain-list">
+      <div class="domain-row">
+        <div class="domain-name">🗣 Language</div>
+        <div class="domain-desc">The most complex symbolic system humans possess. Words, grammar, and syntax form layered codes that allow the expression of virtually any concept. Language is arbitrary, productive, and culturally situated.</div>
+        <div class="domain-examples">
+          <span class="tag amber">spoken</span>
+          <span class="tag amber">written</span>
+          <span class="tag amber">signed</span>
+        </div>
+      </div>
+      <div class="domain-row">
+        <div class="domain-name">🔢 Mathematics</div>
+        <div class="domain-desc">A formal symbolic language of precise, universal meaning. Mathematical symbols (∑, ∞, π) transcend spoken language barriers but require shared training to decode. Perhaps the most unambiguous symbol system ever devised.</div>
+        <div class="domain-examples">
+          <span class="tag sage">universal</span>
+          <span class="tag sage">formal</span>
+        </div>
+      </div>
+      <div class="domain-row">
+        <div class="domain-name">🎨 Visual Art</div>
+        <div class="domain-desc">Art operates through iconic resemblance, cultural symbol (the halo, the skull), and pure aesthetic form. Meaning is often polysemous — deliberately open to multiple interpretations — unlike linguistic signs.</div>
+        <div class="domain-examples">
+          <span class="tag rust">iconic</span>
+          <span class="tag rust">cultural</span>
+          <span class="tag rust">open</span>
+        </div>
+      </div>
+      <div class="domain-row">
+        <div class="domain-name">🎶 Music</div>
+        <div class="domain-desc">Music uses sound indexically (minor keys → sadness through cultural convention), iconically (tremolo → fear), and symbolically (national anthems). It is the most emotionally direct of all symbolic systems.</div>
+        <div class="domain-examples">
+          <span class="tag mist">emotional</span>
+          <span class="tag mist">cultural</span>
+        </div>
+      </div>
+      <div class="domain-row">
+        <div class="domain-name">⛪ Ritual & Religion</div>
+        <div class="domain-desc">Dense symbolic environments where objects, gestures, words, and space all carry sacred or community-binding meaning. Symbols here mediate between the human and the transcendent — or between individual and collective identity.</div>
+        <div class="domain-examples">
+          <span class="tag amber">sacred</span>
+          <span class="tag amber">communal</span>
+        </div>
+      </div>
+      <div class="domain-row">
+        <div class="domain-name">📱 Digital Media</div>
+        <div class="domain-desc">A rapidly evolving symbolic ecology: emojis, memes, interface icons, hashtags, and algorithmic signals. Digital symbols often blend iconic, indexical, and symbolic dimensions and evolve faster than any previous symbol system in history.</div>
+        <div class="domain-examples">
+          <span class="tag sage">emoji</span>
+          <span class="tag sage">meme</span>
+          <span class="tag sage">UX icons</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THINKERS -->
+  <section id="thinkers" class="section">
+    <h2 class="section-heading">Key Thinkers</h2>
+    <p class="section-sub">The minds who shaped our understanding of symbols and meaning</p>
+
+    <div class="thinkers-grid">
+      <div class="thinker-card">
+        <div class="thinker-initial">S</div>
+        <div>
+          <div class="thinker-name">Ferdinand de Saussure</div>
+          <div class="thinker-era">1857–1913 · Structural Linguistics</div>
+          <p class="thinker-contrib">Proposed that the linguistic sign has two inseparable sides: the <em>signifier</em> (sound-image) and the <em>signified</em> (concept). Crucially, the link between them is arbitrary — there's no natural reason "tree" means tree. This arbitrariness is what makes language a social institution.</p>
+          <div class="thinker-idea">"In language there are only differences, without positive terms."</div>
+        </div>
+      </div>
+
+      <div class="thinker-card">
+        <div class="thinker-initial">P</div>
+        <div>
+          <div class="thinker-name">Charles Sanders Peirce</div>
+          <div class="thinker-era">1839–1914 · Pragmatist Semiotics</div>
+          <p class="thinker-contrib">Developed the triadic model of sign: representamen, object, interpretant. Classified signs as icon, index, or symbol. Argued that all thought is sign-based — we cannot think outside of signs. Founded semiotics as a formal discipline.</p>
+          <div class="thinker-idea">"The universe is perfused with signs, if it is not composed exclusively of signs."</div>
+        </div>
+      </div>
+
+      <div class="thinker-card">
+        <div class="thinker-initial">C</div>
+        <div>
+          <div class="thinker-name">Ernst Cassirer</div>
+          <div class="thinker-era">1874–1945 · Philosophy of Symbolic Forms</div>
+          <p class="thinker-contrib">Argued that humans are not rational animals but <em>symbolic animals</em> (animal symbolicum). Language, myth, art, science — all are symbolic forms through which humans construct and inhabit their world. No symbol-free access to reality is possible for us.</p>
+          <div class="thinker-idea">"Man lives in a symbolic universe."</div>
+        </div>
+      </div>
+
+      <div class="thinker-card">
+        <div class="thinker-initial">R</div>
+        <div>
+          <div class="thinker-name">Roland Barthes</div>
+          <div class="thinker-era">1915–1980 · Cultural Semiology</div>
+          <p class="thinker-contrib">Extended semiotic analysis to popular culture — wrestling, advertising, food, fashion. Showed that ideology works through symbols by naturalizing cultural constructions. Introduced the concept of <em>myth</em> as second-order signification: signs become signifiers for ideological concepts.</p>
+          <div class="thinker-idea">"Myth does not deny things; on the contrary, its function is to talk about them."</div>
+        </div>
+      </div>
+
+      <div class="thinker-card">
+        <div class="thinker-initial">V</div>
+        <div>
+          <div class="thinker-name">Lev Vygotsky</div>
+          <div class="thinker-era">1896–1934 · Developmental Psychology</div>
+          <p class="thinker-contrib">Showed that symbolic tools — primarily language — are not just outputs of thought but constitute and shape thought itself. The inner "verbal thought" that underlies much of human cognition is symbolic communication turned inward.</p>
+          <div class="thinker-idea">"Thought is not merely expressed in words; it comes into existence through them."</div>
+        </div>
+      </div>
+
+      <div class="thinker-card">
+        <div class="thinker-initial">U</div>
+        <div>
+          <div class="thinker-name">Umberto Eco</div>
+          <div class="thinker-era">1932–2016 · Semiotics & Literature</div>
+          <p class="thinker-contrib">Developed a comprehensive general semiotics bridging Saussure and Peirce. Famous for the concept of "unlimited semiosis" — signs always refer to other signs in an infinite chain. Also explored how texts generate meaning through reader interpretation.</p>
+          <div class="thinker-idea">"A book is a machine to think with."</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  function showTab(id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function showNode(id) {
+    document.querySelectorAll('.node-detail').forEach(n => n.classList.remove('active'));
+    document.getElementById('node-default').style.display = 'none';
+    document.getElementById('node-' + id).classList.add('active');
+  }
+</script>
+
+</body>
+</html>
