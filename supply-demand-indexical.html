@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indexical Signals & Supply/Demand Zones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #080b0e;
+  --bg2:     #0e1318;
+  --bg3:     #141c22;
+  --border:  #1a2530;
+  --border2: #243040;
+  --demand:  #00c8a0;   /* green — demand / buy pressure */
+  --supply:  #e8504a;   /* red   — supply / sell pressure */
+  --neutral: #e8a030;   /* amber — transition / imbalance */
+  --blue:    #50a8e8;
+  --text:    #8090a0;
+  --bright:  #d8e8f0;
+  --dim:     #304050;
+  --d-glow:  rgba(0,200,160,0.12);
+  --s-glow:  rgba(232,80,74,0.12);
+  --n-glow:  rgba(232,160,48,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 15px;
+  line-height: 1.85;
+  min-height: 100vh;
+}
+
+/* grain */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+
+/* ── HEADER ── */
+header {
+  padding: 48px 56px 36px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: end;
+}
+
+.eyebrow {
+  font-size: 14px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--demand); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.eyebrow::before { content:''; display:inline-block; width:32px; height:1px; background:var(--demand); }
+
+h1 {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
+  font-weight: 400;
+  color: var(--bright);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+h1 em { color: var(--neutral); font-style: italic; }
+
+.header-sub {
+  margin-top: 12px; font-size: 14px; color: var(--dim);
+  max-width: 540px; letter-spacing: 0.02em; line-height: 1.8;
+}
+
+.header-key {
+  display: flex; flex-direction: column; gap: 8px; align-self: flex-end;
+}
+.hk-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase;
+}
+.hk-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+/* ── NAV ── */
+nav {
+  display: flex; border-bottom: 1px solid var(--border);
+  padding: 0 56px; overflow-x: auto; gap: 2px;
+}
+.tab {
+  padding: 13px 20px; font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+  cursor: pointer; border: none; background: none;
+  color: var(--dim); border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all 0.2s; white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--demand); border-bottom-color: var(--demand); }
+
+/* ── MAIN ── */
+main { padding: 48px 56px; max-width: 1200px; margin: 0 auto; }
+.section { display:none; animation: up 0.35s ease both; }
+.section.active { display:block; }
+@keyframes up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── HELPERS ── */
+.sec-h {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 2.1rem; font-weight:400; color: var(--bright); margin-bottom: 4px;
+}
+.sec-sub {
+  font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 32px;
+}
+
+.callout {
+  padding: 22px 28px; margin-bottom: 28px;
+  border-left: 3px solid var(--neutral); background: var(--n-glow);
+}
+.callout p {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.2rem; font-style: italic; color: var(--bright); line-height: 1.75;
+}
+.callout.demand { border-left-color: var(--demand); background: var(--d-glow); }
+.callout.supply { border-left-color: var(--supply); background: var(--s-glow); }
+
+.panel {
+  border: 1px solid var(--border); background: var(--bg2); padding: 26px 28px;
+}
+.p-label { font-size:14px; letter-spacing:0.22em; text-transform:uppercase; color:var(--dim); margin-bottom:8px; }
+.p-title { font-family:'Libre Baskerville',serif; font-size:1.25rem; color:var(--bright); margin-bottom:10px; }
+.p-body  { font-size:14px; color:var(--text); line-height:1.75; }
+.p-body strong { color: var(--bright); font-weight:500; }
+
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--border); border:1px solid var(--border); margin-bottom:28px; }
+.g2 .panel { border:none; }
+.g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; background:var(--border); border:1px solid var(--border); margin-bottom:28px; }
+.g3 .panel { border:none; }
+
+/* ── CHART CANVAS WRAPPER ── */
+.chart-wrap {
+  border: 1px solid var(--border); background: var(--bg2);
+  padding: 16px 20px; margin-bottom: 28px; position: relative;
+}
+.chart-title {
+  font-size:14px; letter-spacing:0.2em; text-transform:uppercase;
+  color:var(--dim); margin-bottom:12px;
+}
+
+/* ── SIGNAL CARDS ── */
+.sig-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 2px; background: var(--border); border: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.sig-card {
+  background: var(--bg2); cursor: pointer;
+  transition: background 0.18s; overflow: hidden;
+}
+.sig-card:hover, .sig-card.active { background: var(--bg3); }
+
+.sc-top {
+  padding: 18px 22px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.sc-name { font-family:'Libre Baskerville',serif; font-size:1.2rem; color:var(--bright); }
+.sc-badge {
+  font-size:14px; letter-spacing:0.1em; padding:2px 8px; border:1px solid;
+}
+.badge-d { color:var(--demand); border-color:rgba(0,200,160,0.35); }
+.badge-s { color:var(--supply); border-color:rgba(232,80,74,0.35); }
+.badge-b { color:var(--blue);   border-color:rgba(80,168,232,0.35); }
+.badge-n { color:var(--neutral);border-color:rgba(232,160,48,0.35); }
+
+.sc-body { padding:18px 22px; }
+.sc-desc { font-size:14px; color:var(--text); line-height:1.85; margin-bottom:10px; }
+.sc-why  { font-size:12px; color:var(--dim); font-style:italic; }
+
+.sig-detail {
+  border:1px solid var(--border2); background:var(--bg3);
+  padding:24px 26px; margin-bottom:28px;
+  display:none; animation: up 0.3s ease;
+}
+.sig-detail.active { display:block; }
+.sd-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; margin-top:14px; }
+.sd-h { font-size:14px; letter-spacing:0.18em; text-transform:uppercase; color:var(--dim); margin-bottom:7px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+.sd-b { font-size:14px; color:var(--text); line-height:1.7; }
+
+/* ── ZONE ANATOMY TABLE ── */
+.zone-table { border:1px solid var(--border); margin-bottom:28px; }
+.zt-head {
+  display:grid; grid-template-columns:180px 1fr 1fr 90px;
+  background:var(--bg3); border-bottom:1px solid var(--border);
+  padding:10px 20px; gap:16px;
+}
+.zt-head span {
+  font-size:14px; letter-spacing:0.18em; text-transform:uppercase; color:var(--dim);
+}
+.zt-row {
+  display:grid; grid-template-columns:180px 1fr 1fr 90px;
+  padding:14px 20px; gap:16px; border-bottom:1px solid var(--border);
+  align-items:start; cursor:pointer; transition:background 0.15s;
+}
+.zt-row:last-child { border-bottom:none; }
+.zt-row:hover { background:var(--bg3); }
+.zt-signal { font-family:'Libre Baskerville',serif; font-size:1.15rem; color:var(--bright); }
+.zt-origin { font-size:14px; color:var(--text); line-height:1.8; }
+.zt-structure { font-size:14px; color:var(--text); line-height:1.8; }
+.zt-integrity {
+  font-size:14px; letter-spacing:0.1em; border:1px solid;
+  padding:3px 8px; text-align:center; align-self:center; white-space:nowrap;
+}
+.int-hi  { color:var(--demand); border-color:rgba(0,200,160,0.35); }
+.int-med { color:var(--neutral);border-color:rgba(232,160,48,0.35); }
+.int-lo  { color:var(--supply); border-color:rgba(232,80,74,0.35);  }
+
+/* ── ZONE LIFECYCLE ── */
+.lifecycle {
+  display:flex; gap:0; margin-bottom:28px; border:1px solid var(--border);
+}
+.lc-step {
+  flex:1; padding:22px 20px;
+  border-right:1px solid var(--border);
+  position:relative;
+}
+.lc-step:last-child { border-right:none; }
+.lc-num { font-size:14px; color:var(--demand); letter-spacing:0.2em; margin-bottom:8px; }
+.lc-title { font-family:'Libre Baskerville',serif; font-size:1.15rem; color:var(--bright); margin-bottom:8px; }
+.lc-body { font-size:14px; color:var(--text); line-height:1.8; }
+.lc-signal { font-size:12px; color:var(--neutral); margin-top:8px; }
+
+/* ── FRESH vs TESTED ── */
+.fvt {
+  display:grid; grid-template-columns:1fr 50px 1fr;
+  gap:2px; background:var(--border); border:1px solid var(--border);
+  margin-bottom:28px;
+}
+.fvt-col { background:var(--bg2); padding:22px 24px; }
+.fvt-mid {
+  background:var(--bg2);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Libre Baskerville',serif; font-size:1.4rem;
+  color:var(--dim); font-style:italic;
+}
+.fvt-title { font-size:14px; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:14px; }
+.fvt-col.d .fvt-title { color:var(--demand); }
+.fvt-col.s .fvt-title { color:var(--supply); }
+.fvt-list { list-style:none; }
+.fvt-list li {
+  font-size:14px; color:var(--text); padding:7px 0;
+  border-bottom:1px solid var(--border); line-height:1.5;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.fvt-list li::before { flex-shrink:0; }
+.fvt-col.d .fvt-list li::before { content:'✓'; color:var(--demand); }
+.fvt-col.s .fvt-list li::before { content:'✗'; color:var(--supply); }
+
+/* ── CONFLUENCE MATRIX ── */
+.matrix {
+  border:1px solid var(--border); background:var(--bg2);
+  margin-bottom:28px;
+}
+.mx-row {
+  display:grid; grid-template-columns:200px 1fr auto;
+  padding:14px 20px; border-bottom:1px solid var(--border);
+  gap:20px; align-items:center;
+}
+.mx-row:last-child { border-bottom:none; }
+.mx-signal { font-family:'Libre Baskerville',serif; font-size:1.15rem; color:var(--bright); }
+.mx-desc { font-size:14px; color:var(--text); line-height:1.8; }
+.mx-weight {
+  font-size:12px; letter-spacing:0.1em; border:1px solid;
+  padding:3px 10px; white-space:nowrap;
+}
+.mw-high  { color:var(--demand); border-color:rgba(0,200,160,0.35); }
+.mw-med   { color:var(--neutral);border-color:rgba(232,160,48,0.35); }
+.mw-low   { color:var(--blue);   border-color:rgba(80,168,232,0.35); }
+
+/* ── CHECKLIST ── */
+.checklist { border:1px solid var(--border); background:var(--bg2); margin-bottom:28px; }
+.cl-row {
+  display:grid; grid-template-columns:30px 1fr auto;
+  padding:16px 20px; border-bottom:1px solid var(--border);
+  gap:14px; align-items:start;
+}
+.cl-row:last-child { border-bottom:none; }
+.cl-n  { font-size:14px; color:var(--demand); padding-top:2px; }
+.cl-tx { font-size:14px; color:var(--text); line-height:1.8; }
+.cl-tx strong { color:var(--bright); font-weight:500; }
+.cl-st {
+  font-size:14px; letter-spacing:0.1em; border:1px solid;
+  padding:2px 8px; white-space:nowrap; align-self:center;
+}
+.st-y { color:var(--demand); border-color:rgba(0,200,160,0.3); }
+.st-n { color:var(--supply); border-color:rgba(232,80,74,0.3); }
+.st-m { color:var(--neutral);border-color:rgba(232,160,48,0.3); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:780px){
+  header{padding:28px;grid-template-columns:1fr;}
+  nav{padding:0 28px;}
+  main{padding:28px;}
+  .g2,.g3,.sig-grid{grid-template-columns:1fr;}
+  .sd-grid{grid-template-columns:1fr;}
+  .fvt{grid-template-columns:1fr;}
+  .fvt-mid{display:none;}
+  .lifecycle{flex-direction:column;}
+  .lc-step{border-right:none;border-bottom:1px solid var(--border);}
+  .zt-head,.zt-row{grid-template-columns:1fr 1fr;}
+  .zt-signal{grid-column:1/-1;}
+  .mx-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="eyebrow">Supply · Demand · Indexical Proof</div>
+    <h1>What Indexical Signals<br>Reveal About <em>Supply &<br>Demand Zones</em></h1>
+    <p class="header-sub">Why certain market signals are structural forensic evidence of real order concentration — and how to read the zones they create with precision.</p>
+  </div>
+  <div class="header-key">
+    <div class="hk-row"><div class="hk-dot" style="background:var(--demand)"></div><span style="color:var(--demand)">Demand Zone · Buy Pressure</span></div>
+    <div class="hk-row"><div class="hk-dot" style="background:var(--supply)"></div><span style="color:var(--supply)">Supply Zone · Sell Pressure</span></div>
+    <div class="hk-row"><div class="hk-dot" style="background:var(--neutral)"></div><span style="color:var(--neutral)">Imbalance · Transition</span></div>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('why')">01 · The Core Logic</button>
+  <button class="tab" onclick="showTab('signals')">02 · Indexical Signals</button>
+  <button class="tab" onclick="showTab('anatomy')">03 · Zone Anatomy</button>
+  <button class="tab" onclick="showTab('lifecycle')">04 · Zone Lifecycle</button>
+  <button class="tab" onclick="showTab('confluence')">05 · Confluence & Entry</button>
+</nav>
+
+<main>
+
+<!-- ══════════ 01 CORE LOGIC ══════════ -->
+<section id="why" class="section active">
+  <div class="sec-h">Why Indexical Signals Reveal Real Zones</div>
+  <p class="sec-sub">The causal chain from order flow to structural zone</p>
+
+  <div class="callout">
+    <p>A supply or demand zone is not a line you draw — it is a <em>price region where institutional orders were left unfilled</em>. Indexical signals are the forensic evidence of those orders. The signal doesn't predict the zone — it <em>is</em> the zone's birth certificate.</p>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">How indexical signals mark zone boundaries — annotated price action</div>
+    <canvas id="coreChart" height="260"></canvas>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="p-label">The Fundamental Logic</div>
+      <div class="p-title">Orders Left in the Market</div>
+      <div class="p-body">
+        When a large institution needs to buy or sell a significant position, they cannot do it all at once without moving price against themselves. So they work their order in layers over time — placing limit orders at specific price zones.<br><br>
+        When price leaves that zone quickly (creating a gap, a strong impulse, or a volume spike), it means <strong>not all their orders were filled</strong>. Unfilled orders remain as pending limit orders in the book — waiting for price to return.<br><br>
+        <span style="color:var(--demand)">The zone is not a prediction. It is where the orders are. The indexical signal proves they were there.</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="p-label">Why This Differs from Conventional TA</div>
+      <div class="p-title">Cause vs Convention</div>
+      <div class="p-body">
+        A Fibonacci level at 61.8% has no pending orders behind it — it works only because enough traders place orders there by convention.<br><br>
+        A supply/demand zone marked by an indexical signal (breakaway gap, strong impulse on volume, absorption pattern) has <strong>real, pending limit orders</strong> behind it placed by real actors responding to real market conditions.<br><br>
+        The difference: <strong>convention</strong> can be extinguished by disbelief. <strong>Pending orders</strong> sit in the exchange order book regardless of whether anyone is watching the chart. They are mechanical — not psychological.
+      </div>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="panel" style="border-top:2px solid var(--demand)">
+      <div class="p-label">Demand Zone Origin</div>
+      <div class="p-title">Where Buyers Were Active</div>
+      <div class="p-body">Demand zones form at price levels where buyers absorbed all available supply and price left rapidly upward. The speed of departure (gap, impulse) tells you how much unmet buying demand remains — orders that never got filled before price moved away.</div>
+    </div>
+    <div class="panel" style="border-top:2px solid var(--supply)">
+      <div class="p-label">Supply Zone Origin</div>
+      <div class="p-title">Where Sellers Were Active</div>
+      <div class="p-body">Supply zones form at levels where sellers overwhelmed buyers and price left rapidly downward. Unfilled sell orders remain at that zone. When price returns, those sellers are still there — ready to sell again, mechanically, not by convention.</div>
+    </div>
+    <div class="panel" style="border-top:2px solid var(--neutral)">
+      <div class="p-label">Imbalance Zone</div>
+      <div class="p-title">Where Price Skipped</div>
+      <div class="p-body">Gaps create a specific type of zone: a price range where <em>zero</em> transactions occurred. This is the purest form of imbalance — no two-sided market existed at all. Both buyers who missed and sellers who missed have pending interest in returning to that range.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 02 SIGNALS ══════════ -->
+<section id="signals" class="section">
+  <div class="sec-h">Indexical Signals That Mark Zones</div>
+  <p class="sec-sub">Each signal is causal evidence — click to expand full analysis</p>
+
+  <div id="sig-detail" class="sig-detail"></div>
+
+  <div class="sig-grid">
+
+    <div class="sig-card" onclick="showSig('gap')">
+      <div class="sc-top">
+        <div class="sc-name">Gap / Price Void</div>
+        <div class="sc-badge badge-b">STRONGEST</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-desc">A range where no transactions occurred. Zero liquidity. Both the upper and lower edges of the gap become zone boundaries — unfilled orders on both sides create magnetic pull back to the zone.</div>
+        <div class="sc-why">↳ Click for full zone construction analysis</div>
+      </div>
+    </div>
+
+    <div class="sig-card" onclick="showSig('impulse')">
+      <div class="sc-top">
+        <div class="sc-name">Strong Impulse Candle</div>
+        <div class="sc-badge badge-d">DEMAND SIGNAL</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-desc">A single candle covering an unusually large range on high volume. The base of the candle (for bullish) or top (for bearish) marks where the institutional order was triggered. The speed of the move proves urgency — unfilled orders remain at the origin.</div>
+        <div class="sc-why">↳ Click for full zone construction analysis</div>
+      </div>
+    </div>
+
+    <div class="sig-card" onclick="showSig('base')">
+      <div class="sc-top">
+        <div class="sc-name">Consolidation → Explosion</div>
+        <div class="sc-badge badge-n">BASE SIGNAL</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-desc">A tight ranging period (low volatility, low volume) followed by a sudden strong directional move. The consolidation range itself becomes the zone — this is where orders were being quietly accumulated or distributed before the move.</div>
+        <div class="sc-why">↳ Click for full zone construction analysis</div>
+      </div>
+    </div>
+
+    <div class="sig-card" onclick="showSig('absorption')">
+      <div class="sc-top">
+        <div class="sc-name">Volume Absorption</div>
+        <div class="sc-badge badge-d">DEMAND SIGNAL</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-desc">High volume at a level with minimal price movement. Buyers absorbing all available supply (or vice versa) without being able to push price further. A classic institutional accumulation/distribution signature.</div>
+        <div class="sc-why">↳ Click for full zone construction analysis</div>
+      </div>
+    </div>
+
+    <div class="sig-card" onclick="showSig('breaker')">
+      <div class="sc-top">
+        <div class="sc-name">Breaker Block</div>
+        <div class="sc-badge badge-s">SUPPLY SIGNAL</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-desc">A prior support zone that fails — price breaks through it with conviction, then retests from below. The former demand zone has flipped to supply. The indexical evidence: the breakout itself proved the order balance had reversed.</div>
+        <div class="sc-why">↳ Click for full zone construction analysis</div>
+      </div>
+    </div>
+
+    <div class="sig-card" onclick="showSig('fvg')">
+      <div class="sc-top">
+        <div class="sc-name">Fair Value Gap (FVG)</div>
+        <div class="sc-badge badge-b">IMBALANCE</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-desc">Three-candle structure where the high of candle 1 and low of candle 3 don't overlap — creating a gap in the middle candle's range. This gap was never traded both ways — it is an imbalance the market will attempt to fill (return to equilibrium).</div>
+        <div class="sc-why">↳ Click for full zone construction analysis</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout demand">
+    <p>The common thread across all these signals: <strong>price left a zone faster than the market could fill orders at that level.</strong> Speed and volume are the two indexical proofs. Neither can be faked in a liquid market without paying the cost of the move.</p>
+  </div>
+</section>
+
+<!-- ══════════ 03 ANATOMY ══════════ -->
+<section id="anatomy" class="section">
+  <div class="sec-h">Zone Anatomy & Construction</div>
+  <p class="sec-sub">How to draw the zone correctly — where the edges are and why</p>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Zone construction from indexical signals — demand and supply zone edges</div>
+    <canvas id="anatomyChart" height="300"></canvas>
+  </div>
+
+  <div class="g2">
+    <div class="panel" style="border-left:3px solid var(--demand)">
+      <div class="p-label">Demand Zone — How to Draw It</div>
+      <div class="p-title">Base-to-Open of Impulse</div>
+      <div class="p-body">
+        <strong>Bottom edge:</strong> The lowest wick of the last candle before the impulse began — this is the absolute floor of demand.<br><br>
+        <strong>Top edge:</strong> The open (or close) of the first strong bullish candle — this is where the buying became aggressive enough to accelerate price.<br><br>
+        The zone is the <em>origin candle's body range</em>, not the full wick range. Wicks are tests; the body is where conviction lived.<br><br>
+        <span style="color:var(--demand)">A tight zone (small range) is more precise and more significant than a wide zone. Width indicates uncertainty — tightness indicates decisiveness.</span>
+      </div>
+    </div>
+    <div class="panel" style="border-left:3px solid var(--supply)">
+      <div class="p-label">Supply Zone — How to Draw It</div>
+      <div class="p-title">Open-to-Base of Impulse</div>
+      <div class="p-body">
+        <strong>Top edge:</strong> The highest wick of the last candle before the impulse downward — the ceiling of supply.<br><br>
+        <strong>Bottom edge:</strong> The open (or close) of the first strong bearish candle — where selling became aggressive enough to accelerate.<br><br>
+        Mirror of demand zone construction. The key is identifying the <em>origin</em> of the move — the exact candle where institutional selling overwhelmed buyers.<br><br>
+        <span style="color:var(--supply)">Supply zones are frequently tested from below after a breakout. The first retest is the highest-quality entry — sellers are present, price memory is fresh, orders most likely still pending.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-sub" style="margin-bottom:14px">Signal-to-zone structural integrity — ranked by indexical strength</div>
+  <div class="zone-table">
+    <div class="zt-head">
+      <span>Signal</span>
+      <span>Why It Creates a Zone</span>
+      <span>Zone Characteristics</span>
+      <span>Integrity</span>
+    </div>
+    <div class="zt-row">
+      <div class="zt-signal">Breakaway Gap</div>
+      <div class="zt-origin">Zero transactions in the gap range — complete liquidity void. Maximum unfilled order density.</div>
+      <div class="zt-structure">Both gap edges are zone boundaries. Upper edge = demand. Lower edge = supply. Gap fill = zone resolution.</div>
+      <div class="zt-integrity int-hi">Very High</div>
+    </div>
+    <div class="zt-row">
+      <div class="zt-signal">Strong Impulse + Volume</div>
+      <div class="zt-origin">Institutional aggression leaving unfilled limit orders at origin. Volume confirms real participation.</div>
+      <div class="zt-structure">Zone = origin candle body. Tight, well-defined. Often lines up with prior structural level.</div>
+      <div class="zt-integrity int-hi">High</div>
+    </div>
+    <div class="zt-row">
+      <div class="zt-signal">Fair Value Gap (FVG)</div>
+      <div class="zt-origin">Three-candle imbalance — the middle candle's range was never fully traded. Market will seek equilibrium.</div>
+      <div class="zt-structure">Zone = gap between candle 1 high and candle 3 low. Precise, often narrow. First entry into zone high quality.</div>
+      <div class="zt-integrity int-hi">High</div>
+    </div>
+    <div class="zt-row">
+      <div class="zt-signal">Consolidation Base</div>
+      <div class="zt-origin">Quiet accumulation/distribution. Low volume over time hides institutional positioning before breakout.</div>
+      <div class="zt-structure">Zone = full consolidation range. Wider than impulse-derived zones. Multiple sub-levels within.</div>
+      <div class="zt-integrity int-med">Medium</div>
+    </div>
+    <div class="zt-row">
+      <div class="zt-signal">Absorption (High Vol, Low Move)</div>
+      <div class="zt-origin">Large players absorbing supply/demand silently. Not visible as a dramatic candle — detectable only via volume.</div>
+      <div class="zt-structure">Zone = the range over which absorption occurred (often 3–5 candles). Requires volume data to identify.</div>
+      <div class="zt-integrity int-med">Medium</div>
+    </div>
+    <div class="zt-row">
+      <div class="zt-signal">Breaker Block</div>
+      <div class="zt-origin">Prior demand zone that failed — flip from demand to supply proven by the breakout through it.</div>
+      <div class="zt-structure">Zone = original demand zone structure, now flipped. First retest from below is prime supply entry.</div>
+      <div class="zt-integrity int-med">Medium–High</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 04 LIFECYCLE ══════════ -->
+<section id="lifecycle" class="section">
+  <div class="sec-h">Zone Lifecycle</div>
+  <p class="sec-sub">How zones are born, tested, and spent — the four stages</p>
+
+  <div class="callout">
+    <p>A zone is not permanent. It has a lifecycle: it is created, it is tested, and eventually it is either <em>respected</em> (orders still pending) or <em>mitigated</em> (orders filled). Knowing which stage a zone is in determines its value as a signal.</p>
+  </div>
+
+  <div class="lifecycle">
+    <div class="lc-step">
+      <div class="lc-num">Stage 01</div>
+      <div class="lc-title">Zone Creation</div>
+      <div class="lc-body">An indexical signal fires — gap, strong impulse, base explosion. Price leaves the origin area quickly, leaving unfilled orders behind. The zone is drawn at the origin candle's body.</div>
+      <div class="lc-signal">↳ Indexical signal: gap, impulse, FVG</div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-num">Stage 02</div>
+      <div class="lc-title">Zone is Fresh</div>
+      <div class="lc-body">Price has not returned. The zone has never been tested. This is the highest-quality state — unfilled orders most likely still present. First test of a fresh zone carries maximum structural weight.</div>
+      <div class="lc-signal">↳ Highest probability entry on first touch</div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-num">Stage 03</div>
+      <div class="lc-title">Zone is Tested</div>
+      <div class="lc-body">Price returns to the zone and reacts — either bouncing (orders still there) or beginning to absorb through. Each test that respects the zone confirms orders remain. Each test that pushes deeper partially mitigates.</div>
+      <div class="lc-signal">↳ Monitor: volume at the test, speed of rejection</div>
+    </div>
+    <div class="lc-step">
+      <div class="lc-num">Stage 04</div>
+      <div class="lc-title">Zone Mitigated</div>
+      <div class="lc-body">Price trades fully through the zone on meaningful volume. Orders have been filled. The indexical signal is spent — the zone no longer carries structural weight. Mark it as resolved. Do not trade it again.</div>
+      <div class="lc-signal">↳ Mitigated = no longer structural. Move on.</div>
+    </div>
+  </div>
+
+  <div class="fvt">
+    <div class="fvt-col d">
+      <div class="fvt-title">Fresh Zone — High Probability</div>
+      <ul class="fvt-list">
+        <li>Never been tested since creation</li>
+        <li>Orders most likely still pending in the book</li>
+        <li>Strong impulse away from zone (high conviction original move)</li>
+        <li>Zone aligns with HTF structure (daily/weekly level)</li>
+        <li>Created by a gap or strong volume impulse (not just base)</li>
+        <li>Zone is tight — narrow range, decisive origin candle</li>
+        <li>Created in the direction of the dominant HTF trend</li>
+      </ul>
+    </div>
+    <div class="fvt-mid">vs</div>
+    <div class="fvt-col s">
+      <div class="fvt-title">Tested / Weak Zone — Lower Probability</div>
+      <ul class="fvt-list">
+        <li>Has been tested multiple times — orders being depleted</li>
+        <li>Price spent significant time at the zone (orders being filled)</li>
+        <li>Weak or low-volume origin move (low institutional conviction)</li>
+        <li>Zone conflicts with HTF structure or is on low timeframe only</li>
+        <li>Created by a consolidation base with ambiguous volume</li>
+        <li>Wide zone — too much uncertainty in the origin area</li>
+        <li>Created counter to the dominant HTF trend</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Zone lifecycle — creation → test → mitigation on annotated price action</div>
+    <canvas id="lifecycleChart" height="260"></canvas>
+  </div>
+</section>
+
+<!-- ══════════ 05 CONFLUENCE ══════════ -->
+<section id="confluence" class="section">
+  <div class="sec-h">Confluence & Entry Framework</div>
+  <p class="sec-sub">How multiple indexical signals stack to increase structural certainty</p>
+
+  <div class="callout">
+    <p>A single indexical signal marks a probable zone. <em>Multiple indexical signals at the same price level</em> create structural certainty — each signal is independent causal evidence pointing to the same order concentration. This is confluence: not the same logic repeated, but different forensic proofs converging.</p>
+  </div>
+
+  <div class="sec-sub" style="margin-bottom:14px">Confluence signal weights — how each signal adds to zone confidence</div>
+  <div class="matrix">
+    <div class="mx-row">
+      <div class="mx-signal">HTF Gap Zone</div>
+      <div class="mx-desc">Weekly or daily gap edge aligning with the zone. Maximum structural weight — the gap is permanent price history, immutable.</div>
+      <div class="mx-weight mw-high">+++ Weight</div>
+    </div>
+    <div class="mx-row">
+      <div class="mx-signal">Prior HTF S/D Origin</div>
+      <div class="mx-desc">The zone was created by a significant impulse on daily or higher timeframe — institutional timeframe participants are the likely order holders.</div>
+      <div class="mx-weight mw-high">+++ Weight</div>
+    </div>
+    <div class="mx-row">
+      <div class="mx-signal">Fair Value Gap</div>
+      <div class="mx-desc">An FVG overlapping the zone adds a separate, independently-derived imbalance signal — different type of evidence pointing to the same level.</div>
+      <div class="mx-weight mw-high">++ Weight</div>
+    </div>
+    <div class="mx-row">
+      <div class="mx-signal">Volume Spike at Origin</div>
+      <div class="mx-desc">Volume confirmation at zone creation proves real institutional participation — not just price movement but confirmed order flow.</div>
+      <div class="mx-weight mw-high">++ Weight</div>
+    </div>
+    <div class="mx-row">
+      <div class="mx-signal">Session High / Low</div>
+      <div class="mx-desc">The zone aligns with a prior session high or low (Asian, London, NY open). Session extremes are where institutions placed bracket orders — independently meaningful structural levels.</div>
+      <div class="mx-weight mw-med">+ Weight</div>
+    </div>
+    <div class="mx-row">
+      <div class="mx-signal">Liquidity Sweep</div>
+      <div class="mx-desc">Price swept below a prior low (stop hunt) then reversed from the zone — indicates institutional accumulation using the stop sweep as cover to fill buy orders.</div>
+      <div class="mx-weight mw-med">+ Weight</div>
+    </div>
+    <div class="mx-row">
+      <div class="mx-signal">Round Number / Psychological Level</div>
+      <div class="mx-desc">Adds modest weight — many orders cluster at round numbers. Semi-conventional, but backed by real order book clustering. Useful as tiebreaker, not primary evidence.</div>
+      <div class="mx-weight mw-low">~ Weight</div>
+    </div>
+    <div class="mx-row">
+      <div class="mx-signal">Fibonacci at Zone</div>
+      <div class="mx-desc">Adds minimal independent weight — it is conventional, not indexical. Only significant if widely-used algos are programmed to it, creating mechanical clustering at the same level.</div>
+      <div class="mx-weight mw-low">~ Minimal</div>
+    </div>
+  </div>
+
+  <div class="sec-sub" style="margin-bottom:14px">Entry validation checklist — before acting on a zone</div>
+  <div class="checklist">
+    <div class="cl-row">
+      <div class="cl-n">01</div>
+      <div class="cl-tx"><strong>Zone is indexically derived.</strong> The zone must be marked from a gap, strong impulse + volume, FVG, or absorption — not from a trendline, Fibonacci, or visual support. The origin must be identifiable and causal.</div>
+      <div class="cl-st st-y">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">02</div>
+      <div class="cl-tx"><strong>Zone is on Daily timeframe or higher.</strong> Sub-daily zones are valid only as entry refinements within HTF structure. A 15m zone at a daily gap boundary is an entry tool. A 15m zone in isolation is insufficient.</div>
+      <div class="cl-st st-y">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">03</div>
+      <div class="cl-tx"><strong>Zone is fresh or on its first retest.</strong> A zone tested three or more times has likely depleted most of its pending orders. First or second touch only. Track test count from zone creation.</div>
+      <div class="cl-st st-y">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">04</div>
+      <div class="cl-tx"><strong>At least two independent indexical signals converge.</strong> A gap edge + FVG at the same level, or a strong impulse origin + session high, or an HTF zone + liquidity sweep. Single-signal zones are lower conviction.</div>
+      <div class="cl-st st-y">Strongly advised</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">05</div>
+      <div class="cl-tx"><strong>Entry triggered by price reaction inside the zone — not at the edge.</strong> Wait for a confirmation candle (displacement) showing rejection from the zone before entering. The zone tells you where; the reaction candle tells you when.</div>
+      <div class="cl-st st-y">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">06</div>
+      <div class="cl-tx"><strong>Stop loss placed outside the zone — not inside it.</strong> If the zone is genuine, price should not need to trade through the far edge. Stop beyond the zone. If it hits, the structural premise was wrong — accept the information.</div>
+      <div class="cl-st st-y">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">07</div>
+      <div class="cl-tx"><strong>Zone direction aligns with HTF structure.</strong> A demand zone in a weekly downtrend is a counter-trend trade — lower probability. Zone direction should be consistent with the dominant institutional bias on the highest timeframe you track.</div>
+      <div class="cl-st st-m">Context-dependent</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">08</div>
+      <div class="cl-tx"><strong>Zone has not been mitigated.</strong> Price should not have traded fully through the zone and closed beyond it. A mitigated zone is a spent signal — the orders were filled. Do not re-mark mitigated zones as active structure.</div>
+      <div class="cl-st st-y">Required</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel" style="border-top:2px solid var(--demand)">
+      <div class="p-label">The Core Mental Model</div>
+      <div class="p-title">You Are Reading an Order Book Fossil</div>
+      <div class="p-body">Every indexical signal is a window into the institutional order book at a moment in the past. The zone says: <em>"Here is where large players had orders. Some filled. Some may not have."</em><br><br>
+      When price returns, you are watching those original orders interact with the current market. If they hold — the orders are still there, and you are trading alongside the original institutional actor. If they fail — the institutional balance has shifted, and the signal is spent.<br><br>
+      <span style="color:var(--demand)">This is the cleanest, most manipulation-resistant framework in retail trading — because it is based on structural market mechanics, not belief.</span></div>
+    </div>
+    <div class="panel" style="border-top:2px solid var(--neutral)">
+      <div class="p-label">What Can Still Go Wrong</div>
+      <div class="p-title">Residual Risks</div>
+      <div class="p-body">
+        <strong>Stop hunts through zones:</strong> Institutions can run price through a zone briefly (wick) to trigger stops, then reverse. Defence: require a full candle close beyond the zone before calling it mitigated.<br><br>
+        <strong>Order cancellation:</strong> Institutions can cancel or move their limit orders. The zone was real when formed — orders may have been repositioned since. This is why fresh zones are stronger than old ones.<br><br>
+        <strong>Macro override:</strong> A strong news event can push through even the most established structural zone. No structural level holds against a genuine paradigm shift. Always know the macro context.
+      </div>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<script>
+// ── Tab navigation
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── Signal detail data
+const sigData = {
+  gap: {
+    title: 'Gap / Price Void — Zone Analysis',
+    what: 'A gap creates the most structurally pure zone in TA because zero transactions occurred in the gap range. Both the upper and lower edges of the gap are zone boundaries: the lower edge is a demand zone (buyers who tried to buy couldn\'t because price jumped past them); the upper edge is a supply zone (sellers who tried to sell couldn\'t). Both represent unfilled orders with mechanical pull back toward the gap.',
+    draw: 'Draw the demand zone at the bottom of the gap (the close of the last pre-gap candle to the open of the first post-gap candle). Draw the supply zone at the top. For large gaps, the midpoint of the gap often acts as an intermediate zone. Volume at the gap candle must confirm — a thin-market gap carries less weight.',
+    quality: 'Highest quality on daily/weekly timeframes where the gap represents overnight or multi-session order imbalance. In crypto (24/7), look for equivalent displacement on high volume rather than overnight gaps. Gap zones retain strength until fully traded through — partial fills (price entering but not exiting) do not constitute mitigation.'
+  },
+  impulse: {
+    title: 'Strong Impulse Candle — Zone Analysis',
+    what: 'A single candle with an unusually large range and high volume represents an institutional actor moving with urgency — they needed to fill a large position before price moved further away. The origin of the candle (its base for bullish, its top for bearish) marks where the order was triggered. The speed of execution (single large candle vs. multiple smaller ones) indicates how aggressively they were willing to pay.',
+    draw: 'For a bullish impulse: the zone spans from the candle\'s open (or the low of the last consolidation candle before the impulse) to approximately 50% of the candle\'s body. This is where the original orders were concentrated. For a bearish impulse: mirror construction from the open/high. Avoid including the full wick in the zone — wicks are tests, bodies are orders.',
+    quality: 'Quality scales with: (1) the relative size of the candle vs recent average range, (2) the volume multiple vs recent average, (3) the timeframe (daily impulse > 1H impulse). An impulse candle 3× the average range on 5× average volume on the daily chart is near the top of the indexical integrity scale — nearly impossible to fake in a liquid regulated market.'
+  },
+  base: {
+    title: 'Consolidation Base → Explosion — Zone Analysis',
+    what: 'A tight consolidation period followed by a strong breakout is evidence of quiet accumulation or distribution. Institutions spread their orders over multiple candles at a range of prices within the consolidation to avoid detection and slippage. The narrow range and declining volume during consolidation is the signature — they are absorbing available supply (in accumulation) without letting price move enough to attract attention.',
+    draw: 'The zone is the full range of the consolidation (highest high to lowest low of the base). This is wider than impulse-derived zones, but each price level within the base has order activity behind it. Sub-levels within the base (the most traded prices) can be identified via volume profile if available — these are the highest-density order clusters.',
+    quality: 'Base zones are slightly lower in indexical precision than gap or impulse zones because the origin is spread over time rather than concentrated at a moment. Their strength comes from the breakout itself — the stronger and higher-volume the breakout from the base, the more conviction the original accumulation/distribution had. Base zones on higher timeframes (weekly) represent multi-week institutional positioning.'
+  },
+  absorption: {
+    title: 'Volume Absorption — Zone Analysis',
+    what: 'When high volume occurs with minimal price movement, it means large orders on one side are being absorbed by an equally large opposing force — like two armies meeting and neither advancing. This is the quietest and most sophisticated institutional signal: they are filling their position by absorbing all available supply (in accumulation) or buying (in distribution) without tipping their hand through price movement.',
+    draw: 'Identify the range over which absorption occurred — typically 3–8 candles with high or climbing volume but a range smaller than surrounding bars. Mark the high and low of this absorption range as the zone boundaries. Absorption zones are often located at the base of what becomes a large impulse — the quiet before the storm.',
+    quality: 'Requires reliable volume data — in crypto without proper exchange aggregation, absorption is hard to identify cleanly. In equities with accurate tape data, absorption is one of the most reliable institutional fingerprints. The key tell: volume is high but price does not respond proportionally. In normal market conditions, high volume should move price — when it doesn\'t, someone is supplying the other side in size.'
+  },
+  breaker: {
+    title: 'Breaker Block — Zone Analysis',
+    what: 'A breaker block occurs when a prior demand zone is decisively broken and price returns to test it from below. The break is the indexical proof — it demonstrated that the original buy orders were overwhelmed, meaning the balance of power at that level has flipped. The former demand zone is now a supply zone because the participants who originally bought there are now underwater and will likely sell on the return (to break even or reduce losses).',
+    draw: 'The zone boundaries are the same as the original demand zone that was broken — the origin candle\'s body range. The difference is the interpretation: previously you looked for a bounce from the top of the zone; now you look for rejection from the bottom of the zone (as price returns from below into former demand, now supply). The flip changes the entry direction, not the zone location.',
+    quality: 'Breaker blocks are medium-high quality because they have two layers of indexical proof: the original zone creation AND the breakout confirming the flip. The primary risk is false breakouts — if the original break was a stop hunt (engineered liquidity grab) rather than a genuine balance shift, the zone has not actually flipped. Require a strong, high-volume close beyond the original zone to confirm the breaker — not just a wick through it.'
+  },
+  fvg: {
+    title: 'Fair Value Gap (FVG) — Zone Analysis',
+    what: 'An FVG is a three-candle structure where the range of the middle candle was never "traded fairly" — i.e., the high of candle 1 and the low of candle 3 do not overlap, creating a gap in the middle candle\'s territory. This means price passed through that range in one direction only. The market tends to return to fill this gap because participants who missed the move will enter on the retrace, and the imbalance represents a structural void that the market seeks to resolve.',
+    draw: 'The FVG zone is defined precisely: the bottom boundary is the high of candle 1; the top boundary is the low of candle 3. The zone is the space between them. Entry in the direction of the original move — if the FVG formed in a bullish impulse, enter long when price retraces into the FVG from above. The 50% midpoint of the FVG is often the strongest reaction level within it.',
+    quality: 'FVGs on higher timeframes (daily) are strong indexical signals — the three candles represent three daily sessions of directional imbalance. Low-timeframe FVGs (5m, 15m) are more susceptible to being engineered and carry less weight unless they align with an HTF FVG or zone. The strongest FVG setups occur when the FVG aligns with an HTF gap zone or prior S/D origin — multiple imbalance signals at the same level.'
+  }
+};
+
+function showSig(id) {
+  const d = sigData[id];
+  const panel = document.getElementById('sig-detail');
+  panel.innerHTML = `
+    <div style="font-family:'Libre Baskerville',serif;font-size:1.3rem;color:var(--bright);margin-bottom:14px;">${d.title}</div>
+    <div class="sd-grid">
+      <div><div class="sd-h">What This Signal Encodes</div><div class="sd-b">${d.what}</div></div>
+      <div><div class="sd-h" style="color:var(--demand)">How to Draw the Zone</div><div class="sd-b">${d.draw}</div></div>
+      <div><div class="sd-h" style="color:var(--neutral)">Quality & Limitations</div><div class="sd-b">${d.quality}</div></div>
+    </div>
+  `;
+  panel.classList.add('active');
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  document.querySelectorAll('.sig-card').forEach(c => c.classList.remove('active'));
+  event.currentTarget.closest('.sig-card').classList.add('active');
+}
+
+// ── Canvas drawing utility
+function setupCanvas(id, height) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  * dpr;
+  canvas.height = height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, W: rect.width, H: height };
+}
+
+function drawGrid(ctx, W, H) {
+  ctx.strokeStyle = '#1a2530'; ctx.lineWidth = 0.5;
+  for (let y = 0; y < H; y += 28) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+}
+
+function drawCandle(ctx, x, bw, yO, yH, yL, yC, isBull, color) {
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(x, yH); ctx.lineTo(x, yL); ctx.stroke();
+  ctx.fillStyle = color;
+  const top = Math.min(yO, yC);
+  const bodyH = Math.max(Math.abs(yC - yO), 2);
+  ctx.fillRect(x - bw/2, top, bw, bodyH);
+}
+
+// ── Chart 1: Core logic chart
+window.addEventListener('load', () => {
+  const r = setupCanvas('coreChart', 260);
+  if (!r) return;
+  const { ctx, W, H } = r;
+  drawGrid(ctx, W, H);
+
+  const green = '#00c8a0', red = '#e8504a', amber = '#e8a030', dim = '#304050';
+  const pad = 32, vH = 32, vBase = H - 4;
+  const totalW = W - pad * 2;
+
+  // Candles: [open%, high%, low%, close%] — 0=top, 1=bottom in display
+  const candles = [
+    // demand base + explosion
+    [0.82,0.79,0.88,0.85, 'bear', 0.3],
+    [0.84,0.81,0.87,0.83, 'bear', 0.25],
+    [0.80,0.77,0.85,0.79, 'bear', 0.28],
+    [0.78,0.75,0.82,0.76, 'bear', 0.32],
+    // DEMAND ZONE origin — strong bull impulse
+    [0.76,0.50,0.78,0.52, 'bull', 0.90],
+    [0.52,0.47,0.54,0.49, 'bull', 0.60],
+    [0.49,0.44,0.51,0.46, 'bull', 0.50],
+    // rally
+    [0.46,0.41,0.48,0.43, 'bull', 0.40],
+    [0.44,0.39,0.46,0.41, 'bull', 0.35],
+    [0.42,0.37,0.44,0.39, 'bull', 0.32],
+    // SUPPLY ZONE origin — strong bear impulse
+    [0.38,0.36,0.57,0.59, 'bear', 0.85],
+    [0.59,0.56,0.62,0.61, 'bear', 0.55],
+    [0.61,0.58,0.64,0.63, 'bear', 0.42],
+    // retrace toward demand
+    [0.63,0.60,0.67,0.65, 'bear', 0.35],
+    [0.66,0.63,0.69,0.64, 'bear', 0.30],
+  ];
+
+  const cw = totalW / candles.length;
+  const bw = cw * 0.52;
+  const scaleY = (v) => v * (H - vH - 20) + 10;
+
+  // Draw demand zone
+  const dzTop = scaleY(0.52), dzBot = scaleY(0.78);
+  ctx.fillStyle = 'rgba(0,200,160,0.10)';
+  ctx.fillRect(0, dzTop, W, dzBot - dzTop);
+  ctx.strokeStyle = green; ctx.lineWidth = 1; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(0, dzTop); ctx.lineTo(W, dzTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, dzBot); ctx.lineTo(W, dzBot); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw supply zone
+  const szTop = scaleY(0.36), szBot = scaleY(0.57);
+  ctx.fillStyle = 'rgba(232,80,74,0.10)';
+  ctx.fillRect(0, szTop, W, szBot - szTop);
+  ctx.strokeStyle = red; ctx.lineWidth = 1; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(0, szTop); ctx.lineTo(W, szTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, szBot); ctx.lineTo(W, szBot); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw candles
+  candles.forEach((c, i) => {
+    const x = pad + i * cw + cw/2;
+    const [op,hi,lo,cl,,vol] = c;
+    const color = c[4] === 'bull' ? green : red;
+    drawCandle(ctx, x, bw, scaleY(op), scaleY(hi), scaleY(lo), scaleY(cl), c[4]==='bull', color);
+    // volume bar
+    ctx.fillStyle = c[4]==='bull' ? 'rgba(0,200,160,0.35)' : 'rgba(232,80,74,0.35)';
+    ctx.fillRect(x - cw*0.35, vBase - vol*vH, cw*0.7, vol*vH);
+  });
+
+  // Labels
+  ctx.font = '11px IBM Plex Mono, monospace'; ctx.letterSpacing = '0.05em';
+  ctx.fillStyle = green;
+  ctx.fillText('DEMAND ZONE — unfilled buy orders', 8, dzTop - 5);
+  ctx.fillStyle = red;
+  ctx.fillText('SUPPLY ZONE — unfilled sell orders', 8, szTop - 5);
+  ctx.fillStyle = amber;
+  ctx.fillText('IMPULSE ORIGIN →', pad + 3 * cw + 4, scaleY(0.64));
+  ctx.fillStyle = amber;
+  ctx.fillText('← IMPULSE ORIGIN', pad + 9 * cw + 4, scaleY(0.47));
+});
+
+// ── Chart 2: Anatomy chart
+window.addEventListener('load', () => {
+  const r = setupCanvas('anatomyChart', 300);
+  if (!r) return;
+  const { ctx, W, H } = r;
+  drawGrid(ctx, W, H);
+
+  const green = '#00c8a0', red = '#e8504a', amber = '#e8a030';
+  const pad = 32, vH = 28, vBase = H - 4;
+  const totalW = W - pad * 2;
+  const scaleY = v => v * (H - vH - 20) + 10;
+
+  // Demand zone anatomy
+  const dZoneTop = scaleY(0.48), dZoneBot = scaleY(0.72);
+  ctx.fillStyle = 'rgba(0,200,160,0.08)';
+  ctx.fillRect(0, dZoneTop, W * 0.5, dZoneBot - dZoneTop);
+  ctx.strokeStyle = green; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(0, dZoneTop); ctx.lineTo(W * 0.5, dZoneTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, dZoneBot); ctx.lineTo(W * 0.5, dZoneBot); ctx.stroke();
+
+  // Supply zone anatomy
+  const sZoneTop = scaleY(0.30), sZoneBot = scaleY(0.52);
+  ctx.fillStyle = 'rgba(232,80,74,0.08)';
+  ctx.fillRect(W * 0.55, sZoneTop, W * 0.45, sZoneBot - sZoneTop);
+  ctx.strokeStyle = red; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(W * 0.55, sZoneTop); ctx.lineTo(W, sZoneTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W * 0.55, sZoneBot); ctx.lineTo(W, sZoneBot); ctx.stroke();
+
+  // Left side candles (demand anatomy)
+  const leftCandles = [
+    [0.80,0.76,0.85,0.82,'bear',0.3],
+    [0.82,0.78,0.86,0.80,'bear',0.28],
+    [0.78,0.74,0.84,0.76,'bear',0.32],
+    // origin impulse
+    [0.72,0.46,0.75,0.49,'bull',0.95],
+    [0.49,0.44,0.52,0.46,'bull',0.7],
+    [0.47,0.42,0.50,0.44,'bull',0.55],
+    [0.44,0.40,0.47,0.41,'bull',0.4],
+  ];
+  const lcw = (W * 0.48) / leftCandles.length;
+  const lbw = lcw * 0.55;
+  leftCandles.forEach((c, i) => {
+    const x = pad + i * lcw + lcw/2;
+    const color = c[4]==='bull' ? green : red;
+    drawCandle(ctx, x, lbw, scaleY(c[0]), scaleY(c[1]), scaleY(c[2]), scaleY(c[3]), c[4]==='bull', color);
+    ctx.fillStyle = c[4]==='bull' ? 'rgba(0,200,160,0.4)' : 'rgba(232,80,74,0.3)';
+    ctx.fillRect(x - lcw*0.35, vBase - c[5]*vH, lcw*0.7, c[5]*vH);
+  });
+
+  // Right side candles (supply anatomy)
+  const rightCandles = [
+    [0.50,0.47,0.54,0.48,'bull',0.32],
+    [0.48,0.44,0.51,0.46,'bull',0.28],
+    [0.46,0.43,0.50,0.44,'bull',0.30],
+    // origin impulse bear
+    [0.44,0.42,0.68,0.70,'bear',0.90],
+    [0.70,0.67,0.73,0.71,'bear',0.65],
+    [0.72,0.69,0.75,0.73,'bear',0.5],
+    [0.74,0.71,0.77,0.75,'bear',0.38],
+  ];
+  const rcw = (W * 0.44) / rightCandles.length;
+  const rbw = rcw * 0.55;
+  rightCandles.forEach((c, i) => {
+    const x = W * 0.56 + i * rcw + rcw/2;
+    const color = c[4]==='bull' ? green : red;
+    drawCandle(ctx, x, rbw, scaleY(c[0]), scaleY(c[1]), scaleY(c[2]), scaleY(c[3]), c[4]==='bull', color);
+    ctx.fillStyle = c[4]==='bull' ? 'rgba(0,200,160,0.35)' : 'rgba(232,80,74,0.35)';
+    ctx.fillRect(x - rcw*0.35, vBase - c[5]*vH, rcw*0.7, c[5]*vH);
+  });
+
+  // Annotations
+  ctx.font = '11px IBM Plex Mono'; ctx.setLineDash([]);
+  ctx.fillStyle = green;
+  ctx.fillText('Top edge: open of impulse candle', 6, dZoneTop - 5);
+  ctx.fillText('Bot edge: low before impulse', 6, dZoneBot + 12);
+  ctx.fillStyle = red;
+  ctx.fillText('Top edge: high before impulse', W * 0.56, sZoneTop - 5);
+  ctx.fillText('Bot edge: open of impulse candle', W * 0.56, sZoneBot + 12);
+  ctx.fillStyle = amber;
+  ctx.fillText('DEMAND ZONE', 6, (dZoneTop + dZoneBot)/2 + 4);
+  ctx.fillText('SUPPLY ZONE', W * 0.56, (sZoneTop + sZoneBot)/2 + 4);
+});
+
+// ── Chart 3: Lifecycle
+window.addEventListener('load', () => {
+  const r = setupCanvas('lifecycleChart', 260);
+  if (!r) return;
+  const { ctx, W, H } = r;
+  drawGrid(ctx, W, H);
+
+  const green = '#00c8a0', red = '#e8504a', amber = '#e8a030', dim = '#304050';
+  const pad = 28, vH = 28, vBase = H - 4;
+  const scaleY = v => v * (H - vH - 20) + 10;
+
+  // Zone band
+  const zTop = scaleY(0.50), zBot = scaleY(0.68);
+  ctx.fillStyle = 'rgba(0,200,160,0.07)';
+  ctx.fillRect(0, zTop, W, zBot - zTop);
+  ctx.strokeStyle = green; ctx.lineWidth = 1; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(0,zTop); ctx.lineTo(W,zTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,zBot); ctx.lineTo(W,zBot); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Candles showing lifecycle
+  const totalW = W - pad * 2;
+  const allC = [
+    // creation — impulse up
+    [0.72,0.50,0.75,0.52,'bull',0.92],
+    [0.52,0.47,0.55,0.49,'bull',0.65],
+    [0.49,0.44,0.51,0.47,'bull',0.5],
+    // move away — zone fresh
+    [0.46,0.42,0.48,0.44,'bull',0.38],
+    [0.43,0.39,0.46,0.40,'bull',0.34],
+    // first retest — zone respected
+    [0.42,0.39,0.56,0.54,'bear',0.45],
+    [0.54,0.50,0.58,0.52,'bear',0.38],
+    [0.52,0.48,0.55,0.50,'bear',0.35], // touches zone
+    [0.51,0.46,0.54,0.48,'bull',0.52], // strong rejection
+    [0.48,0.42,0.50,0.43,'bull',0.65],
+    // second retest — partially mitigated
+    [0.44,0.41,0.48,0.46,'bear',0.4],
+    [0.47,0.43,0.52,0.51,'bear',0.42],
+    [0.53,0.49,0.57,0.55,'bear',0.38], // deeper into zone
+    [0.56,0.48,0.60,0.50,'bull',0.48], // weaker bounce
+    // mitigation — breaks through
+    [0.52,0.49,0.58,0.56,'bear',0.35],
+    [0.57,0.54,0.62,0.60,'bear',0.38],
+    [0.61,0.58,0.65,0.63,'bear',0.72], // zone broken
+    [0.64,0.61,0.67,0.65,'bear',0.55],
+  ];
+
+  const cw = totalW / allC.length;
+  const bw = cw * 0.55;
+  allC.forEach((c, i) => {
+    const x = pad + i * cw + cw/2;
+    const color = c[4]==='bull' ? green : red;
+    // fade mitigated zone
+    const opacity = i >= 15 ? 0.4 : 1;
+    ctx.globalAlpha = opacity;
+    drawCandle(ctx, x, bw, scaleY(c[0]), scaleY(c[1]), scaleY(c[2]), scaleY(c[3]), c[4]==='bull', color);
+    ctx.fillStyle = c[4]==='bull' ? 'rgba(0,200,160,0.35)' : 'rgba(232,80,74,0.3)';
+    ctx.fillRect(x - cw*0.35, vBase - c[5]*vH, cw*0.7, c[5]*vH);
+    ctx.globalAlpha = 1;
+  });
+
+  // Stage labels
+  ctx.font = '11px IBM Plex Mono'; ctx.fillStyle = amber;
+  const lx = [0, 3, 5, 9, 12, 15];
+  const labels = ['CREATE','FRESH','1ST RETEST','RESPECTED','2ND TEST','MITIGATED'];
+  const colors = [green, green, amber, green, amber, red];
+  labels.forEach((l, i) => {
+    ctx.fillStyle = colors[i];
+    ctx.fillText(l, pad + lx[i] * cw, 8);
+  });
+
+  // Vertical dividers
+  ctx.strokeStyle = dim; ctx.lineWidth = 1; ctx.setLineDash([3,4]);
+  [3, 5, 9, 12, 15].forEach(i => {
+    const x = pad + i * cw;
+    ctx.beginPath(); ctx.moveTo(x, 12); ctx.lineTo(x, H - vH - 4); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = green;
+  ctx.fillText('DEMAND ZONE', 6, zTop - 5);
+  ctx.fillStyle = red;
+  ctx.fillText('ZONE SPENT →', pad + 15 * cw + 4, zTop - 5);
+});
+</script>
+</body>
+</html>
