@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Market Algo Models — Plain English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #f8f4ee;
+  --bg2:    #f0ead8;
+  --bg3:    #e8dfc8;
+  --ink:    #1c1810;
+  --border: #ccc0a8;
+  --amber:  #c07020;
+  --rust:   #a83020;
+  --sage:   #386848;
+  --blue:   #2858a8;
+  --purple: #6038a8;
+  --mist:   #708090;
+  --bright: #1c1810;
+  --cream:  #faf7f0;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+
+/* subtle paper texture */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:900;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 56px 64px 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+header::after {
+  content: 'ML';
+  position: absolute;
+  right: 48px; bottom: -20px;
+  font-family: 'Lora', serif;
+  font-size: 14rem;
+  font-style: italic;
+  color: rgba(255,255,255,0.03);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.eyebrow {
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before {
+  content:''; display:inline-block;
+  width:32px; height:1px; background:var(--amber);
+}
+
+h1 {
+  font-family: 'Lora', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-weight: 400; color: #f8f4ee;
+  line-height: 1.08; letter-spacing: -0.01em;
+  margin-bottom: 20px;
+}
+h1 em { color: var(--amber); font-style: italic; }
+
+.header-desc {
+  font-size: 15px; color: rgba(248,244,238,0.65);
+  max-width: 600px; line-height: 1.75;
+}
+
+.header-promise {
+  margin-top: 24px;
+  display: inline-block;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  padding: 8px 20px;
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+}
+
+/* ── NAV ── */
+nav {
+  display: flex; border-bottom: 2px solid var(--ink);
+  padding: 0 64px; overflow-x: auto; background: var(--cream);
+}
+.tab {
+  padding: 16px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  cursor: pointer; border: none; background: none;
+  color: var(--mist); border-bottom: 3px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s; white-space: nowrap;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--amber); border-bottom-color: var(--amber); }
+
+/* ── MAIN ── */
+main { padding: 52px 64px; max-width: 1200px; margin: 0 auto; }
+.section { display:none; animation: up 0.35s ease both; }
+.section.active { display:block; }
+@keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── TYPE ── */
+.sec-h {
+  font-family: 'Lora', serif;
+  font-size: 2rem; font-weight: 400; color: var(--ink);
+  margin-bottom: 6px;
+}
+.sec-sub {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--mist); margin-bottom: 36px;
+}
+
+/* ── ANALOGY BOX ── */
+.analogy {
+  background: var(--ink); color: var(--bg);
+  padding: 28px 36px; margin-bottom: 32px;
+  position: relative; overflow: hidden;
+}
+.analogy::before {
+  content: '"';
+  position: absolute; right: 24px; top: -10px;
+  font-family: 'Lora', serif; font-size: 8rem;
+  color: rgba(255,255,255,0.05); line-height: 1;
+}
+.analogy-label {
+  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 10px;
+}
+.analogy p {
+  font-family: 'Lora', serif;
+  font-size: 1.15rem; font-style: italic;
+  color: rgba(248,244,238,0.9); line-height: 1.8;
+}
+.analogy strong { color: var(--amber); font-style: normal; }
+
+/* ── PANELS ── */
+.panel {
+  border: 1px solid var(--border);
+  background: var(--cream); padding: 26px 30px;
+}
+.p-label {
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--mist); margin-bottom: 10px;
+}
+.p-title {
+  font-family: 'Lora', serif;
+  font-size: 1.2rem; color: var(--ink); margin-bottom: 14px;
+}
+.p-body { font-size: 14px; color: #3a3020; line-height: 1.8; }
+.p-body strong { color: var(--ink); font-weight: 600; }
+.p-body em { color: var(--amber); font-style: normal; }
+
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--border); border:1px solid var(--border); margin-bottom:32px; }
+.g2 .panel { border:none; }
+.g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; background:var(--border); border:1px solid var(--border); margin-bottom:32px; }
+.g3 .panel { border:none; }
+
+/* ── CONCEPT CARDS (the main teaching units) ── */
+.concept-stack { display:flex; flex-direction:column; gap:2px; margin-bottom:32px; }
+
+.concept-card {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  cursor: pointer; transition: background 0.18s;
+  overflow: hidden;
+}
+.concept-card:hover, .concept-card.open { background: var(--bg2); }
+
+.cc-header {
+  display: grid; grid-template-columns: 70px 1fr auto;
+  align-items: stretch;
+}
+
+.cc-num {
+  background: var(--ink); color: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Lora', serif; font-size: 1.5rem; font-style: italic;
+  border-right: 1px solid var(--border); flex-shrink: 0;
+  min-height: 72px;
+  transition: background 0.18s;
+}
+.concept-card.open .cc-num { background: var(--amber); }
+
+.cc-main { padding: 18px 24px; }
+.cc-name {
+  font-family: 'Lora', serif; font-size: 1.1rem; color: var(--ink);
+  margin-bottom: 4px;
+}
+.cc-tagline { font-size: 12px; color: var(--mist); line-height: 1.5; }
+
+.cc-badge {
+  padding: 0 22px;
+  display: flex; align-items: center; justify-content: center;
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.badge {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  border: 1px solid; padding: 4px 10px; white-space: nowrap;
+}
+.b-nn  { color: var(--blue);   border-color: rgba(40,88,168,0.35); }
+.b-rf  { color: var(--sage);   border-color: rgba(56,104,72,0.35); }
+.b-rl  { color: var(--purple); border-color: rgba(96,56,168,0.35); }
+.b-tr  { color: var(--rust);   border-color: rgba(168,48,32,0.35); }
+.b-ev  { color: var(--amber);  border-color: rgba(192,112,32,0.35); }
+
+.cc-expand {
+  display: none; padding: 0 24px 24px 94px;
+  animation: up 0.25s ease;
+  border-top: 1px solid var(--border);
+}
+.concept-card.open .cc-expand { display: block; }
+
+.expand-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; padding-top: 20px; }
+
+.eg-col-h {
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--mist); margin-bottom: 10px; padding-bottom: 7px;
+  border-bottom: 1px solid var(--border);
+}
+.eg-col-b { font-size: 14px; color: #3a3020; line-height: 1.8; }
+.eg-col-b strong { color: var(--ink); font-weight: 600; }
+
+/* ── MATH DEMYSTIFIER ── */
+.math-card {
+  border: 1px solid var(--border); background: var(--cream);
+  margin-bottom: 16px; overflow: hidden;
+  cursor: pointer; transition: background 0.15s;
+}
+.math-card:hover { background: var(--bg2); }
+
+.mc-top {
+  display: grid; grid-template-columns: 1fr auto;
+  padding: 16px 22px; gap: 16px; align-items: center;
+}
+.mc-formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px; color: var(--rust);
+  background: var(--bg2); padding: 8px 16px;
+  border: 1px solid var(--border); display: inline-block;
+  letter-spacing: 0.05em;
+}
+.mc-arrow {
+  font-size: 18px; color: var(--amber); padding: 0 8px;
+}
+.mc-plain {
+  font-size: 14px; color: var(--ink); flex: 1; line-height: 1.6;
+}
+.mc-expand {
+  display: none; padding: 16px 22px; background: var(--bg2);
+  border-top: 1px solid var(--border);
+  animation: up 0.25s ease;
+}
+.math-card.open .mc-expand { display: block; }
+.mc-exp-body { font-size: 14px; color: #3a3020; line-height: 1.8; }
+.mc-exp-body strong { color: var(--ink); }
+
+/* ── COMPARISON TABLE ── */
+.compare-table { border: 2px solid var(--ink); margin-bottom: 32px; }
+.ct-head {
+  display: grid; grid-template-columns: 180px 1fr 1fr 1fr;
+  background: var(--ink); color: var(--bg);
+  padding: 12px 20px; gap: 16px;
+}
+.ct-head span { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; }
+.ct-row {
+  display: grid; grid-template-columns: 180px 1fr 1fr 1fr;
+  padding: 15px 20px; gap: 16px;
+  border-bottom: 1px solid var(--border);
+  align-items: start; transition: background 0.15s;
+}
+.ct-row:last-child { border-bottom: none; }
+.ct-row:hover { background: var(--bg2); }
+.ct-label {
+  font-family: 'Lora', serif; font-size: 0.95rem; color: var(--ink);
+}
+.ct-cell { font-size: 13px; color: #3a3020; line-height: 1.65; }
+.ct-good { color: var(--sage); font-weight: 600; }
+.ct-bad  { color: var(--rust); }
+.ct-med  { color: var(--amber); }
+
+/* ── NEURAL NET VISUAL ── */
+.nn-visual {
+  border: 1px solid var(--border); background: var(--cream);
+  padding: 24px; margin-bottom: 32px;
+}
+.nn-title {
+  font-family: 'Lora', serif; font-size: 1.2rem; color: var(--ink);
+  margin-bottom: 6px;
+}
+.nn-sub { font-size: 11px; color: var(--mist); letter-spacing: 0.12em; margin-bottom: 20px; }
+
+/* ── LIMITS BOX ── */
+.limits-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); margin-bottom: 32px;
+}
+.lim-card { background: var(--cream); padding: 24px 22px; }
+.lim-icon { font-size: 1.8rem; margin-bottom: 10px; }
+.lim-title {
+  font-family: 'Lora', serif; font-size: 1.05rem;
+  color: var(--ink); margin-bottom: 10px;
+}
+.lim-body { font-size: 13px; color: #3a3020; line-height: 1.75; }
+
+/* ── TAKEAWAY ── */
+.takeaway {
+  border: 2px solid var(--amber); background: var(--bg2);
+  padding: 28px 36px; margin-bottom: 32px;
+}
+.tw-label {
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 12px;
+}
+.tw-body {
+  font-family: 'Lora', serif; font-size: 1.1rem;
+  color: var(--ink); line-height: 1.85;
+}
+.tw-body strong { color: var(--amber); }
+
+/* ── CHART WRAP ── */
+.chart-wrap {
+  border: 1px solid var(--border); background: var(--cream);
+  padding: 20px 24px; margin-bottom: 32px;
+}
+.chart-title {
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--mist); margin-bottom: 16px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 820px) {
+  header, nav, main { padding-left: 24px; padding-right: 24px; }
+  .g2, .g3, .limits-grid { grid-template-columns: 1fr; }
+  .expand-grid { grid-template-columns: 1fr; }
+  .cc-header { grid-template-columns: 60px 1fr; }
+  .cc-badge { display: none; }
+  .cc-expand { padding-left: 24px; }
+  .ct-head, .ct-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Plain English · No Jargon Wall</div>
+  <h1>Neural &amp; Algo<br><em>Market Models</em><br>Demystified</h1>
+  <p class="header-desc">The same concepts taught at the London College of Finance and Quant desks worldwide — explained without the mathematical wall. If you can understand a recipe, a weather forecast, or a chess computer, you can understand these.</p>
+  <div class="header-promise">Every concept explained with a real-world analogy first</div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('bigpicture')">01 · The Big Picture</button>
+  <button class="tab" onclick="showTab('models')">02 · The Main Models</button>
+  <button class="tab" onclick="showTab('math')">03 · The Maths Decoded</button>
+  <button class="tab" onclick="showTab('compare')">04 · Model Comparison</button>
+  <button class="tab" onclick="showTab('limits')">05 · What They Can't Do</button>
+</nav>
+
+<main>
+
+<!-- ══════ TAB 1: BIG PICTURE ══════ -->
+<section id="bigpicture" class="section active">
+  <div class="sec-h">The Big Picture — What Are These Models?</div>
+  <p class="sec-sub">Before any mathematics — the idea behind all of them</p>
+
+  <div class="analogy">
+    <div class="analogy-label">The Core Analogy</div>
+    <p>Imagine you hire <strong>10,000 experienced traders</strong>, sit them all at desks, show each one a different slice of market history, and ask them to each write one simple rule they noticed. Then you average all their rules together. That combined rulebook — updated every day — is essentially what a machine learning market model does.</p>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="p-label">What "Learning" Actually Means</div>
+      <div class="p-title">Pattern Recognition at Scale</div>
+      <div class="p-body">
+        When people say an algorithm <strong>"learns"</strong> from data, they mean it is adjusting thousands of small dials (called weights or parameters) until its output — "price will go up" or "price will go down" — matches what actually happened in historical data as closely as possible.<br><br>
+        It is not thinking. It is not understanding. It is <em>optimising a very large set of numbers</em> until they produce accurate answers on past data — then hoping those patterns persist into the future.
+      </div>
+    </div>
+    <div class="panel">
+      <div class="p-label">Why Markets Are Hard for Algorithms</div>
+      <div class="p-title">The Data Is Alive</div>
+      <div class="p-body">
+        In most machine learning problems — recognising faces, translating language, detecting cancer — the data does not change because you're analysing it. Markets are different.<br><br>
+        <strong>When a model finds a pattern and starts trading it, the pattern degrades</strong> — because the model's own trades move the market and attract competitors who copy it. The data source is reflexive. This is the fundamental challenge that makes market ML harder than almost any other ML application.
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">The learning loop — how a market model is built and deployed</div>
+    <canvas id="loopChart" height="180"></canvas>
+  </div>
+
+  <div class="g3">
+    <div class="panel" style="border-top: 3px solid var(--blue)">
+      <div class="p-label">Input — What Goes In</div>
+      <div class="p-title">Features / Signals</div>
+      <div class="p-body">
+        Raw market data fed to the model: price, volume, bid-ask spread, order book depth, options flow, economic releases, sentiment scores, even satellite imagery of car parks. Each input is called a <em>feature</em>. The art is choosing which features are meaningful — most are noise.
+      </div>
+    </div>
+    <div class="panel" style="border-top: 3px solid var(--amber)">
+      <div class="p-label">Process — What Happens Inside</div>
+      <div class="p-title">The Model</div>
+      <div class="p-body">
+        The algorithm processes the features through a series of mathematical transformations. Each type of model (neural network, random forest, etc.) does this differently. The output is a number — typically a probability between 0 and 1 — representing confidence in a direction.
+      </div>
+    </div>
+    <div class="panel" style="border-top: 3px solid var(--sage)">
+      <div class="p-label">Output — What Comes Out</div>
+      <div class="p-title">Signal / Decision</div>
+      <div class="p-body">
+        The model outputs a signal: buy, sell, hold, or a position size. This gets filtered through risk management rules before any trade is placed. Most real-world algo systems have the model output going through at least 3–4 additional filters before capital is committed.
+      </div>
+    </div>
+  </div>
+
+  <div class="takeaway">
+    <div class="tw-label">The One Thing to Understand</div>
+    <div class="tw-body">
+      Every machine learning market model — no matter how complex — is doing <strong>one fundamental thing</strong>: finding patterns in past data and betting that those patterns will repeat. The sophistication is in <em>which patterns</em> it finds, <em>how robust</em> those patterns are, and <em>how quickly</em> it updates when they break down. The mathematics is just the machinery for doing this efficiently at scale.
+    </div>
+  </div>
+</section>
+
+<!-- ══════ TAB 2: MAIN MODELS ══════ -->
+<section id="models" class="section">
+  <div class="sec-h">The Main Model Types</div>
+  <p class="sec-sub">Click each model to expand — plain English explanation + how it sees the market</p>
+
+  <div class="concept-stack">
+
+    <!-- NEURAL NETWORK -->
+    <div class="concept-card" onclick="toggleConcept(this)">
+      <div class="cc-header">
+        <div class="cc-num">NN</div>
+        <div class="cc-main">
+          <div class="cc-name">Neural Network (Deep Learning)</div>
+          <div class="cc-tagline">Layers of pattern detectors — each layer learns increasingly abstract features from raw data</div>
+        </div>
+        <div class="cc-badge"><span class="badge b-nn">Deep Learning</span></div>
+      </div>
+      <div class="cc-expand">
+        <div class="expand-grid">
+          <div>
+            <div class="eg-col-h">The Analogy</div>
+            <div class="eg-col-b">Think of how you recognise a friend's face. You don't consciously check "two eyes, a nose, a mouth." Your brain has layers of detectors — edges → shapes → features → face. You learned this automatically from millions of faces as a child.<br><br>A neural network does the same thing with market data. The first layer detects simple patterns (price went up 3 days in a row). The second layer combines those into slightly more complex patterns. By layer 10 or 20, it may be detecting something like "the relationship between options volume and overnight gaps in a rising rate environment."<br><br>No human programmed those complex patterns — <strong>the network discovered them automatically</strong> from data.</div>
+          </div>
+          <div>
+            <div class="eg-col-h">How It Sees Markets</div>
+            <div class="eg-col-b">A neural network treating a price chart like an image — literally feeding in candlestick chart images as pixels — learns to spot formations the same way face recognition spots a nose. <strong>CNNs (Convolutional Neural Networks)</strong> do this.<br><br>An <strong>LSTM (Long Short-Term Memory)</strong> network instead reads price sequences like sentences — it has memory of what happened earlier in the sequence and uses that context when interpreting the current moment. Like understanding that "bank" means a riverbank vs a financial institution based on what came before it.<br><br>LSTMs are used when the <em>order and timing</em> of events matters — which in markets, it usually does.</div>
+          </div>
+          <div>
+            <div class="eg-col-h">The Real-World Catch</div>
+            <div class="eg-col-b">Neural networks are <strong>black boxes</strong> — you cannot easily explain why they made a decision. They also require enormous amounts of data to train properly. In markets, you have maybe 30 years of daily data — a neural network needs millions of examples. This is why they work better on high-frequency data (millions of ticks) than on daily charts.<br><br>The deeper danger: they <strong>overfit</strong> easily — memorising noise in historical data as if it were signal. A model that looks brilliant on 20 years of backtest may be completely useless live because it memorised idiosyncrasies of the past that will never repeat.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANDOM FOREST -->
+    <div class="concept-card" onclick="toggleConcept(this)">
+      <div class="cc-header">
+        <div class="cc-num">RF</div>
+        <div class="cc-main">
+          <div class="cc-name">Random Forest</div>
+          <div class="cc-tagline">A democracy of simple decision trees — each votes, majority wins</div>
+        </div>
+        <div class="cc-badge"><span class="badge b-rf">Ensemble</span></div>
+      </div>
+      <div class="cc-expand">
+        <div class="expand-grid">
+          <div>
+            <div class="eg-col-h">The Analogy</div>
+            <div class="eg-col-b">Imagine you want to know whether a stock will go up tomorrow. Instead of asking one expert, you ask <strong>500 experts</strong> — but each one only gets to see a random subset of the information (some see volume but not price; others see price but not sector data). Each expert gives you a yes/no vote. The final answer is the majority vote.<br><br>No single expert is very accurate. But <strong>500 imperfect experts voting together</strong> — each seeing a different slice of reality — turns out to be surprisingly robust. Their individual errors tend to cancel each other out.</div>
+          </div>
+          <div>
+            <div class="eg-col-h">How It Sees Markets</div>
+            <div class="eg-col-b">Each "tree" in the forest asks a series of yes/no questions: "Is the 20-day moving average above the 50-day?" → "Is volume above average?" → "Is the RSI below 30?" → "Vote: buy."<br><br>With 500 such trees, each trained on a random sample of data and random subset of features, the forest aggregates thousands of simple rules into a collective verdict.<br><br><strong>Random forests are very good at finding which features actually matter</strong> — they can rank the importance of 200 different inputs and tell you that the top 5 explain 80% of the predictive power. This feature importance ranking is genuinely useful to human traders.</div>
+          </div>
+          <div>
+            <div class="eg-col-h">Why Quants Like It</div>
+            <div class="eg-col-b">Unlike neural networks, random forests are <strong>more interpretable and less prone to overfitting</strong>. Each individual tree is readable — you can literally print it out as a flowchart. The forest as a whole is still complex, but you can inspect which branches matter most.<br><br>They work well on <strong>tabular data</strong> — a spreadsheet of features — which is what most fundamental and technical market data looks like. For this reason, random forests and their cousin <strong>gradient boosted trees (XGBoost)</strong> are the most widely used ML models in practical quantitative trading today, despite being less glamorous than neural networks.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REINFORCEMENT LEARNING -->
+    <div class="concept-card" onclick="toggleConcept(this)">
+      <div class="cc-header">
+        <div class="cc-num">RL</div>
+        <div class="cc-main">
+          <div class="cc-name">Reinforcement Learning (RL)</div>
+          <div class="cc-tagline">An agent that learns by doing — reward for profit, punishment for loss</div>
+        </div>
+        <div class="cc-badge"><span class="badge b-rl">Agent-Based</span></div>
+      </div>
+      <div class="cc-expand">
+        <div class="expand-grid">
+          <div>
+            <div class="eg-col-h">The Analogy</div>
+            <div class="eg-col-b">This is how a dog learns to sit. You don't explain the physics of sitting — you just give it a treat when it does the right thing and nothing when it doesn't. Over thousands of repetitions, it figures out the behaviour that maximises treats.<br><br>A reinforcement learning trading agent works the same way. It takes an action (buy, sell, hold), receives a reward (profit) or punishment (loss), and gradually learns which actions in which market states tend to lead to the best outcomes. <strong>No one programs the strategy — the agent discovers it through trial and error.</strong></div>
+          </div>
+          <div>
+            <div class="eg-col-h">How It Sees Markets</div>
+            <div class="eg-col-b">The RL agent observes a "state" — current price, position, recent history — and chooses an action. The market responds. The agent updates its policy (its decision-making rules) based on whether the outcome was good or bad.<br><br>This is closer to how a human discretionary trader actually operates than supervised learning is — because it directly optimises for profit rather than prediction accuracy. An RL agent can learn things like:<br><br>— When to be patient and hold vs when to exit<br>— How to size positions dynamically<br>— How to handle drawdowns without panic-closing</div>
+          </div>
+          <div>
+            <div class="eg-col-h">The Hard Problems</div>
+            <div class="eg-col-b">RL in markets faces two brutal challenges:<br><br><strong>1. Sparse rewards:</strong> A trade might take 3 weeks to resolve. The agent gets almost no feedback signal to learn from, unlike a game where you score every few seconds.<br><br><strong>2. Non-stationarity:</strong> The market environment keeps changing. A policy learned in 2018 conditions may be completely wrong in 2022 conditions. The agent must constantly relearn — but if it relearns too fast, it overreacts to noise.<br><br>RL is the most promising approach for true autonomous trading — but also the hardest to make work in practice.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSFORMERS -->
+    <div class="concept-card" onclick="toggleConcept(this)">
+      <div class="cc-header">
+        <div class="cc-num">TR</div>
+        <div class="cc-main">
+          <div class="cc-name">Transformer Models (Attention)</div>
+          <div class="cc-tagline">The technology behind ChatGPT — now being applied to price sequences and news</div>
+        </div>
+        <div class="cc-badge"><span class="badge b-tr">Attention</span></div>
+      </div>
+      <div class="cc-expand">
+        <div class="expand-grid">
+          <div>
+            <div class="eg-col-h">The Analogy</div>
+            <div class="eg-col-b">When you read a long article and answer a question about it, you don't reread every word equally — you <strong>attend</strong> to the parts most relevant to the question. "What caused the crash in 2020?" — your attention jumps to the COVID paragraph, not the 2019 earnings section.<br><br>Transformers do this mathematically. Given a long sequence of price data, they learn to "attend" to the moments most relevant to predicting the next move — completely ignoring the noise in between. This is called <strong>self-attention</strong>.</div>
+          </div>
+          <div>
+            <div class="eg-col-h">How It Sees Markets</div>
+            <div class="eg-col-b">A transformer applied to financial time series can learn that the price action 47 trading days ago is highly relevant to today — even though it's far in the past — while the price action 3 days ago is just noise. LSTMs struggle with this because they process information sequentially and memory of distant events fades.<br><br>Transformers are also being used for <strong>news sentiment analysis</strong> — reading thousands of financial news articles per second and extracting a sentiment signal. A model that reads "central bank signals hawkish pivot" can activate a rate-sensitive trade before most traders have processed the headline.</div>
+          </div>
+          <div>
+            <div class="eg-col-h">State of Play</div>
+            <div class="eg-col-b">Transformers are the newest and most actively researched architecture in quantitative finance. They are used at the largest hedge funds (Renaissance, Two Sigma, Citadel) for:<br><br>— Multi-asset pattern recognition across thousands of instruments simultaneously<br>— Cross-market correlation detection<br>— Real-time news and alternative data processing<br><br><strong>The catch:</strong> they require enormous compute and data to train. A proper financial transformer requires a research team, GPU clusters, and years of data engineering. The barrier to entry is extremely high.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENETIC / EVOLUTIONARY -->
+    <div class="concept-card" onclick="toggleConcept(this)">
+      <div class="cc-header">
+        <div class="cc-num">EV</div>
+        <div class="cc-main">
+          <div class="cc-name">Genetic / Evolutionary Algorithms</div>
+          <div class="cc-tagline">Darwinian survival of the fittest — applied to trading rules</div>
+        </div>
+        <div class="cc-badge"><span class="badge b-ev">Evolutionary</span></div>
+      </div>
+      <div class="cc-expand">
+        <div class="expand-grid">
+          <div>
+            <div class="eg-col-h">The Analogy</div>
+            <div class="eg-col-b">Imagine you write 1,000 random trading strategies. You run them all on 10 years of data. The worst 500 are deleted (they "die"). The best 500 are kept — but then you randomly mix parts of two strategies together (like breeding), creating 500 new offspring strategies. You also occasionally introduce random mutations (change a parameter slightly). Repeat for 1,000 generations.<br><br>After many generations, only strategies that are genuinely robust survive. <strong>Natural selection finds good strategies without anyone understanding why they work.</strong></div>
+          </div>
+          <div>
+            <div class="eg-col-h">How It Sees Markets</div>
+            <div class="eg-col-b">Each "individual" in the population is a complete trading rule set — a combination of indicators, parameters, entry conditions, and exit rules. The "fitness function" is the strategy's Sharpe ratio or profit factor on historical data.<br><br>Over generations, the algorithm evolves strategies that balance complexity and performance. It can discover non-obvious combinations of rules that no human would have thought to test manually — like "buy when the 13-day RSI crosses above 31 AND the VWAP deviation is below 0.8% AND the sector ETF has been up 3 of the last 5 days."</div>
+          </div>
+          <div>
+            <div class="eg-col-h">Key Strength & Weakness</div>
+            <div class="eg-col-b"><strong>Strength:</strong> Explores a vast search space of possible strategies without requiring a human to design them. Good at finding robust, interpretable rule-based systems that can be understood and audited.<br><br><strong>Weakness:</strong> Severe overfitting risk — with enough generations and enough candidates, you will inevitably evolve strategies that are perfectly tuned to historical quirks. The standard defence is rigorous out-of-sample testing on data the algorithm never saw. Many practitioners insist on a walk-forward test before trusting any evolved strategy with real capital.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════ TAB 3: MATHS DECODED ══════ -->
+<section id="math" class="section">
+  <div class="sec-h">The Maths — Decoded</div>
+  <p class="sec-sub">The equations that look scary — what they actually mean in plain English</p>
+
+  <div class="analogy">
+    <div class="analogy-label">Before We Start</div>
+    <p>Every intimidating equation in quantitative finance is just a <strong>precise description of a simple idea</strong>. The maths is not the insight — it is the notation. Once you understand the idea, the notation becomes a convenient shorthand. Let's decode the most common ones.</p>
+  </div>
+
+  <div class="math-card" onclick="toggleMath(this)">
+    <div class="mc-top">
+      <div>
+        <div class="mc-formula">ŷ = σ(Wx + b)</div>
+        <div style="font-size:10px;color:var(--mist);margin-top:4px;letter-spacing:0.1em;">The Neural Network Forward Pass</div>
+      </div>
+      <div class="mc-arrow">→</div>
+      <div class="mc-plain">A neuron takes inputs, multiplies each by its importance, adds a bias, then squashes the result into a usable range.</div>
+    </div>
+    <div class="mc-expand">
+      <div class="mc-exp-body">
+        <strong>ŷ</strong> = the output (prediction — e.g. "0.73" meaning 73% chance price goes up)<br>
+        <strong>σ</strong> = a squashing function (sigmoid/ReLU) that keeps the output between 0 and 1 instead of exploding to infinity<br>
+        <strong>W</strong> = the weights — how important each input is. These are what the model "learns" — they start random and get adjusted thousands of times<br>
+        <strong>x</strong> = the inputs (price, volume, momentum, etc.)<br>
+        <strong>b</strong> = the bias — a baseline offset, like a default opinion before seeing any data<br><br>
+        <strong>In plain English:</strong> "Multiply each piece of market data by how important it is, add them up, add a baseline, then convert the result into a probability." That's it. Every layer of a neural network does this, passing its output to the next layer as input.
+      </div>
+    </div>
+  </div>
+
+  <div class="math-card" onclick="toggleMath(this)">
+    <div class="mc-top">
+      <div>
+        <div class="mc-formula">L = -Σ y·log(ŷ)</div>
+        <div style="font-size:10px;color:var(--mist);margin-top:4px;letter-spacing:0.1em;">Cross-Entropy Loss Function</div>
+      </div>
+      <div class="mc-arrow">→</div>
+      <div class="mc-plain">How wrong is the model? A score that gets bigger when confident wrong predictions are made.</div>
+    </div>
+    <div class="mc-expand">
+      <div class="mc-exp-body">
+        This is how the model knows it made a mistake. The loss function is a single number that summarises "how bad was my prediction?"<br><br>
+        <strong>y</strong> = what actually happened (1 = price went up, 0 = price went down)<br>
+        <strong>ŷ</strong> = what the model predicted (e.g. 0.9 = "very confident price goes up")<br>
+        <strong>log(ŷ)</strong> = the key trick: if the model said 90% confidence and was right, the penalty is small. If the model said 90% confidence and was <em>wrong</em>, the penalty is enormous.<br><br>
+        <strong>In plain English:</strong> "Punish confident wrong predictions much more than uncertain wrong predictions." This forces the model to only be confident when it genuinely has evidence. The model adjusts its weights after every prediction to reduce this penalty — that adjustment process is called <strong>backpropagation</strong>.
+      </div>
+    </div>
+  </div>
+
+  <div class="math-card" onclick="toggleMath(this)">
+    <div class="mc-top">
+      <div>
+        <div class="mc-formula">Sharpe = (R̄ - Rf) / σ</div>
+        <div style="font-size:10px;color:var(--mist);margin-top:4px;letter-spacing:0.1em;">Sharpe Ratio — The Universal Performance Measure</div>
+      </div>
+      <div class="mc-arrow">→</div>
+      <div class="mc-plain">How much return are you getting per unit of risk taken? The higher the better.</div>
+    </div>
+    <div class="mc-expand">
+      <div class="mc-exp-body">
+        <strong>R̄</strong> = your strategy's average return<br>
+        <strong>Rf</strong> = the risk-free rate (what you'd get from government bonds — the "free" baseline)<br>
+        <strong>σ</strong> = standard deviation of your returns (how volatile/bumpy the ride was)<br><br>
+        <strong>In plain English:</strong> "How much <em>extra</em> return did you earn above doing nothing, divided by how rough the ride was?"<br><br>
+        A Sharpe of 0.5 = mediocre. 1.0 = good. 2.0 = excellent. 3.0+ = suspicious (probably overfitting).<br><br>
+        Most ML models in finance use this as their fitness function — they're trying to maximise Sharpe, not raw return. This is correct because a strategy that makes 30% a year with 50% drawdowns is not useful — you'd be wiped out before you captured the returns.
+      </div>
+    </div>
+  </div>
+
+  <div class="math-card" onclick="toggleMath(this)">
+    <div class="mc-top">
+      <div>
+        <div class="mc-formula">Attention(Q,K,V) = softmax(QKᵀ/√d)V</div>
+        <div style="font-size:10px;color:var(--mist);margin-top:4px;letter-spacing:0.1em;">Transformer Self-Attention</div>
+      </div>
+      <div class="mc-arrow">→</div>
+      <div class="mc-plain">For each moment in time, figure out which other moments are most relevant — then build a weighted summary.</div>
+    </div>
+    <div class="mc-expand">
+      <div class="mc-exp-body">
+        This is the heart of GPT, BERT, and financial transformers. It looks intimidating but the idea is simple:<br><br>
+        <strong>Q (Query):</strong> "What am I looking for?" — the current moment asking a question about context<br>
+        <strong>K (Key):</strong> "What does each past moment offer?" — each historical moment advertising its relevance<br>
+        <strong>V (Value):</strong> "What is the actual content of each past moment?" — the information to be retrieved<br>
+        <strong>softmax(QKᵀ/√d):</strong> compute a relevance score between the query and every key, then normalise to percentages. The √d just prevents the numbers from getting too large.<br><br>
+        <strong>In plain English:</strong> "Look at every past price moment, score how relevant each one is to right now, then build a weighted average of the relevant ones." It's like searching your own memory for the most relevant experiences before making a decision — which is exactly what experienced traders do consciously.
+      </div>
+    </div>
+  </div>
+
+  <div class="math-card" onclick="toggleMath(this)">
+    <div class="mc-top">
+      <div>
+        <div class="mc-formula">Q(s,a) ← Q(s,a) + α[r + γ·maxQ(s') - Q(s,a)]</div>
+        <div style="font-size:10px;color:var(--mist);margin-top:4px;letter-spacing:0.1em;">Q-Learning Update Rule (Reinforcement Learning)</div>
+      </div>
+      <div class="mc-arrow">→</div>
+      <div class="mc-plain">Update your opinion of how good an action was, based on what reward you actually got and what future rewards look possible.</div>
+    </div>
+    <div class="mc-expand">
+      <div class="mc-exp-body">
+        <strong>Q(s,a)</strong> = your current estimate of "how good is action <em>a</em> when in state <em>s</em>?" (e.g. "how good is buying when RSI is 28 and volume is surging?")<br>
+        <strong>r</strong> = the reward you actually received (profit or loss from that trade)<br>
+        <strong>γ (gamma)</strong> = how much you care about future rewards vs immediate ones. Close to 1 = patient (value long-term). Close to 0 = impatient (only care about now)<br>
+        <strong>maxQ(s')</strong> = the best possible future value from the new state you're now in<br>
+        <strong>α (alpha)</strong> = learning rate — how fast you update your beliefs<br><br>
+        <strong>In plain English:</strong> "I thought this action was worth X. I tried it, got reward r, and now see I could earn maxQ more in future. Update my estimate toward that new reality, but don't update too fast." This is exactly how a human trader learns from experience — the maths just makes it precise and automated.
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════ TAB 4: COMPARISON ══════ -->
+<section id="compare" class="section">
+  <div class="sec-h">Model Comparison</div>
+  <p class="sec-sub">Which model for which problem — a practical guide</p>
+
+  <div class="compare-table">
+    <div class="ct-head">
+      <span>Model</span>
+      <span>Best For</span>
+      <span>Biggest Risk</span>
+      <span>Used By</span>
+    </div>
+    <div class="ct-row">
+      <div class="ct-label">Neural Network (LSTM)</div>
+      <div class="ct-cell"><span class="ct-good">Sequential patterns</span> in price series. Learning temporal dependencies — what happened 3 weeks ago affecting today. High-frequency tick data.</div>
+      <div class="ct-cell"><span class="ct-bad">Overfitting severely.</span> Black box — cannot explain decisions. Needs enormous data. Computationally expensive.</div>
+      <div class="ct-cell">Quant hedge funds (HFT desks), Two Sigma, D.E. Shaw for high-frequency pattern extraction.</div>
+    </div>
+    <div class="ct-row">
+      <div class="ct-label">Random Forest / XGBoost</div>
+      <div class="ct-cell"><span class="ct-good">Tabular feature data.</span> Feature importance ranking. Mixing fundamental + technical signals. Mid-frequency trading.</div>
+      <div class="ct-cell"><span class="ct-med">Moderate overfitting.</span> Does not naturally handle sequential time patterns. Still needs careful cross-validation.</div>
+      <div class="ct-cell">Most widely used in practical quant funds. AQR, systematic macro funds, quantitative equity desks.</div>
+    </div>
+    <div class="ct-row">
+      <div class="ct-label">Reinforcement Learning</div>
+      <div class="ct-cell"><span class="ct-good">Direct strategy optimisation.</span> Position sizing. Learning to hold vs exit. Multi-step decisions where one action affects future options.</div>
+      <div class="ct-cell"><span class="ct-bad">Very hard to train.</span> Unstable. Sparse rewards. Non-stationary environment means policies degrade quickly.</div>
+      <div class="ct-cell">Research-stage at most funds. Some use in execution optimisation (minimising market impact of large orders).</div>
+    </div>
+    <div class="ct-row">
+      <div class="ct-label">Transformer</div>
+      <div class="ct-cell"><span class="ct-good">Long-range dependencies.</span> Cross-asset patterns. News/sentiment processing. Multi-instrument correlation detection.</div>
+      <div class="ct-cell"><span class="ct-bad">Enormous compute requirement.</span> Data hungry. Requires specialised ML engineering team. Overkill for small datasets.</div>
+      <div class="ct-cell">Renaissance Technologies, Citadel, Two Sigma, and large systematic macro funds with dedicated ML research teams.</div>
+    </div>
+    <div class="ct-row">
+      <div class="ct-label">Genetic Algorithm</div>
+      <div class="ct-cell"><span class="ct-good">Discovering interpretable rule sets.</span> Parameter optimisation. Strategy search in large rule spaces without human design.</div>
+      <div class="ct-cell"><span class="ct-bad">Extreme overfitting risk.</span> Evolves strategies perfectly calibrated to historical noise. Requires rigorous walk-forward testing.</div>
+      <div class="ct-cell">Systematic retail traders, smaller quant firms, futures trading specialists. More accessible than deep learning.</div>
+    </div>
+    <div class="ct-row">
+      <div class="ct-label">Linear Regression / Lasso</div>
+      <div class="ct-cell"><span class="ct-good">Simple factor models.</span> Interpretable. Fast. Good baseline. Surprisingly competitive when features are well-designed.</div>
+      <div class="ct-cell"><span class="ct-med">Assumes linear relationships</span> which markets often violate. Cannot capture complex interactions between features.</div>
+      <div class="ct-cell">Used as a baseline everywhere. Academic finance research. Factor investing (value, momentum, quality factors).</div>
+    </div>
+  </div>
+
+  <div class="takeaway">
+    <div class="tw-label">The Practitioner's Truth</div>
+    <div class="tw-body">
+      The most sophisticated quant funds in the world — Renaissance, Two Sigma, D.E. Shaw — do not rely on any single model. They run <strong>ensembles of hundreds of models</strong>, each capturing a different aspect of market behaviour. No single algorithm beats the market. The edge comes from aggregating many weak signals into a robust combined signal — and from constant monitoring, retraining, and risk management. The model is 20% of the problem. Data quality, feature engineering, risk management, and execution are the other 80%.
+    </div>
+  </div>
+</section>
+
+<!-- ══════ TAB 5: LIMITS ══════ -->
+<section id="limits" class="section">
+  <div class="sec-h">What These Models Cannot Do</div>
+  <p class="sec-sub">The honest limitations — what the academic papers and sales decks rarely say</p>
+
+  <div class="analogy">
+    <div class="analogy-label">The Uncomfortable Truth</div>
+    <p>A model trained on every market crash in history would <strong>not have predicted COVID in March 2020</strong>. It has never seen a pandemic before. All machine learning models are, fundamentally, historians — they can only learn from what has already happened. The market's most dangerous moments are precisely the ones with no historical precedent.</p>
+  </div>
+
+  <div class="limits-grid">
+    <div class="lim-card">
+      <div class="lim-icon">🔄</div>
+      <div class="lim-title">The Overfitting Trap</div>
+      <div class="lim-body">
+        Every model can be tuned to perfectly predict the past. This is almost always an illusion — the model has memorised historical noise, not discovered real structure.<br><br>
+        The test: if a strategy looks too good in backtest — Sharpe above 3, near-zero drawdowns — it is almost certainly overfit. Real edges in markets are modest: Sharpe 0.7–1.5 is exceptional for a live strategy.
+      </div>
+    </div>
+    <div class="lim-card">
+      <div class="lim-icon">⚡</div>
+      <div class="lim-title">The Regime Change Problem</div>
+      <div class="lim-body">
+        A model trained on 2010–2020 data learned in a world of near-zero interest rates, quantitative easing, and tech sector dominance. That world ended in 2022.<br><br>
+        Market regimes change — and ML models don't automatically know they've changed. A model can go from profitable to catastrophic overnight when the underlying market structure shifts. Constant monitoring and regime detection are essential.
+      </div>
+    </div>
+    <div class="lim-card">
+      <div class="lim-icon">🪞</div>
+      <div class="lim-title">The Reflexivity Problem</div>
+      <div class="lim-body">
+        When a model finds an edge and deploys capital against it, the edge begins to disappear. Other models copy the strategy. The anomaly gets arbitraged away.<br><br>
+        This is why the half-life of a profitable signal is short — often months in liquid markets. The model must constantly be retrained and new signals found. It's a treadmill, not a destination.
+      </div>
+    </div>
+    <div class="lim-card">
+      <div class="lim-icon">📏</div>
+      <div class="lim-title">Capacity Limits</div>
+      <div class="lim-body">
+        A strategy that makes 20% a year on $100,000 will make nowhere near 20% on $100 million. Large orders move markets against themselves — the edge exists only up to a certain capital level.<br><br>
+        Most retail-accessible ML strategies are capacity-constrained at levels far below what large funds deploy. The best signals are often only useful at small scale.
+      </div>
+    </div>
+    <div class="lim-card">
+      <div class="lim-icon">🌪</div>
+      <div class="lim-title">Black Swan Blindness</div>
+      <div class="lim-body">
+        ML models estimate probabilities from historical distributions. A true black swan — an event outside all historical experience — assigns near-zero probability to something that then happens.<br><br>
+        In 2008, models said mortgage default correlations were near zero. In 1987, models said a 20% single-day crash was essentially impossible. All models failed catastrophically on their most important test.
+      </div>
+    </div>
+    <div class="lim-card">
+      <div class="lim-icon">🤔</div>
+      <div class="lim-title">No Understanding of Why</div>
+      <div class="lim-body">
+        A neural network can learn that "when this pattern appears, price usually rises" — but it cannot tell you <em>why</em>. It has no causal model.<br><br>
+        This matters because when the "why" changes — a new regulation, a structural market shift — the model keeps predicting based on a correlation that no longer has a causal basis. Human understanding of market mechanics is still essential for knowing <em>when to stop trusting the model</em>.
+      </div>
+    </div>
+  </div>
+
+  <div class="takeaway">
+    <div class="tw-label">The Integration Principle</div>
+    <div class="tw-body">
+      The most durable edge in markets combines <strong>structural understanding</strong> (why does this pattern exist? what order flow causes it?) with <strong>statistical confirmation</strong> (does the data support it?). Pure ML without structural understanding is fragile — it works until it doesn't, and you won't know why it stopped. Structural analysis without statistical discipline is sloppy — you may be fooling yourself with patterns that never had statistical validity. The strongest practitioners use both: <strong>the structural insight tells you where to look, the statistical model tells you how strongly to act.</strong>
+    </div>
+  </div>
+
+</section>
+</main>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function toggleConcept(card) {
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.concept-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) card.classList.add('open');
+}
+
+function toggleMath(card) {
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.math-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) card.classList.add('open');
+}
+
+// ── Learning Loop Chart
+window.addEventListener('load', () => {
+  const canvas = document.getElementById('loopChart');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 180 * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = 180;
+
+  const ink = '#1c1810', amber = '#c07020', mist = '#708090';
+  const bg2 = '#f0ead8', border = '#ccc0a8';
+
+  ctx.fillStyle = bg2;
+  ctx.fillRect(0, 0, W, H);
+
+  // 5 boxes in a loop
+  const boxes = [
+    { label: 'Historical\nMarket Data', x: 0.08, color: '#2858a8' },
+    { label: 'Feature\nEngineering', x: 0.27, color: '#386848' },
+    { label: 'Model\nTraining', x: 0.50, color: amber },
+    { label: 'Live\nPrediction', x: 0.73, color: '#a83020' },
+    { label: 'Performance\nFeedback', x: 0.91, color: '#6038a8' },
+  ];
+
+  const bW = 90, bH = 50, cy = H / 2;
+
+  boxes.forEach((b, i) => {
+    const bx = b.x * W - bW / 2;
+    const by = cy - bH / 2;
+
+    // box
+    ctx.fillStyle = '#faf7f0';
+    ctx.strokeStyle = b.color;
+    ctx.lineWidth = 2;
+    ctx.fillRect(bx, by, bW, bH);
+    ctx.strokeRect(bx, by, bW, bH);
+
+    // label
+    ctx.fillStyle = ink;
+    ctx.font = `500 11px JetBrains Mono, monospace`;
+    ctx.textAlign = 'center';
+    const lines = b.label.split('\n');
+    lines.forEach((line, li) => {
+      ctx.fillText(line, b.x * W, cy - 6 + li * 15);
+    });
+
+    // arrow to next
+    if (i < boxes.length - 1) {
+      const x1 = bx + bW + 4;
+      const x2 = boxes[i + 1].x * W - bW / 2 - 4;
+      ctx.strokeStyle = mist;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, cy);
+      ctx.lineTo(x2 - 8, cy);
+      ctx.stroke();
+      // arrowhead
+      ctx.fillStyle = mist;
+      ctx.beginPath();
+      ctx.moveTo(x2, cy);
+      ctx.lineTo(x2 - 8, cy - 4);
+      ctx.lineTo(x2 - 8, cy + 4);
+      ctx.fill();
+    }
+  });
+
+  // feedback arc (loop back from last to first)
+  ctx.strokeStyle = amber;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 4]);
+  const lastX = boxes[4].x * W;
+  const firstX = boxes[0].x * W;
+  ctx.beginPath();
+  ctx.moveTo(lastX + bW / 2 - 4, cy + bH / 2);
+  ctx.bezierCurveTo(lastX + 30, cy + 70, firstX - 30, cy + 70, firstX - bW / 2 + 4, cy + bH / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = amber;
+  ctx.font = '10px JetBrains Mono';
+  ctx.textAlign = 'center';
+  ctx.fillText('Continuous retraining loop', W / 2, cy + 82);
+});
+</script>
+</body>
+</html>
