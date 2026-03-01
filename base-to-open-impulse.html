@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base-to-Open Impulse Structure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #07090c;
+  --bg2:     #0d1117;
+  --bg3:     #131a22;
+  --border:  #1c2a38;
+  --border2: #263646;
+  --green:   #00d4a0;
+  --red:     #ff4a5a;
+  --amber:   #f0a800;
+  --blue:    #48b0f0;
+  --purple:  #a070f0;
+  --text:    #7a9ab0;
+  --bright:  #d8eaf8;
+  --dim:     #2a3e52;
+  --g-glow:  rgba(0,212,160,0.10);
+  --r-glow:  rgba(255,74,90,0.10);
+  --a-glow:  rgba(240,168,0,0.08);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.022'/%3E%3C/svg%3E");
+}
+
+/* ── HEADER ── */
+header {
+  padding: 52px 60px 40px;
+  border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--amber); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before {
+  content:''; display:inline-block;
+  width:36px; height:1px; background:var(--amber);
+}
+
+h1 {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 400; color: var(--bright);
+  line-height: 1.06; letter-spacing: -0.015em;
+  margin-bottom: 18px;
+}
+h1 em { color: var(--green); font-style: italic; }
+h1 span { color: var(--amber); }
+
+.header-row {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 32px; align-items: end;
+}
+
+.header-desc {
+  font-size: 14px; color: var(--text);
+  max-width: 580px; line-height: 1.75;
+}
+
+.header-stats {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.hs-item {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hs-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* ── NAV ── */
+nav {
+  display: flex; border-bottom: 1px solid var(--border);
+  padding: 0 60px; overflow-x: auto;
+}
+.tab {
+  padding: 15px 22px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  cursor: pointer; border: none; background: none;
+  color: var(--dim); border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all 0.2s; white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--amber); border-bottom-color: var(--amber); }
+
+/* ── MAIN ── */
+main { padding: 48px 60px; max-width: 1240px; margin: 0 auto; }
+.section { display:none; animation: up 0.35s ease both; }
+.section.active { display:block; }
+@keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── TYPE HELPERS ── */
+.sec-h {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 2rem; font-weight:400; color: var(--bright);
+  margin-bottom: 6px;
+}
+.sec-sub {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 36px;
+}
+
+/* ── CALLOUT ── */
+.callout {
+  padding: 24px 32px; margin-bottom: 32px;
+  border-left: 4px solid var(--amber); background: var(--a-glow);
+}
+.callout p {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.15rem; font-style: italic;
+  color: var(--bright); line-height: 1.8;
+}
+.callout.green { border-left-color: var(--green); background: var(--g-glow); }
+.callout.red   { border-left-color: var(--red);   background: var(--r-glow); }
+
+/* ── PANELS ── */
+.panel {
+  border: 1px solid var(--border);
+  background: var(--bg2); padding: 26px 28px;
+}
+.p-label {
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 10px;
+}
+.p-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.2rem; color: var(--bright); margin-bottom: 14px;
+}
+.p-body { font-size: 14px; color: var(--text); line-height: 1.8; }
+.p-body strong { color: var(--bright); font-weight: 500; }
+.p-body em { color: var(--amber); font-style: normal; }
+
+.g2 {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); margin-bottom: 32px;
+}
+.g2 .panel { border: none; }
+
+.g3 {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); margin-bottom: 32px;
+}
+.g3 .panel { border: none; }
+
+/* ── CHART WRAP ── */
+.chart-wrap {
+  border: 1px solid var(--border); background: var(--bg2);
+  padding: 20px 24px; margin-bottom: 32px;
+}
+.chart-title {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 16px;
+}
+canvas { display:block; width:100%; }
+
+/* ── PHASE STEPS ── */
+.phases {
+  display: flex; flex-direction: column;
+  gap: 2px; margin-bottom: 32px;
+}
+.phase-row {
+  display: grid; grid-template-columns: 60px 200px 1fr auto;
+  gap: 0; border: 1px solid var(--border);
+  background: var(--bg2); overflow: hidden;
+  cursor: pointer; transition: background 0.18s;
+}
+.phase-row:hover, .phase-row.active { background: var(--bg3); }
+
+.ph-num {
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.6rem; font-style: italic;
+  color: var(--dim); border-right: 1px solid var(--border);
+  padding: 20px 0;
+}
+.phase-row.active .ph-num { color: var(--amber); }
+
+.ph-label {
+  padding: 20px 22px; border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.ph-name {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.05rem; color: var(--bright); margin-bottom: 4px;
+}
+.ph-tag {
+  font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--dim);
+}
+
+.ph-desc {
+  padding: 20px 24px;
+  font-size: 14px; color: var(--text); line-height: 1.75;
+}
+.ph-desc strong { color: var(--bright); font-weight: 500; }
+
+.ph-signal {
+  padding: 20px 22px; border-left: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  min-width: 130px;
+}
+.ph-badge {
+  font-size: 11px; letter-spacing: 0.1em;
+  border: 1px solid; padding: 4px 10px;
+  text-align: center; white-space: nowrap;
+}
+.badge-accumulate { color: var(--blue);   border-color: rgba(72,176,240,0.35); }
+.badge-compress   { color: var(--purple); border-color: rgba(160,112,240,0.35); }
+.badge-departure  { color: var(--amber);  border-color: rgba(240,168,0,0.35); }
+.badge-impulse    { color: var(--green);  border-color: rgba(0,212,160,0.35); }
+.badge-zone       { color: var(--red);    border-color: rgba(255,74,90,0.35); }
+
+/* ── EXPAND DETAIL ── */
+.phase-detail {
+  border: 1px solid var(--border2); background: var(--bg3);
+  padding: 28px 30px; margin-bottom: 2px;
+  display: none; animation: up 0.3s ease;
+}
+.phase-detail.active { display: block; }
+.pd-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 26px; }
+.pd-h {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.pd-b { font-size: 14px; color: var(--text); line-height: 1.8; }
+.pd-b strong { color: var(--bright); font-weight: 500; }
+
+/* ── TF COMPARISON ── */
+.tf-compare {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); margin-bottom: 32px;
+}
+.tf-card { background: var(--bg2); padding: 28px 30px; border: none; }
+
+.tf-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+}
+.tf-badge {
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid; padding: 5px 12px;
+}
+.tf-badge.daily  { color: var(--blue);  border-color: rgba(72,176,240,0.4); }
+.tf-badge.weekly { color: var(--green); border-color: rgba(0,212,160,0.4); }
+
+.tf-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.25rem; color: var(--bright);
+}
+
+.tf-body { font-size: 14px; color: var(--text); line-height: 1.8; margin-bottom: 18px; }
+.tf-body strong { color: var(--bright); font-weight: 500; }
+
+.tf-items { list-style: none; }
+.tf-items li {
+  font-size: 13px; color: var(--text); padding: 8px 0;
+  border-bottom: 1px solid var(--border); line-height: 1.6;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.tf-items li:last-child { border-bottom: none; }
+.tf-items li::before { content: '→'; flex-shrink: 0; }
+.tf-card.daily  .tf-items li::before { color: var(--blue); }
+.tf-card.weekly .tf-items li::before { color: var(--green); }
+
+/* ── ROC METER ── */
+.roc-wrap {
+  border: 1px solid var(--border); background: var(--bg2);
+  padding: 28px 30px; margin-bottom: 32px;
+}
+.roc-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.3rem; color: var(--bright); margin-bottom: 6px;
+}
+.roc-sub { font-size: 11px; color: var(--dim); letter-spacing: 0.12em; margin-bottom: 24px; }
+
+.roc-bars { display: flex; flex-direction: column; gap: 14px; }
+.roc-bar-row { display: grid; grid-template-columns: 220px 1fr 80px; gap: 14px; align-items: center; }
+.roc-label { font-size: 13px; color: var(--text); }
+.roc-track {
+  height: 10px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 2px; overflow: hidden;
+}
+.roc-fill {
+  height: 100%; border-radius: 2px;
+  animation: fillBar 1s ease both;
+}
+@keyframes fillBar { from { width: 0; } }
+.roc-pct { font-size: 12px; color: var(--bright); text-align: right; }
+
+/* ── ZONE CONSTRUCTION ── */
+.zone-steps {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 2px; background: var(--border);
+  border: 1px solid var(--border); margin-bottom: 32px;
+}
+.zs-card { background: var(--bg2); padding: 22px 20px; }
+.zs-num {
+  font-size: 11px; letter-spacing: 0.2em; color: var(--amber);
+  margin-bottom: 10px;
+}
+.zs-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.05rem; color: var(--bright); margin-bottom: 10px;
+}
+.zs-body { font-size: 13px; color: var(--text); line-height: 1.75; }
+.zs-body strong { color: var(--bright); }
+.zs-body em { color: var(--green); font-style: normal; }
+
+/* ── CHECKLIST ── */
+.checklist { border: 1px solid var(--border); background: var(--bg2); margin-bottom: 32px; }
+.cl-row {
+  display: grid; grid-template-columns: 36px 1fr auto;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  gap: 16px; align-items: start;
+}
+.cl-row:last-child { border-bottom: none; }
+.cl-n  { font-size: 11px; color: var(--amber); padding-top: 3px; }
+.cl-tx { font-size: 14px; color: var(--text); line-height: 1.75; }
+.cl-tx strong { color: var(--bright); font-weight: 500; }
+.cl-st {
+  font-size: 11px; letter-spacing: 0.1em; border: 1px solid;
+  padding: 3px 10px; white-space: nowrap; align-self: center;
+}
+.st-y { color: var(--green); border-color: rgba(0,212,160,0.35); }
+.st-n { color: var(--red);   border-color: rgba(255,74,90,0.35); }
+.st-m { color: var(--amber); border-color: rgba(240,168,0,0.35); }
+
+/* ── FALSE BASE TABLE ── */
+.false-table { border: 1px solid var(--border); margin-bottom: 32px; }
+.ft-head {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  padding: 12px 22px; gap: 16px;
+}
+.ft-head span { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
+.ft-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  padding: 16px 22px; gap: 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s; align-items: start;
+}
+.ft-row:last-child { border-bottom: none; }
+.ft-row:hover { background: var(--bg3); }
+.ft-signal { font-family: 'Libre Baskerville', serif; font-size: 1rem; color: var(--bright); }
+.ft-real { font-size: 13px; color: var(--text); line-height: 1.65; }
+.ft-false { font-size: 13px; color: var(--red); line-height: 1.65; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 820px) {
+  header, main, nav { padding-left: 24px; padding-right: 24px; }
+  .header-row { grid-template-columns: 1fr; }
+  .g2, .g3, .tf-compare, .zone-steps { grid-template-columns: 1fr; }
+  .pd-grid { grid-template-columns: 1fr; }
+  .phase-row { grid-template-columns: 50px 1fr; }
+  .ph-signal { display: none; }
+  .roc-bar-row { grid-template-columns: 140px 1fr 60px; }
+  .ft-head, .ft-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Indexical Signal · Price Structure</div>
+  <div class="header-row">
+    <div>
+      <h1>Base-to-<em>Open</em><br>Impulse <span>Structure</span></h1>
+      <p class="header-desc">How price departs from a tight consolidation base with a sudden, high rate-of-change move — and why this specific structure creates the most reliable demand zones on daily and weekly charts.</p>
+    </div>
+    <div class="header-stats">
+      <div class="hs-item"><div class="hs-dot" style="background:var(--blue)"></div><span style="color:var(--blue)">Base — Accumulation Phase</span></div>
+      <div class="hs-item"><div class="hs-dot" style="background:var(--amber)"></div><span style="color:var(--amber)">Departure — Rate of Change</span></div>
+      <div class="hs-item"><div class="hs-dot" style="background:var(--green)"></div><span style="color:var(--green)">Impulse — Zone Origin</span></div>
+      <div class="hs-item"><div class="hs-dot" style="background:var(--red)"></div><span style="color:var(--red)">Demand Zone — Unfilled Orders</span></div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showTab('anatomy')">01 · Structure Anatomy</button>
+  <button class="tab" onclick="showTab('phases')">02 · Four Phases</button>
+  <button class="tab" onclick="showTab('timeframes')">03 · Daily vs Weekly</button>
+  <button class="tab" onclick="showTab('zone')">04 · Zone Construction</button>
+  <button class="tab" onclick="showTab('false')">05 · False Base Signals</button>
+</nav>
+
+<main>
+
+<!-- ══════ TAB 1: ANATOMY ══════ -->
+<section id="anatomy" class="section active">
+  <div class="sec-h">What the Base-to-Open Structure Is</div>
+  <p class="sec-sub">The anatomy of tight consolidation followed by explosive departure</p>
+
+  <div class="callout">
+    <p>The base-to-open impulse is the market's most legible institutional fingerprint. A tight base is where large players quietly accumulate a position. The explosive departure is the moment they have absorbed all available supply — and price has nowhere to go but up, fast.</p>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Base-to-Open Impulse — full structure annotated on simulated daily chart</div>
+    <canvas id="mainChart" height="300"></canvas>
+  </div>
+
+  <div class="g3">
+    <div class="panel" style="border-top: 3px solid var(--blue)">
+      <div class="p-label">Component 01</div>
+      <div class="p-title">The Base</div>
+      <div class="p-body">
+        A period of <strong>tight price consolidation</strong> — typically 5 to 20 candles with a range significantly smaller than the preceding trend candles. Volume contracts during the base as the battle between buyers and sellers reaches temporary equilibrium.<br><br>
+        <em>What's really happening:</em> institutions are absorbing available supply (or demand) without letting price move enough to signal their intent. The tighter the base, the more controlled the accumulation.
+      </div>
+    </div>
+    <div class="panel" style="border-top: 3px solid var(--amber)">
+      <div class="p-label">Component 02</div>
+      <div class="p-title">The Departure</div>
+      <div class="p-body">
+        The moment price <strong>breaks the base boundary</strong> with a sudden change in velocity. This is the "rate of change" event — price moves a multiple of its recent average range in a single candle or session.<br><br>
+        <em>What's really happening:</em> the institution has absorbed all available supply. There are no more sellers willing to sell at these prices. Buyers overwhelm — price must jump to find the next available supply level.
+      </div>
+    </div>
+    <div class="panel" style="border-top: 3px solid var(--green)">
+      <div class="p-label">Component 03</div>
+      <div class="p-title">The Impulse Candle</div>
+      <div class="p-body">
+        The first strong candle departing the base — its <strong>open is the zone's top boundary</strong>, its body encodes the order concentration. Volume spikes sharply. This candle is the indexical proof of institutional conviction.<br><br>
+        <em>What's really happening:</em> the open of this candle is where pending buy orders were stacked. The zone from base-low to impulse-open is where orders remain unfilled — the structural demand zone.
+      </div>
+    </div>
+  </div>
+
+  <div class="roc-wrap">
+    <div class="roc-title">Rate of Change — What Makes the Departure Significant</div>
+    <div class="roc-sub">Relative range expansion at departure vs. base candles — the bigger the ratio, the stronger the signal</div>
+    <div class="roc-bars">
+      <div class="roc-bar-row">
+        <div class="roc-label">Weak departure (noise)</div>
+        <div class="roc-track"><div class="roc-fill" style="width:18%; background: var(--red);"></div></div>
+        <div class="roc-pct" style="color:var(--red)">1.2× base</div>
+      </div>
+      <div class="roc-bar-row">
+        <div class="roc-label">Marginal (needs confirmation)</div>
+        <div class="roc-track"><div class="roc-fill" style="width:36%; background: var(--amber);"></div></div>
+        <div class="roc-pct" style="color:var(--amber)">2× base</div>
+      </div>
+      <div class="roc-bar-row">
+        <div class="roc-label">Valid signal (daily)</div>
+        <div class="roc-track"><div class="roc-fill" style="width:55%; background: var(--green);"></div></div>
+        <div class="roc-pct" style="color:var(--green)">3× base</div>
+      </div>
+      <div class="roc-bar-row">
+        <div class="roc-label">Strong signal (daily/weekly)</div>
+        <div class="roc-track"><div class="roc-fill" style="width:72%; background: var(--green);"></div></div>
+        <div class="roc-pct" style="color:var(--green)">4–5× base</div>
+      </div>
+      <div class="roc-bar-row">
+        <div class="roc-label">Exceptional (weekly breakout)</div>
+        <div class="roc-track"><div class="roc-fill" style="width:95%; background: var(--blue);"></div></div>
+        <div class="roc-pct" style="color:var(--blue)">6×+ base</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="p-label">Why Rate of Change Matters</div>
+      <div class="p-title">Velocity Is the Proof</div>
+      <div class="p-body">
+        A slow drift away from a base is meaningless — it could be random price movement. A <strong>sudden, large, high-volume departure</strong> is not random. It is the market's way of saying: the balance at this level has been definitively resolved.<br><br>
+        The high rate of change proves <em>urgency</em> — buyers were so imbalanced versus sellers that price had to accelerate to find the next supply level. That urgency is the indexical evidence of institutional order flow.
+      </div>
+    </div>
+    <div class="panel">
+      <div class="p-label">The Unfilled Order Principle</div>
+      <div class="p-title">Why the Zone Persists</div>
+      <div class="p-body">
+        When price departs the base rapidly, the institution that was accumulating did not get all their orders filled. They placed limit buy orders throughout the base range — but price jumped past some of those levels so fast that the orders at the top of the base <strong>never executed</strong>.<br><br>
+        Those unfilled limit orders sit in the exchange book. When price returns to the base zone, those orders activate mechanically — regardless of current sentiment, news, or belief.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ TAB 2: FOUR PHASES ══════ -->
+<section id="phases" class="section">
+  <div class="sec-h">The Four Phases of Base-to-Open</div>
+  <p class="sec-sub">Click each phase to expand full detail — what happens, what to look for, what it proves</p>
+
+  <div class="callout green">
+    <p>Each phase has a distinct character readable on the chart. Learning to identify where in the cycle price is — before the impulse fires — gives you the structural edge of anticipation rather than reaction.</p>
+  </div>
+
+  <!-- PHASE 1 -->
+  <div class="phases">
+    <div class="phase-row" onclick="togglePhase('p1')">
+      <div class="ph-num">1</div>
+      <div class="ph-label">
+        <div class="ph-name">Prior Trend / Context</div>
+        <div class="ph-tag">Sets the directional bias</div>
+      </div>
+      <div class="ph-desc">
+        The base does not form in a vacuum. It forms <strong>within a dominant trend</strong> — either as a continuation pause mid-trend or as a reversal accumulation after an extended move. The trend context determines whether the eventual impulse is a continuation or a change of character.
+      </div>
+      <div class="ph-signal"><span class="ph-badge badge-accumulate">Context</span></div>
+    </div>
+    <div class="phase-detail" id="p1">
+      <div class="pd-grid">
+        <div>
+          <div class="pd-h">What to Identify</div>
+          <div class="pd-b">Is the base forming in an uptrend (continuation base — most reliable) or after a prolonged downtrend (reversal base — higher risk)? Continuation bases on daily/weekly charts within established uptrends have the highest success rate because institutional momentum is already directionally committed. The base is simply a pause to reload.</div>
+        </div>
+        <div>
+          <div class="pd-h">What It Looks Like</div>
+          <div class="pd-b">Prior to the base, you see a series of strong directional candles — the trend. Then volatility suddenly compresses. Candle ranges shrink to a fraction of the trend candles. This transition from volatility to stillness is the first sign that a base is forming. The <strong>ATR (Average True Range) contracts</strong> sharply at this point.</div>
+        </div>
+        <div>
+          <div class="pd-h">Indexical Evidence</div>
+          <div class="pd-b">The trend itself is indexical — it is evidence of sustained directional order flow. The base forming within that trend tells you the institutional actors driving the trend are pausing, not reversing. They are managing their position, not exiting it. This context is what gives the eventual impulse its structural weight.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase-row" onclick="togglePhase('p2')">
+      <div class="ph-num">2</div>
+      <div class="ph-label">
+        <div class="ph-name">The Base Formation</div>
+        <div class="ph-tag">Tight range · Declining volume</div>
+      </div>
+      <div class="ph-desc">
+        Price enters a tight horizontal range. Candle bodies shrink. Volume declines. Each candle closes near the middle of its range. This is the <strong>accumulation phase</strong> — institutions absorbing available supply quietly, keeping price contained.
+      </div>
+      <div class="ph-signal"><span class="ph-badge badge-compress">Compress</span></div>
+    </div>
+    <div class="phase-detail" id="p2">
+      <div class="pd-grid">
+        <div>
+          <div class="pd-h">Base Characteristics</div>
+          <div class="pd-b"><strong>Duration:</strong> 5–20 candles on daily. 3–8 candles on weekly. Too short = not enough accumulation. Too long = institutional interest may have faded or repositioned.<br><br><strong>Range:</strong> The base high-to-low should be 30–50% or less of the average trend candle range. Tight is better. A base that is wider than the trend candles preceding it is a weak base.<br><br><strong>Shape:</strong> Flat top and flat bottom (rectangle) is strongest. Slight downward drift (falling wedge into support) is also valid — often a deliberate shakeout.</div>
+        </div>
+        <div>
+          <div class="pd-h">Volume Profile</div>
+          <div class="pd-b">Volume should <strong>decline progressively</strong> through the base — each week or day seeing lower volume than the last. This is the signature of supply exhaustion: fewer and fewer sellers are willing to sell at these levels as institutions quietly absorb.<br><br>A base with rising volume is a warning — it may indicate distribution (selling into an attempted rally) rather than accumulation. The directional volume context matters: volume on down days should be lower than on up days within the base.</div>
+        </div>
+        <div>
+          <div class="pd-h">Why This Happens</div>
+          <div class="pd-b">Institutions cannot buy billions of dollars of an asset in a single moment without moving the price against themselves. So they spread orders across time — absorbing available supply from retail sellers over days or weeks within a defined range.<br><br>The tight range is the institution's <em>working range</em>. They defend both the top (selling to keep price from running away before they're done) and the bottom (buying to prevent price from falling before they're positioned).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase-row" onclick="togglePhase('p3')">
+      <div class="ph-num">3</div>
+      <div class="ph-label">
+        <div class="ph-name">The Departure</div>
+        <div class="ph-tag">High rate of change · Volume surge</div>
+      </div>
+      <div class="ph-desc">
+        The critical moment. Price breaks the base boundary with a candle whose range is <strong>3–6× the base candles</strong>. Volume explodes. This is the departure — all available supply has been absorbed and price accelerates to find the next supply level.
+      </div>
+      <div class="ph-signal"><span class="ph-badge badge-departure">Departure</span></div>
+    </div>
+    <div class="phase-detail" id="p3">
+      <div class="pd-grid">
+        <div>
+          <div class="pd-h">The Departure Candle</div>
+          <div class="pd-b">The departure candle is the most important single candle in the structure. It should:<br><br>— Open <strong>at or just above</strong> the base top (this open is the zone boundary)<br>— Close near its high (minimal upper wick = buyers in control to the close)<br>— Have a body that is 70%+ of its total range (conviction, not hesitation)<br>— Show volume significantly above the base average and the prior trend average<br><br>A departure candle that closes mid-range or shows a large upper wick is a warning — selling into the breakout is occurring.</div>
+        </div>
+        <div>
+          <div class="pd-h">Why Volume Surges</div>
+          <div class="pd-b">Two things happen simultaneously at the departure:<br><br><strong>1. Stop triggers:</strong> Traders who were short the base or positioned defensively have stops just above the base top. These stops activate as buy orders — adding fuel to the move.<br><br><strong>2. Breakout buyers:</strong> Momentum traders and algorithms watching for breakouts add buy orders on the departure candle.<br><br>Both sources of buying are on top of the institutional buying that has been ongoing throughout the base. The volume surge is the sum of all three — a genuine indexical signal.</div>
+        </div>
+        <div>
+          <div class="pd-h">Rate of Change as Proof</div>
+          <div class="pd-b">The rate of change (price moved per unit time) during departure is the key metric. A departure candle moving 3× the base's average daily range in a single day proves that the price-per-unit-time velocity has tripled.<br><br>This velocity cannot be faked in a liquid market without committing real capital. It is not a visual pattern — it is a measurable physical property of price movement. On weekly charts, a departure candle that covers 5–8× the prior week's base range is an exceptional structural signal.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase-row" onclick="togglePhase('p4')">
+      <div class="ph-num">4</div>
+      <div class="ph-label">
+        <div class="ph-name">The Impulse Extension</div>
+        <div class="ph-tag">Follow-through · Zone confirmed</div>
+      </div>
+      <div class="ph-desc">
+        The candles following the departure continue in the same direction, confirming institutional conviction. Price does not immediately retrace into the base. The base-to-open zone is now established as a <strong>structural demand zone</strong>.
+      </div>
+      <div class="ph-signal"><span class="ph-badge badge-impulse">Zone Set</span></div>
+    </div>
+    <div class="phase-detail" id="p4">
+      <div class="pd-grid">
+        <div>
+          <div class="pd-h">What Confirms the Impulse</div>
+          <div class="pd-b">The 2–5 candles following the departure are the confirmation phase:<br><br>— Each closes above the prior close (staircase up)<br>— Volume remains above average (sustained participation)<br>— No candle closes back inside the base range<br>— The base top is not revisited as resistance<br><br>If any of these fail — especially if a candle closes back inside the base — the departure may be a false breakout and the structure is compromised.</div>
+        </div>
+        <div>
+          <div class="pd-h">The Zone That's Created</div>
+          <div class="pd-b">At this point the demand zone is fully formed. Its boundaries:<br><br><strong>Bottom edge:</strong> the lowest low of the base (absolute floor of demand)<br><strong>Top edge:</strong> the open of the departure candle (where aggressive buying began)<br><br>The zone width is typically narrow — tighter than most conventional S/D zones — because it was defined by a precise moment of institutional decision rather than a wide accumulation range.</div>
+        </div>
+        <div>
+          <div class="pd-h">When Price Returns</div>
+          <div class="pd-b">The eventual return to the zone is the trading opportunity. First return to a fresh base-to-open zone is the highest probability setup in supply/demand trading:<br><br>— The pending limit orders that weren't filled at departure are still in the book<br>— Institutional actors who accumulated in the base will defend the zone (their average cost)<br>— The zone represents their <em>cost basis</em> — they will not willingly let price trade below it without defending<br><br>Volume at the return should decrease (sellers exhausting) before a reaction.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════ TAB 3: TIMEFRAMES ══════ -->
+<section id="timeframes" class="section">
+  <div class="sec-h">Daily vs Weekly Chart Structure</div>
+  <p class="sec-sub">How the same structure behaves differently — and why weekly zones dominate</p>
+
+  <div class="callout">
+    <p>The base-to-open structure exists on both daily and weekly charts — but the weekly version carries categorically higher structural weight. The actors creating weekly bases are operating on multi-month institutional timeframes. Their orders are larger, their conviction deeper, and their zones more durable.</p>
+  </div>
+
+  <div class="tf-compare">
+    <div class="tf-card daily">
+      <div class="tf-header">
+        <span class="tf-badge daily">Daily Chart</span>
+        <div class="tf-title">Day-Session Institutional Timeframe</div>
+      </div>
+      <div class="tf-body">
+        Daily base-to-open structures reflect <strong>session-level institutional decisions</strong> — fund managers, prop desks, and large hedge funds positioning over days to weeks. The base typically forms over 5–15 trading days. The departure happens when a catalyst (earnings, macro data, technical breakout) resolves the accumulated indecision.
+      </div>
+      <ul class="tf-items">
+        <li>Base duration: 5–15 daily candles (~1–3 weeks)</li>
+        <li>Departure candle: 3–5× the base's average daily range</li>
+        <li>Volume multiple: 3–8× average daily volume at departure</li>
+        <li>Zone durability: weeks to months before first retest</li>
+        <li>Who creates it: mid-to-large institutional funds, ETF flows</li>
+        <li>Best entry: first daily candle retest of the zone top</li>
+        <li>Invalidation: daily close below the base low</li>
+      </ul>
+    </div>
+    <div class="tf-card weekly">
+      <div class="tf-header">
+        <span class="tf-badge weekly">Weekly Chart</span>
+        <div class="tf-title">Multi-Month Institutional Timeframe</div>
+      </div>
+      <div class="tf-body">
+        Weekly base-to-open structures represent <strong>macro-level institutional positioning</strong> — pension funds, sovereign wealth, and major asset managers operating on quarterly horizons. A weekly base of 6–10 candles represents 6–10 weeks of quiet accumulation. The departure is a definitive macro signal.
+      </div>
+      <ul class="tf-items">
+        <li>Base duration: 4–12 weekly candles (~1–3 months)</li>
+        <li>Departure candle: 4–8× the base's average weekly range</li>
+        <li>Volume multiple: 5–10× average weekly volume at departure</li>
+        <li>Zone durability: months to years before full mitigation</li>
+        <li>Who creates it: macro funds, sovereign wealth, pension allocation</li>
+        <li>Best entry: weekly or daily retest of zone on declining volume</li>
+        <li>Invalidation: weekly close below the base low on high volume</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Daily base (left) vs Weekly base (right) — scale comparison</div>
+    <canvas id="tfChart" height="280"></canvas>
+  </div>
+
+  <div class="g3">
+    <div class="panel" style="border-top: 3px solid var(--purple)">
+      <div class="p-label">The Hierarchy Rule</div>
+      <div class="p-title">Weekly Overrides Daily</div>
+      <div class="p-body">
+        When a daily base-to-open zone conflicts with a weekly base-to-open zone at the same price level, the <strong>weekly zone always takes precedence</strong>. The weekly zone was created by actors with more capital and longer time horizons — their orders are larger and more durable.<br><br>
+        A daily zone that sits within a weekly zone is a high-confluence setup — two independent institutional timeframes pointing at the same price level.
+      </div>
+    </div>
+    <div class="panel" style="border-top: 3px solid var(--blue)">
+      <div class="p-label">Using Both Together</div>
+      <div class="p-title">Multi-Timeframe Confluence</div>
+      <div class="p-body">
+        The optimal setup: <strong>weekly base-to-open zone establishes the macro level</strong>. Price retraces toward the weekly zone. On the daily chart, a fresh base forms near the top of the weekly zone, then fires its own departure.<br><br>
+        This nested structure — a daily impulse launching from within a weekly zone — is the highest-confidence base-to-open setup available. You have two timeframes of indexical evidence converging.
+      </div>
+    </div>
+    <div class="panel" style="border-top: 3px solid var(--amber)">
+      <div class="p-label">Rate of Change Difference</div>
+      <div class="p-title">Why Weekly ROC Is More Significant</div>
+      <div class="p-body">
+        A daily candle covering 4% in a day is notable. A weekly candle covering 4% represents <strong>5 consecutive days of sustained buying</strong> — not a single session surge that can be reversed overnight.<br><br>
+        Weekly rate-of-change departures are structurally more meaningful because they represent <em>accumulated conviction over time</em>, not a single large order. The time dimension adds a layer of proof that daily candles cannot replicate.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ TAB 4: ZONE CONSTRUCTION ══════ -->
+<section id="zone" class="section">
+  <div class="sec-h">Zone Construction — Step by Step</div>
+  <p class="sec-sub">Exactly how to draw the demand zone from a base-to-open structure</p>
+
+  <div class="callout green">
+    <p>The precision of zone construction matters. Drawing the zone too wide dilutes the signal — you are including price levels that were not part of the original order concentration. Drawing it too narrow misses the full range of pending orders.</p>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Zone construction — exact boundaries from base-to-open structure</div>
+    <canvas id="zoneChart" height="300"></canvas>
+  </div>
+
+  <div class="zone-steps">
+    <div class="zs-card">
+      <div class="zs-num">Step 01</div>
+      <div class="zs-title">Identify the Base</div>
+      <div class="zs-body">Find the consolidation range — the group of tight candles where range has contracted. Mark the <em>highest high</em> and <em>lowest low</em> of the entire base. This defines the raw zone boundary before refinement.</div>
+    </div>
+    <div class="zs-card">
+      <div class="zs-num">Step 02</div>
+      <div class="zs-title">Find the Last Base Candle</div>
+      <div class="zs-body">Identify the <strong>last candle before the departure</strong> — the final candle that is still inside the base range. Its body (not wick) represents the transition point between accumulation and departure.</div>
+    </div>
+    <div class="zs-card">
+      <div class="zs-num">Step 03</div>
+      <div class="zs-title">Mark the Departure Open</div>
+      <div class="zs-body">The <strong>open of the first departure candle</strong> is the zone's top edge. This is the price at which aggressive buying began. Orders placed above this level were already entering the impulse — orders below it are the zone's contents.</div>
+    </div>
+    <div class="zs-card">
+      <div class="zs-num">Step 04</div>
+      <div class="zs-title">Set the Bottom Edge</div>
+      <div class="zs-body">The bottom edge is the <strong>lowest low of the entire base</strong> — the absolute floor of demand during accumulation. This is where the institution defended price most aggressively. Stop below this level on any trade from the zone.</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel" style="border-left: 4px solid var(--green)">
+      <div class="p-label">The Refined Zone</div>
+      <div class="p-title">Body-to-Open (Not Wick-to-Open)</div>
+      <div class="p-body">
+        A common error is including the full wick of the base candles in the zone. <strong>Wicks are tests, not orders.</strong><br><br>
+        The zone should run from the <em>open of the departure candle</em> (top) to the <em>lowest close or open of the base candles</em> — not the lowest wick. This body-to-open construction keeps the zone tighter and more accurate to where the actual order concentration was.<br><br>
+        Exception: if the base had a significant downward wick that was immediately bought back (a shakeout wick), include it in the zone — it represents a deliberate stop-hunt by the accumulating institution.
+      </div>
+    </div>
+    <div class="panel" style="border-left: 4px solid var(--amber)">
+      <div class="p-label">Zone Validity Tests</div>
+      <div class="p-title">When the Zone Remains Active</div>
+      <div class="p-body">
+        A base-to-open zone remains valid (orders still pending) as long as:<br><br>
+        <strong>1.</strong> Price has not returned to trade through it on significant volume<br>
+        <strong>2.</strong> A candle has not <em>closed</em> below the base low (wicks don't count)<br>
+        <strong>3.</strong> The macro context hasn't fundamentally shifted (company still solvent, sector still in favour)<br>
+        <strong>4.</strong> The time elapsed is within reasonable institutional order-management windows — weekly zones can stay valid for years; daily zones typically lose potency after 6–18 months if untested<br><br>
+        First touch of a valid zone = highest probability. Second touch = still valid but reduced. Third touch = zone likely depleted.
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-sub" style="margin-bottom: 16px">Entry and stop placement from a base-to-open zone</div>
+  <div class="checklist">
+    <div class="cl-row">
+      <div class="cl-n">01</div>
+      <div class="cl-tx"><strong>Enter at the zone's top edge (departure open).</strong> This is the most precise entry — closest to where pending orders are concentrated. It maximises reward-to-risk by keeping the stop (below base low) at maximum distance from entry.</div>
+      <div class="cl-st st-y">Primary</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">02</div>
+      <div class="cl-tx"><strong>Secondary entry at the 50% midpoint of the zone</strong> if price pushes slightly below the departure open. This accommodates a stop hunt through the top edge — a common institutional tactic to clear retail stops before reversing.</div>
+      <div class="cl-st st-m">Secondary</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">03</div>
+      <div class="cl-tx"><strong>Stop below the base low — not inside it.</strong> If the zone is valid, price must not close below the base low. A close below it means the structure has failed. Place stop 0.5–1 ATR below the base low to avoid noise.</div>
+      <div class="cl-st st-y">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">04</div>
+      <div class="cl-tx"><strong>Wait for a reaction candle before entering.</strong> Price entering the zone is not a signal. A rejection candle — strong body closing away from the zone — is the confirmation that orders are activating. Do not enter on price touching the zone alone.</div>
+      <div class="cl-st st-y">Required</div>
+    </div>
+    <div class="cl-row">
+      <div class="cl-n">05</div>
+      <div class="cl-tx"><strong>Volume should dry up as price enters the zone.</strong> Declining volume on the retrace into the zone means sellers are running out of conviction. A high-volume retrace into the zone is a warning — the zone may be being mitigated rather than respected.</div>
+      <div class="cl-st st-y">Confirm</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ TAB 5: FALSE SIGNALS ══════ -->
+<section id="false" class="section">
+  <div class="sec-h">False Base Signals & How to Distinguish</div>
+  <p class="sec-sub">Not every tight range followed by a move is a genuine base-to-open structure</p>
+
+  <div class="callout red">
+    <p>The base-to-open structure is frequently mimicked by low-quality price action — random compression, thin-market moves, and engineered stop hunts that look like departures. Each false version has a specific tell that separates it from the genuine structure.</p>
+  </div>
+
+  <div class="false-table">
+    <div class="ft-head">
+      <span>Signal</span>
+      <span>What a Real Base-to-Open Looks Like</span>
+      <span>What the False Version Looks Like</span>
+    </div>
+    <div class="ft-row">
+      <div class="ft-signal">Volume at Departure</div>
+      <div class="ft-real">Volume surges 3–8× average at the departure candle. Confirms real participation — buyers and triggered stops combining to create genuine order flow.</div>
+      <div class="ft-false">Volume is flat or only slightly elevated at departure. Price moves fast but no one is participating. Often seen in thin pre/post-market conditions or low-float stocks.</div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-signal">Departure Candle Close</div>
+      <div class="ft-real">Candle closes near its high — 70%+ of range is a bullish body. Buyers dominated the entire session. No late-day selling to erode the move.</div>
+      <div class="ft-false">Candle closes mid-range or shows a large upper wick. Selling entered before the close, reversing much of the intraday gain. Institutional selling into the breakout is the likely cause.</div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-signal">Base Tightness</div>
+      <div class="ft-real">Base candles have ranges 30–50% of the prior trend candles. The compression is visually obvious — you can see the volatility drop from trend to base clearly.</div>
+      <div class="ft-false">Base candles are only slightly smaller than trend candles. This is not real compression — it is a slow trend, not an accumulation base. There is no clear volatility contraction event.</div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-signal">Follow-Through</div>
+      <div class="ft-real">The 3–5 candles after departure continue in the same direction without closing back inside the base. The base top acts as support on any immediate pullback.</div>
+      <div class="ft-false">Price departs the base then immediately returns inside it within 1–3 candles. This is a stop hunt — the "breakout" was engineered to clear retail stops before a move in the opposite direction.</div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-signal">Context / Macro Alignment</div>
+      <div class="ft-real">The base forms in the direction of the dominant weekly or monthly trend. The departure is the natural continuation of macro momentum. Institutions are adding to a winning direction.</div>
+      <div class="ft-false">The base forms counter to the dominant macro trend. Even a valid-looking departure in a counter-trend direction has lower conviction — it is fighting the structural bias of the larger timeframe.</div>
+    </div>
+    <div class="ft-row">
+      <div class="ft-signal">Rate of Change Magnitude</div>
+      <div class="ft-real">The departure candle covers 3× or more of the base's average candle range in a single session. This is the velocity proof — undeniable acceleration relative to recent price behaviour.</div>
+      <div class="ft-false">The departure candle is only 1.5–2× the base range. This marginal expansion can occur from random volatility without any institutional trigger. Not sufficient evidence of genuine order flow.</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel" style="border-top: 3px solid var(--green)">
+      <div class="p-label">The Cleanest Filter</div>
+      <div class="p-title">All Four Must Be Present</div>
+      <div class="p-body">
+        A genuine base-to-open structure requires all four simultaneously:<br><br>
+        <strong>1. Tight base</strong> — visually obvious volatility contraction<br>
+        <strong>2. High ROC departure</strong> — 3× minimum range expansion<br>
+        <strong>3. Volume surge</strong> — 3× minimum volume at departure<br>
+        <strong>4. Clean follow-through</strong> — no immediate return inside the base<br><br>
+        If any one is absent, downgrade the signal. If two are absent, it is not a base-to-open structure — it is just a breakout, and breakouts without the base-to-open structure carry far less structural weight.
+      </div>
+    </div>
+    <div class="panel" style="border-top: 3px solid var(--amber)">
+      <div class="p-label">The Stop Hunt Disguise</div>
+      <div class="p-title">When Institutions Use the Pattern Against You</div>
+      <div class="p-body">
+        The most dangerous false signal: an institution deliberately creates a base-like structure near a known resistance level, triggers a "breakout" departure to activate retail buy stops, then immediately reverses — using the retail buying as liquidity to distribute their own position.<br><br>
+        The tell: <strong>the departure candle has a large upper wick</strong> (selling entered immediately after the high), and the next 1–2 candles close back inside the base with rising volume.<br><br>
+        Defence: never enter on the departure candle itself. Always wait for a pullback retest of the base top with declining volume — this confirms the breakout was genuine, not engineered.
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ── Navigation
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── Phase toggle
+function togglePhase(id) {
+  const el = document.getElementById(id);
+  const wasActive = el.classList.contains('active');
+  document.querySelectorAll('.phase-detail').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.phase-row').forEach(r => r.classList.remove('active'));
+  if (!wasActive) {
+    el.classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+}
+
+// ── Canvas helpers
+function mkCanvas(id, h) {
+  const c = document.getElementById(id);
+  if (!c) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = c.getBoundingClientRect();
+  c.width = rect.width * dpr;
+  c.height = h * dpr;
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, W: rect.width, H: h };
+}
+
+function grid(ctx, W, H) {
+  ctx.strokeStyle = '#1c2a38'; ctx.lineWidth = 0.5;
+  for (let y = 0; y < H; y += 30) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+}
+
+function candle(ctx, x, bw, yO, yH, yL, yC, color) {
+  ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(x, yH); ctx.lineTo(x, yL); ctx.stroke();
+  ctx.fillStyle = color;
+  const top = Math.min(yO, yC);
+  const bh = Math.max(Math.abs(yC - yO), 2);
+  ctx.fillRect(x - bw / 2, top, bw, bh);
+}
+
+// ── MAIN CHART
+window.addEventListener('load', () => {
+  const r = mkCanvas('mainChart', 300);
+  if (!r) return;
+  const { ctx, W, H } = r;
+  grid(ctx, W, H);
+
+  const G = '#00d4a0', R = '#ff4a5a', A = '#f0a800', B = '#48b0f0', DIM = '#2a3e52';
+  const pad = 30, vH = 34, vBase = H - 4;
+  const sy = v => v * (H - vH - 18) + 10;
+  const totalW = W - pad * 2;
+
+  // Candle data: [open%, high%, low%, close%, color, vol]
+  // Phase 1: Prior trend (moving down then stabilising)
+  // Phase 2: Tight base
+  // Phase 3: Departure
+  // Phase 4: Impulse extension
+  const cdata = [
+    // Prior downtrend
+    [0.28,0.24,0.33,0.31,R,0.55],
+    [0.31,0.28,0.38,0.36,R,0.50],
+    [0.36,0.32,0.40,0.39,R,0.48],
+    [0.39,0.36,0.44,0.42,R,0.52],
+    [0.42,0.38,0.46,0.44,R,0.45],
+    // BASE FORMS — tight candles, declining volume
+    [0.44,0.42,0.48,0.45,G,0.28],
+    [0.45,0.43,0.48,0.46,R,0.24],
+    [0.46,0.44,0.49,0.47,G,0.22],
+    [0.47,0.45,0.50,0.47,R,0.20],
+    [0.47,0.45,0.49,0.46,G,0.18],
+    [0.46,0.44,0.49,0.47,R,0.17],
+    [0.47,0.45,0.50,0.48,G,0.16],
+    [0.48,0.46,0.51,0.47,R,0.16],
+    // DEPARTURE — high ROC, volume surge
+    [0.47,0.28,0.48,0.30,G,0.95],
+    // IMPULSE EXTENSION
+    [0.30,0.25,0.32,0.27,G,0.72],
+    [0.27,0.22,0.29,0.24,G,0.60],
+    [0.24,0.20,0.27,0.22,G,0.52],
+    [0.22,0.18,0.25,0.20,G,0.44],
+    // RETRACE TOWARD ZONE
+    [0.20,0.18,0.26,0.24,R,0.36],
+    [0.24,0.21,0.28,0.26,R,0.30],
+    [0.26,0.23,0.30,0.28,R,0.24],
+    // TOUCH ZONE — bounce
+    [0.28,0.25,0.33,0.30,R,0.20],
+    [0.30,0.27,0.34,0.29,G,0.42],
+    [0.29,0.24,0.31,0.26,G,0.55],
+  ];
+
+  const cw = totalW / cdata.length;
+  const bw = cw * 0.58;
+
+  // Draw base zone
+  const baseTop = sy(0.47), baseBot = sy(0.51);
+  ctx.fillStyle = 'rgba(0,212,160,0.07)';
+  ctx.fillRect(0, baseTop, W, baseBot - baseTop);
+  ctx.strokeStyle = G; ctx.lineWidth = 1; ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(0, baseTop); ctx.lineTo(W, baseTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, baseBot); ctx.lineTo(W, baseBot); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw demand zone (departure open to base low)
+  const dzTop = sy(0.47), dzBot = sy(0.51);
+  ctx.fillStyle = 'rgba(0,212,160,0.12)';
+  ctx.fillRect(pad + 13 * cw, dzTop, W, dzBot - dzTop);
+
+  // Volume bars + candles
+  cdata.forEach((c, i) => {
+    const x = pad + i * cw + cw / 2;
+    const [op, hi, lo, cl, col, vol] = c;
+    const isBase = i >= 5 && i <= 12;
+    const isDep = i === 13;
+    const color = isDep ? A : col;
+
+    candle(ctx, x, bw, sy(op), sy(hi), sy(lo), sy(cl), color);
+
+    // volume
+    const vcol = isDep ? A : (col === G ? 'rgba(0,212,160,0.38)' : 'rgba(255,74,90,0.32)');
+    ctx.fillStyle = vcol;
+    ctx.fillRect(x - cw * 0.38, vBase - vol * vH, cw * 0.76, vol * vH);
+  });
+
+  // Annotations
+  ctx.font = '11px IBM Plex Mono'; ctx.setLineDash([]);
+  ctx.fillStyle = DIM;
+  ctx.fillText('Prior Trend', pad + 1 * cw, sy(0.22));
+  ctx.fillStyle = B;
+  ctx.fillText('BASE — tight range, declining vol', pad + 5 * cw + 2, sy(0.42));
+  ctx.fillStyle = A;
+  ctx.fillText('DEPARTURE ↑ High ROC + Vol Surge', pad + 13 * cw + 4, sy(0.25));
+  ctx.fillStyle = G;
+  ctx.fillText('DEMAND ZONE', pad + 14 * cw + 4, dzBot + 13);
+  ctx.fillStyle = G;
+  ctx.fillText('← First retest of zone', pad + 21 * cw - 10, sy(0.26));
+
+  // Departure open arrow
+  const depOpenY = sy(0.47);
+  ctx.strokeStyle = A; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(pad + 13 * cw, depOpenY); ctx.lineTo(W, depOpenY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = A; ctx.font = '10px IBM Plex Mono';
+  ctx.fillText('← Departure OPEN = Zone Top', pad + 15 * cw, depOpenY - 5);
+});
+
+// ── TF CHART
+window.addEventListener('load', () => {
+  const r = mkCanvas('tfChart', 280);
+  if (!r) return;
+  const { ctx, W, H } = r;
+  grid(ctx, W, H);
+
+  const G = '#00d4a0', R = '#ff4a5a', A = '#f0a800', B = '#48b0f0';
+  const sy = v => v * (H - 40) + 10;
+  const pad = 20, vH = 28, vBase = H - 4;
+
+  // LEFT: Daily base (smaller, more candles)
+  const lW = W * 0.44;
+  const dailyC = [
+    [0.7,0.65,0.75,0.72,R,0.4],
+    [0.72,0.68,0.76,0.74,R,0.38],
+    // base (tight)
+    [0.74,0.72,0.77,0.75,G,0.22],[0.75,0.73,0.78,0.74,R,0.20],
+    [0.74,0.72,0.77,0.75,G,0.19],[0.75,0.73,0.77,0.74,R,0.18],
+    [0.74,0.72,0.76,0.75,G,0.17],[0.75,0.73,0.77,0.74,R,0.17],
+    // departure
+    [0.74,0.54,0.75,0.56,G,0.88],
+    // extension
+    [0.56,0.50,0.58,0.52,G,0.65],[0.52,0.46,0.54,0.48,G,0.50],
+    [0.48,0.43,0.50,0.45,G,0.40],
+  ];
+  const dcw = (lW - pad * 2) / dailyC.length;
+  const dbw = dcw * 0.6;
+
+  // daily zone
+  ctx.fillStyle = 'rgba(0,212,160,0.09)';
+  ctx.fillRect(pad + 8 * dcw, sy(0.74), lW, sy(0.78) - sy(0.74));
+  ctx.strokeStyle = G; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(pad + 8*dcw, sy(0.74)); ctx.lineTo(lW + pad, sy(0.74)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad + 8*dcw, sy(0.78)); ctx.lineTo(lW + pad, sy(0.78)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  dailyC.forEach((c, i) => {
+    const x = pad + i * dcw + dcw / 2;
+    const color = i === 8 ? A : (c[4] === G ? G : R);
+    candle(ctx, x, dbw, sy(c[0]), sy(c[1]), sy(c[2]), sy(c[3]), color);
+    const vcol = i === 8 ? 'rgba(240,168,0,0.5)' : (c[4] === G ? 'rgba(0,212,160,0.35)' : 'rgba(255,74,90,0.3)');
+    ctx.fillStyle = vcol;
+    ctx.fillRect(x - dcw*0.38, vBase - c[5]*vH, dcw*0.76, c[5]*vH);
+  });
+
+  ctx.font = '11px IBM Plex Mono'; ctx.fillStyle = B;
+  ctx.fillText('DAILY CHART', pad + 2, 20);
+  ctx.fillStyle = '#2a3e52';
+  ctx.fillText('base: ~8 candles (~2 wks)', pad + 2, 36);
+
+  // DIVIDER
+  ctx.strokeStyle = '#1c2a38'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(W * 0.5, 10); ctx.lineTo(W * 0.5, H - 10); ctx.stroke();
+
+  // RIGHT: Weekly base (fewer, larger candles)
+  const rStart = W * 0.54;
+  const rW = W - rStart - pad;
+  const weeklyC = [
+    [0.7,0.62,0.76,0.73,R,0.45],
+    // base (tight, fewer candles)
+    [0.73,0.70,0.77,0.74,G,0.25],[0.74,0.71,0.77,0.75,R,0.22],
+    [0.75,0.72,0.78,0.74,G,0.20],[0.74,0.71,0.77,0.75,R,0.18],
+    [0.75,0.72,0.78,0.74,G,0.17],
+    // departure — massive candle
+    [0.74,0.40,0.76,0.42,G,0.98],
+    // extension
+    [0.42,0.34,0.44,0.36,G,0.72],[0.36,0.29,0.38,0.31,G,0.55],
+  ];
+  const wcw = rW / weeklyC.length;
+  const wbw = wcw * 0.62;
+
+  // weekly zone
+  ctx.fillStyle = 'rgba(0,212,160,0.09)';
+  ctx.fillRect(rStart + 6*wcw, sy(0.74), W, sy(0.79) - sy(0.74));
+  ctx.strokeStyle = G; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(rStart + 6*wcw, sy(0.74)); ctx.lineTo(W, sy(0.74)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(rStart + 6*wcw, sy(0.79)); ctx.lineTo(W, sy(0.79)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  weeklyC.forEach((c, i) => {
+    const x = rStart + i * wcw + wcw / 2;
+    const color = i === 6 ? A : (c[4] === G ? G : R);
+    candle(ctx, x, wbw, sy(c[0]), sy(c[1]), sy(c[2]), sy(c[3]), color);
+    const vcol = i === 6 ? 'rgba(240,168,0,0.55)' : (c[4] === G ? 'rgba(0,212,160,0.35)' : 'rgba(255,74,90,0.3)');
+    ctx.fillStyle = vcol;
+    ctx.fillRect(x - wcw*0.38, vBase - c[5]*vH, wcw*0.76, c[5]*vH);
+  });
+
+  ctx.font = '11px IBM Plex Mono'; ctx.fillStyle = G;
+  ctx.fillText('WEEKLY CHART', rStart + 2, 20);
+  ctx.fillStyle = '#2a3e52';
+  ctx.fillText('base: ~5 candles (~5 wks)', rStart + 2, 36);
+  ctx.fillStyle = A;
+  ctx.fillText('Massive ROC →', rStart + 5.2 * wcw, sy(0.55));
+});
+
+// ── ZONE CONSTRUCTION CHART
+window.addEventListener('load', () => {
+  const r = mkCanvas('zoneChart', 300);
+  if (!r) return;
+  const { ctx, W, H } = r;
+  grid(ctx, W, H);
+
+  const G = '#00d4a0', R = '#ff4a5a', A = '#f0a800', B = '#48b0f0', DIM = '#2a3e52';
+  const sy = v => v * (H - 40) + 10;
+  const pad = 36, vH = 32, vBase = H - 4;
+  const totalW = W - pad * 2;
+
+  const cdata = [
+    [0.35,0.30,0.40,0.38,R,0.5],[0.38,0.34,0.43,0.41,R,0.46],
+    [0.41,0.38,0.46,0.43,R,0.42],[0.43,0.39,0.47,0.45,R,0.45],
+    // BASE
+    [0.45,0.43,0.49,0.46,G,0.26],[0.46,0.44,0.50,0.47,R,0.23],
+    [0.47,0.45,0.51,0.48,G,0.21],[0.48,0.46,0.51,0.47,R,0.20],
+    [0.47,0.45,0.50,0.48,G,0.19],[0.48,0.46,0.51,0.47,R,0.18],
+    [0.47,0.45,0.50,0.48,G,0.17],
+    // DEPARTURE
+    [0.47,0.26,0.48,0.28,G,0.96],
+    // EXTENSION
+    [0.28,0.23,0.30,0.25,G,0.70],[0.25,0.20,0.27,0.22,G,0.58],
+    [0.22,0.18,0.25,0.20,G,0.46],[0.20,0.16,0.22,0.18,G,0.38],
+  ];
+
+  const cw = totalW / cdata.length;
+  const bw = cw * 0.6;
+
+  // STEP 1: Base high/low bracket
+  const baseHigh = sy(0.45), baseLow = sy(0.51);
+
+  // STEP 2: departure open line
+  const depOpen = sy(0.47);
+
+  // DEMAND ZONE fill
+  ctx.fillStyle = 'rgba(0,212,160,0.12)';
+  ctx.fillRect(pad + 11 * cw, depOpen, W, baseLow - depOpen);
+
+  // Base boundary
+  ctx.strokeStyle = B; ctx.lineWidth = 1; ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(pad + 4 * cw, baseHigh); ctx.lineTo(pad + 12 * cw, baseHigh); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad + 4 * cw, baseLow); ctx.lineTo(W, baseLow); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Departure open line
+  ctx.strokeStyle = A; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(pad + 11 * cw, depOpen); ctx.lineTo(W, depOpen); ctx.stroke();
+
+  // Draw candles
+  cdata.forEach((c, i) => {
+    const x = pad + i * cw + cw / 2;
+    const isDep = i === 11;
+    const isBase = i >= 4 && i <= 10;
+    const col = isDep ? A : (c[4] === G ? G : R);
+    candle(ctx, x, bw, sy(c[0]), sy(c[1]), sy(c[2]), sy(c[3]), col);
+    const vcol = isDep ? 'rgba(240,168,0,0.55)' : (c[4] === G ? 'rgba(0,212,160,0.35)' : 'rgba(255,74,90,0.3)');
+    ctx.fillStyle = vcol;
+    ctx.fillRect(x - cw * 0.38, vBase - c[5] * vH, cw * 0.76, c[5] * vH);
+  });
+
+  // Labels
+  ctx.setLineDash([]); ctx.font = '11px IBM Plex Mono';
+  ctx.fillStyle = B;
+  ctx.fillText('Step 1: Base range', pad + 4 * cw + 2, baseHigh - 6);
+  ctx.fillStyle = A;
+  ctx.fillText('Step 3: Departure OPEN → Zone Top', pad + 12 * cw + 4, depOpen - 5);
+  ctx.fillStyle = G;
+  ctx.fillText('Step 4: Base Low → Zone Bottom', pad + 12 * cw + 4, baseLow + 12);
+  ctx.fillStyle = G;
+  ctx.fillText('DEMAND ZONE', pad + 12 * cw + 8, (depOpen + baseLow) / 2 + 4);
+
+  // Step 2 bracket on the last base candle
+  const lastBaseX = pad + 10 * cw + cw / 2;
+  ctx.strokeStyle = '#a070f0'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(lastBaseX + bw/2 + 4, sy(0.47)); ctx.lineTo(lastBaseX + bw/2 + 12, sy(0.47));
+  ctx.lineTo(lastBaseX + bw/2 + 12, sy(0.48)); ctx.lineTo(lastBaseX + bw/2 + 4, sy(0.48)); ctx.stroke();
+  ctx.fillStyle = '#a070f0'; ctx.font = '10px IBM Plex Mono';
+  ctx.fillText('Step 2: Last base candle', lastBaseX + bw/2 + 14, sy(0.475));
+});
+</script>
+</body>
+</html>
