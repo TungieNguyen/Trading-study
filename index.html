@@ -3,20 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Symbolic Communication — Trading Study Guide</title>
+<title>Trading Study Library</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink: #1a1209;
-  --paper: #f5f0e8;
-  --amber: #c8831a;
-  --rust: #a03e20;
-  --sage: #4a6741;
-  --mist: #7a8fa6;
-  --cream: #ede7d3;
-  --dark-bg: #0a0d0f;
-  --dark-text: #c8d8e8;
+  --ink:    #1a1209;
+  --paper:  #f5f0e8;
+  --amber:  #c8831a;
+  --rust:   #a03e20;
+  --sage:   #4a6741;
+  --blue:   #2a5080;
+  --purple: #5a3880;
+  --mist:   #7a8fa6;
+  --cream:  #ede7d3;
+  --border: #c8b898;
+  --dim:    #9a8a70;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -25,387 +27,538 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 13px;
   min-height: 100vh;
 }
 
 body::before {
-  content:'';
-  position:fixed; inset:0;
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:100;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events:none; z-index:100; opacity:0.5;
+  opacity:0.5;
 }
 
+/* ── HEADER ── */
 header {
-  padding: 64px 60px 48px;
+  padding: 56px 64px 44px;
   border-bottom: 2px solid var(--ink);
-  max-width: 1100px;
-  margin: 0 auto;
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 32px; align-items: end;
 }
 
 .eyebrow {
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--mist);
-  margin-bottom: 16px;
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--mist); margin-bottom: 14px;
 }
 
 h1 {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: clamp(2.4rem, 5vw, 4.2rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  margin-bottom: 20px;
+  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+  line-height: 1.06; letter-spacing: -0.02em;
+  color: var(--ink); margin-bottom: 16px;
 }
-
 h1 em { color: var(--amber); font-style: italic; }
 
 .intro {
-  font-size: 13px;
-  color: #3a3020;
-  line-height: 1.7;
-  max-width: 600px;
-  margin-bottom: 24px;
+  font-size: 13px; color: #4a3a28; line-height: 1.7;
+  max-width: 540px; margin-bottom: 20px;
 }
 
-.series-tag {
-  display: inline-block;
-  border: 1px solid var(--ink);
-  padding: 6px 14px;
-  font-size: 10px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+.header-stats {
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+.stat-pill {
+  background: var(--ink); color: var(--paper);
+  padding: 6px 14px; font-size: 10px;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.stat-pill span { color: var(--amber); font-family: 'Playfair Display', serif; font-size: 1.1rem; font-style: italic; }
+
+.header-right {
+  display: flex; flex-direction: column; gap: 12px; align-self: flex-end;
 }
 
-/* Main grid */
-.modules {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 48px 60px 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+/* ── CONTROLS ── */
+.controls {
+  max-width: 1200px; margin: 0 auto;
+  padding: 24px 64px;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
 }
 
-.module-card {
+.search-wrap {
+  flex: 1; min-width: 200px; position: relative;
+}
+.search-wrap::before {
+  content: '⌕'; position: absolute; left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--mist); font-size: 16px; pointer-events: none;
+}
+#searchInput {
+  width: 100%; padding: 10px 14px 10px 36px;
+  border: 1px solid var(--border); background: var(--cream);
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--ink);
+  outline: none; transition: border-color 0.2s;
+}
+#searchInput:focus { border-color: var(--amber); }
+#searchInput::placeholder { color: var(--mist); }
+
+.filter-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 8px 14px; border: 1px solid var(--border); background: var(--cream);
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; color: var(--dim); transition: all 0.18s;
+}
+.filter-btn:hover { border-color: var(--ink); color: var(--ink); }
+.filter-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.sort-select {
+  padding: 9px 14px; border: 1px solid var(--border); background: var(--cream);
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--dim); cursor: pointer; outline: none;
+}
+
+/* ── GRID ── */
+.library {
+  max-width: 1200px; margin: 0 auto;
+  padding: 36px 64px 80px;
+}
+
+.section-label {
+  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--mist); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::after {
+  content:''; flex:1; height:1px; background: var(--border);
+}
+
+.cards-grid {
   display: grid;
-  grid-template-columns: 80px 1fr auto;
-  gap: 0;
-  border: 2px solid var(--ink);
-  background: var(--paper);
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.2s;
-  overflow: hidden;
-  position: relative;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2px; margin-bottom: 40px;
+  background: var(--border);
+  border: 1px solid var(--border);
 }
 
-.module-card::after {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 0;
-  background: var(--ink);
-  transition: width 0.3s ease;
-  z-index: 0;
+.study-card {
+  background: var(--paper); text-decoration: none; color: inherit;
+  display: flex; flex-direction: column;
+  transition: background 0.18s; position: relative; overflow: hidden;
+  animation: fadeIn 0.4s ease both;
 }
 
-.module-card:hover::after { width: 100%; }
-.module-card:hover .mc-num,
-.module-card:hover .mc-content *,
-.module-card:hover .mc-arrow { color: var(--paper) !important; }
-.module-card:hover .mc-tag { border-color: var(--paper) !important; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-.mc-num {
-  background: var(--ink);
-  color: var(--paper);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.study-card:hover { background: var(--cream); }
+
+.card-top {
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 10px;
+}
+
+.card-num {
   font-family: 'Playfair Display', serif;
-  font-size: 1.8rem;
-  font-style: italic;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-  transition: background 0.3s;
+  font-size: 2rem; font-style: italic;
+  color: var(--border); line-height: 1; flex-shrink: 0;
+  transition: color 0.18s;
+}
+.study-card:hover .card-num { color: var(--amber); }
+
+.card-cat {
+  font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  border: 1px solid; padding: 3px 8px; white-space: nowrap;
+  align-self: flex-start;
 }
 
-.module-card:hover .mc-num { background: var(--amber); }
+.card-body { padding: 18px 24px; flex: 1; }
 
-.mc-content {
-  padding: 28px 32px;
-  border-left: 2px solid var(--ink);
-  position: relative;
-  z-index: 1;
-}
-
-.mc-eyebrow {
-  font-size: 9px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--mist);
-  margin-bottom: 8px;
-  transition: color 0.2s;
-}
-
-.mc-title {
+.card-title {
   font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
-  color: var(--ink);
-  margin-bottom: 10px;
-  transition: color 0.2s;
+  font-size: 1.15rem; color: var(--ink);
+  margin-bottom: 10px; line-height: 1.3;
 }
 
-.mc-desc {
-  font-size: 12px;
-  color: #3a3020;
-  line-height: 1.65;
-  margin-bottom: 14px;
-  max-width: 560px;
-  transition: color 0.2s;
+.card-desc {
+  font-size: 12px; color: #4a3a28; line-height: 1.65;
+  display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
 }
 
-.mc-tags {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.card-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
 }
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.card-tag {
+  font-size: 9px; letter-spacing: 0.08em;
+  border: 1px solid currentColor; padding: 2px 7px;
+}
+.card-arrow {
+  font-size: 1.1rem; color: var(--mist);
+  transition: color 0.18s; flex-shrink: 0;
+}
+.study-card:hover .card-arrow { color: var(--ink); }
 
-.mc-tag {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  border: 1px solid currentColor;
-  padding: 3px 9px;
-  transition: border-color 0.2s, color 0.2s;
+/* accent bar on left */
+.study-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0;
+  width:3px; background: var(--amber);
+  transform: scaleY(0); transform-origin: bottom;
+  transition: transform 0.25s ease;
 }
+.study-card:hover::before { transform: scaleY(1); }
 
-.tag-amber { color: var(--amber); }
-.tag-sage  { color: var(--sage); }
-.tag-rust  { color: var(--rust); }
-.tag-mist  { color: var(--mist); }
-
-.mc-arrow {
-  display: flex;
-  align-items: center;
-  padding: 0 32px;
-  font-size: 1.6rem;
-  color: var(--mist);
-  border-left: 2px solid var(--ink);
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-  transition: color 0.2s;
+/* empty state */
+.empty-state {
+  grid-column: 1/-1; padding: 64px;
+  text-align: center; background: var(--cream);
 }
-
-/* Connection lines between cards */
-.connector {
-  display: flex;
-  align-items: center;
-  padding: 0 80px;
-  height: 24px;
-  gap: 0;
-}
-.connector-line {
-  flex: 1;
-  height: 1px;
-  background: var(--ink);
-  opacity: 0.2;
-}
-.connector-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--amber);
-  margin: 0 8px;
-}
-
-/* Learning path */
-.path-section {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 60px 80px;
-}
-
-.path-title {
+.empty-state h3 {
   font-family: 'Playfair Display', serif;
-  font-size: 1rem;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--mist);
+  font-size: 1.4rem; color: var(--ink); margin-bottom: 10px;
 }
+.empty-state p { font-size: 12px; color: var(--mist); }
 
-.path-title::before, .path-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--ink);
-  opacity: 0.15;
-}
-
-.path-steps {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  border: 2px solid var(--ink);
-}
-
-.path-step {
-  background: var(--cream);
-  padding: 22px 24px;
-  border-right: 2px solid var(--ink);
-}
-
-.path-step:last-child { border-right: none; }
-
-.ps-num {
-  font-size: 10px;
-  color: var(--amber);
-  letter-spacing: 0.2em;
-  margin-bottom: 6px;
-}
-
-.ps-head {
-  font-family: 'Playfair Display', serif;
-  font-size: 1rem;
-  margin-bottom: 8px;
-}
-
-.ps-body {
-  font-size: 11px;
-  color: #3a3020;
-  line-height: 1.6;
-}
-
+/* ── FOOTER ── */
 footer {
   border-top: 2px solid var(--ink);
-  padding: 24px 60px;
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 22px 64px;
+  max-width: 1200px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
 }
+.footer-text { font-size: 10px; color: var(--mist); letter-spacing: 0.1em; }
 
-.footer-text {
-  font-size: 10px;
-  color: var(--mist);
-  letter-spacing: 0.1em;
+/* ── HOW TO ADD ── */
+.add-banner {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 64px 32px;
 }
+.add-inner {
+  border: 1px dashed var(--border); padding: 18px 24px;
+  background: var(--cream);
+  display: flex; align-items: center; gap: 16px;
+}
+.add-icon { font-size: 1.4rem; flex-shrink: 0; }
+.add-text { font-size: 12px; color: var(--dim); line-height: 1.6; }
+.add-text strong { color: var(--ink); }
 
-@media (max-width: 700px) {
-  header, .modules, .path-section, footer { padding-left: 24px; padding-right: 24px; }
-  .module-card { grid-template-columns: 60px 1fr; }
-  .mc-arrow { display: none; }
-  .path-steps { grid-template-columns: 1fr; }
-  .path-step { border-right: none; border-bottom: 2px solid var(--ink); }
-  .path-step:last-child { border-bottom: none; }
+@media (max-width: 720px) {
+  header { grid-template-columns: 1fr; padding: 28px; }
+  .controls, .library, .add-banner, footer { padding-left: 24px; padding-right: 24px; }
+  .cards-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="eyebrow">Personal Study Series · Semiotics × Markets</div>
-  <h1>Symbolic<br><em>Communication</em><br>in Trading</h1>
-  <p class="intro">A three-part study guide exploring how signs, patterns, and chart structures function as symbolic systems — from the foundations of semiotics to the manipulation mechanics of technical analysis.</p>
-  <span class="series-tag">3 Modules · Interactive</span>
+  <div>
+    <div class="eyebrow">Personal Study Library · Markets & Semiotics</div>
+    <h1>Trading<br><em>Study</em><br>Library</h1>
+    <p class="intro">Every module in one place. Upload a new HTML file to GitHub and it appears here automatically — no editing required.</p>
+    <div class="header-stats">
+      <div class="stat-pill"><span id="totalCount">—</span> Modules</div>
+      <div class="stat-pill"><span id="catCount">—</span> Topics</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div style="font-size:10px;color:var(--mist);letter-spacing:0.12em;text-align:right;">LAST UPDATED</div>
+    <div id="lastUpdated" style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--amber);text-align:right;">—</div>
+  </div>
 </header>
 
-<div class="modules">
-
-  <a class="module-card" href="symbolic-communication.html">
-    <div class="mc-num">1</div>
-    <div class="mc-content">
-      <div class="mc-eyebrow">Foundation · Semiotics</div>
-      <div class="mc-title">Symbolic Communication</div>
-      <div class="mc-desc">The foundational theory: how signs work, the semiotic triangle, Peirce's classification of icons/indices/symbols, and how meaning is constructed through shared agreement. The conceptual base for everything that follows.</div>
-      <div class="mc-tags">
-        <span class="mc-tag tag-amber">Saussure</span>
-        <span class="mc-tag tag-amber">Peirce</span>
-        <span class="mc-tag tag-amber">Semiotic Triangle</span>
-        <span class="mc-tag tag-sage">Icon · Index · Symbol</span>
-        <span class="mc-tag tag-mist">Cassirer · Barthes</span>
-      </div>
-    </div>
-    <div class="mc-arrow">→</div>
-  </a>
-
-  <div class="connector">
-    <div class="connector-line"></div>
-    <div class="connector-dot"></div>
-    <div class="connector-line"></div>
+<div class="controls">
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search modules, topics, keywords...">
   </div>
-
-  <a class="module-card" href="ta-symbolic-communication.html">
-    <div class="mc-num">2</div>
-    <div class="mc-content">
-      <div class="mc-eyebrow">Application · Technical Analysis</div>
-      <div class="mc-title">TA Patterns as Symbolic Communication</div>
-      <div class="mc-desc">How chart patterns function as sign systems — and how they become vectors for manipulation. Pattern-by-pattern semiotic deconstruction, the design-vs-manipulation duality, psychology of pattern belief, and the self-fulfilling prophecy loop.</div>
-      <div class="mc-tags">
-        <span class="mc-tag tag-rust">Pattern Semiotics</span>
-        <span class="mc-tag tag-rust">Stop Hunts</span>
-        <span class="mc-tag tag-amber">Reflexivity</span>
-        <span class="mc-tag tag-sage">H&S · Fibonacci · Volume</span>
-        <span class="mc-tag tag-mist">Behavioural Finance</span>
-      </div>
-    </div>
-    <div class="mc-arrow">→</div>
-  </a>
-
-  <div class="connector">
-    <div class="connector-line"></div>
-    <div class="connector-dot"></div>
-    <div class="connector-line"></div>
+  <div class="filter-btns" id="filterBtns">
+    <button class="filter-btn active" data-cat="all" onclick="setFilter('all',this)">All</button>
   </div>
-
-  <a class="module-card" href="gaps-htf-structure.html">
-    <div class="mc-num">3</div>
-    <div class="mc-content">
-      <div class="mc-eyebrow">Advanced · Indexical Integrity</div>
-      <div class="mc-title">Gaps & High-Timeframe Structure</div>
-      <div class="mc-desc">Why gaps resist manipulation where conventional patterns fail. The ontological difference between indexical signals and conventional symbols. The HTF structure ladder — how timeframe determines who creates the signal and what it costs to fabricate it.</div>
-      <div class="mc-tags">
-        <span class="mc-tag tag-sage">Indexical Signals</span>
-        <span class="mc-tag tag-sage">Gap Types</span>
-        <span class="mc-tag tag-amber">HTF Ladder</span>
-        <span class="mc-tag tag-rust">Liquidity Voids</span>
-        <span class="mc-tag tag-mist">Structural Ground Truth</span>
-      </div>
-    </div>
-    <div class="mc-arrow">→</div>
-  </a>
-
+  <select class="sort-select" id="sortSelect" onchange="renderCards()">
+    <option value="num">Sort: Number</option>
+    <option value="alpha">Sort: A–Z</option>
+    <option value="cat">Sort: Category</option>
+  </select>
 </div>
 
-<div class="path-section">
-  <div class="path-title">Suggested Learning Path</div>
-  <div class="path-steps">
-    <div class="path-step">
-      <div class="ps-num">Step 01</div>
-      <div class="ps-head">Build the vocabulary</div>
-      <div class="ps-body">Start with Module 1. Understand Peirce's icon/index/symbol distinction — this is the conceptual lens for everything in the other modules. Focus on why the index (causal connection) is fundamentally different from the symbol (convention).</div>
-    </div>
-    <div class="path-step">
-      <div class="ps-num">Step 02</div>
-      <div class="ps-head">Apply it to TA</div>
-      <div class="ps-body">Move to Module 2. Go through each pattern card and ask: is this iconic, indexical, or purely conventional? Notice how the manipulation risk scales with how conventional (agreed-upon) the pattern is. Read the self-fulfilling prophecy loop carefully.</div>
-    </div>
-    <div class="path-step">
-      <div class="ps-num">Step 03</div>
-      <div class="ps-head">Build structural ground</div>
-      <div class="ps-body">Module 3 is the practical framework. Use the HTF Structure Ladder to understand why timeframe matters. Apply the 8-point integrity checklist to any gap you're considering. Return to Modules 1–2 to test your understanding of why the principles hold.</div>
+<div class="library">
+  <div class="section-label" id="resultsLabel">All Modules</div>
+  <div class="cards-grid" id="cardsGrid"></div>
+</div>
+
+<div class="add-banner">
+  <div class="add-inner">
+    <div class="add-icon">＋</div>
+    <div class="add-text">
+      <strong>To add a new module:</strong> upload any <code>.html</code> file to your GitHub repo and add one entry to the <code>MODULES</code> list at the top of this page's source code. The card will appear here immediately on next page load — no other changes needed.
     </div>
   </div>
 </div>
 
 <footer>
-  <div class="footer-text">Personal Study Guide · Symbolic Communication in Trading</div>
-  <div class="footer-text">3 Modules · Built for offline use</div>
+  <div class="footer-text">Trading Study Library · TungieNguyen · GitHub Pages</div>
+  <div class="footer-text" id="footerCount">—</div>
 </footer>
 
+<script>
+// ═══════════════════════════════════════════════════════════
+//  MODULE REGISTRY
+//  To add a new module: copy one entry below, fill in the
+//  details, and upload the HTML file to GitHub. Done.
+// ═══════════════════════════════════════════════════════════
+const MODULES = [
+  {
+    num: 1,
+    file: 'symbolic-communication.html',
+    title: 'Symbolic Communication',
+    category: 'Semiotics',
+    catColor: '#c8831a',
+    desc: 'The foundational theory: how signs work, the semiotic triangle, Peirce\'s classification of icons/indices/symbols, and how meaning is constructed through shared agreement.',
+    tags: ['Saussure', 'Peirce', 'Icon · Index · Symbol', 'Semiotic Triangle'],
+    tagColor: '#c8831a',
+    added: '2025-03-01',
+  },
+  {
+    num: 2,
+    file: 'ta-symbolic-communication.html',
+    title: 'TA Patterns as Symbolic Communication',
+    category: 'Technical Analysis',
+    catColor: '#a03e20',
+    desc: 'How chart patterns function as sign systems — and how they become vectors for manipulation. Pattern-by-pattern semiotic deconstruction, design-vs-manipulation duality, and the self-fulfilling prophecy loop.',
+    tags: ['Pattern Semiotics', 'Stop Hunts', 'Reflexivity', 'Behavioural Finance'],
+    tagColor: '#a03e20',
+    added: '2025-03-01',
+  },
+  {
+    num: 3,
+    file: 'gaps-htf-structure.html',
+    title: 'Gaps & High-Timeframe Structure',
+    category: 'Price Structure',
+    catColor: '#4a6741',
+    desc: 'Why gaps resist manipulation where conventional patterns fail. The HTF structure ladder — how timeframe determines who creates the signal and what it costs to fabricate it.',
+    tags: ['Gap Types', 'HTF Ladder', 'Liquidity Voids', 'Indexical Signals'],
+    tagColor: '#4a6741',
+    added: '2025-03-01',
+  },
+  {
+    num: 4,
+    file: 'supply-demand-indexical.html',
+    title: 'Indexical Signals & Supply/Demand Zones',
+    category: 'Price Structure',
+    catColor: '#4a6741',
+    desc: 'What indexical signals structurally reveal about supply and demand zones. Zone anatomy, lifecycle from creation to mitigation, confluence framework, and the entry validation checklist.',
+    tags: ['Zone Anatomy', 'Order Flow', 'Confluence', 'Mitigation'],
+    tagColor: '#4a6741',
+    added: '2025-03-01',
+  },
+  {
+    num: 5,
+    file: 'base-to-open-impulse.html',
+    title: 'Base-to-Open Impulse Structure',
+    category: 'Price Structure',
+    catColor: '#4a6741',
+    desc: 'How price departs from a tight consolidation base with a high rate-of-change move on daily and weekly charts. Four phases, zone construction step-by-step, and false signal identification.',
+    tags: ['Base Formation', 'Rate of Change', 'Daily vs Weekly', 'Demand Zone'],
+    tagColor: '#4a6741',
+    added: '2025-03-01',
+  },
+  {
+    num: 6,
+    file: 'neural-algo-models.html',
+    title: 'Neural & Algo Market Models — Demystified',
+    category: 'Algorithmic Trading',
+    catColor: '#2a5080',
+    desc: 'The complex mathematics of neural networks, random forests, reinforcement learning, transformers, and genetic algorithms — explained in plain English with real-world analogies. Every equation decoded.',
+    tags: ['Neural Networks', 'Random Forest', 'Reinforcement Learning', 'Transformers'],
+    tagColor: '#2a5080',
+    added: '2025-03-01',
+  },
+  // ─────────────────────────────────────────────────────────
+  // ADD NEW MODULES BELOW THIS LINE
+  // Copy this template and fill in your details:
+  //
+  // {
+  //   num: 7,
+  //   file: 'your-file-name.html',
+  //   title: 'Your Module Title',
+  //   category: 'Category Name',
+  //   catColor: '#c8831a',
+  //   desc: 'A short description of what this module covers.',
+  //   tags: ['Tag 1', 'Tag 2', 'Tag 3'],
+  //   tagColor: '#c8831a',
+  //   added: '2025-03-02',
+  // },
+  // ─────────────────────────────────────────────────────────
+];
+
+// ── State
+let activeFilter = 'all';
+let searchTerm   = '';
+
+// ── Build category list from modules
+function getCategories() {
+  const cats = [...new Set(MODULES.map(m => m.category))];
+  return cats;
+}
+
+// ── Build filter buttons
+function buildFilters() {
+  const cats = getCategories();
+  const wrap = document.getElementById('filterBtns');
+  // clear existing (keep All)
+  wrap.innerHTML = `<button class="filter-btn active" data-cat="all" onclick="setFilter('all',this)">All</button>`;
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.dataset.cat = cat;
+    btn.textContent = cat;
+    btn.onclick = () => setFilter(cat, btn);
+    wrap.appendChild(btn);
+  });
+}
+
+function setFilter(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+// ── Filter + search
+function getFiltered() {
+  return MODULES.filter(m => {
+    const matchCat  = activeFilter === 'all' || m.category === activeFilter;
+    const q = searchTerm.toLowerCase();
+    const matchSearch = !q ||
+      m.title.toLowerCase().includes(q) ||
+      m.desc.toLowerCase().includes(q) ||
+      m.category.toLowerCase().includes(q) ||
+      m.tags.some(t => t.toLowerCase().includes(q));
+    return matchCat && matchSearch;
+  });
+}
+
+// ── Sort
+function getSorted(list) {
+  const val = document.getElementById('sortSelect').value;
+  const copy = [...list];
+  if (val === 'alpha') copy.sort((a,b) => a.title.localeCompare(b.title));
+  else if (val === 'cat') copy.sort((a,b) => a.category.localeCompare(b.category) || a.num - b.num);
+  else copy.sort((a,b) => a.num - b.num);
+  return copy;
+}
+
+// ── Render cards
+function renderCards() {
+  const grid = document.getElementById('cardsGrid');
+  const label = document.getElementById('resultsLabel');
+  const list = getSorted(getFiltered());
+
+  grid.innerHTML = '';
+
+  if (list.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <h3>No modules found</h3>
+        <p>Try a different search term or category filter.</p>
+      </div>`;
+    label.textContent = '0 results';
+    return;
+  }
+
+  // Group by category if sorting by cat
+  const sortVal = document.getElementById('sortSelect').value;
+  let lastCat = null;
+
+  list.forEach((m, idx) => {
+    if (sortVal === 'cat' && m.category !== lastCat) {
+      // insert a section label inside the grid as a full-width header
+      const sep = document.createElement('div');
+      sep.style.cssText = `
+        grid-column: 1/-1; background: var(--cream);
+        padding: 12px 24px; border-bottom: 1px solid var(--border);
+        font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+        color: var(--mist);
+      `;
+      sep.textContent = m.category;
+      grid.appendChild(sep);
+      lastCat = m.category;
+    }
+
+    const card = document.createElement('a');
+    card.className = 'study-card';
+    card.href = m.file;
+    card.style.animationDelay = `${idx * 0.04}s`;
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-num">${String(m.num).padStart(2,'0')}</div>
+        <div class="card-cat" style="color:${m.catColor};border-color:${m.catColor}40">${m.category}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${m.title}</div>
+        <div class="card-desc">${m.desc}</div>
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          ${m.tags.slice(0,3).map(t =>
+            `<span class="card-tag" style="color:${m.tagColor};border-color:${m.tagColor}40">${t}</span>`
+          ).join('')}
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    `;
+
+    // accent bar colour matches category
+    card.style.setProperty('--accent', m.catColor);
+    card.style.cssText += `--amber: ${m.catColor};`;
+
+    grid.appendChild(card);
+  });
+
+  // update label
+  const filterText = activeFilter === 'all' ? 'All Modules' : activeFilter;
+  const searchText = searchTerm ? ` matching "${searchTerm}"` : '';
+  label.textContent = `${list.length} ${list.length === 1 ? 'module' : 'modules'} — ${filterText}${searchText}`;
+}
+
+// ── Update header stats
+function updateStats() {
+  document.getElementById('totalCount').textContent = MODULES.length;
+  document.getElementById('catCount').textContent   = getCategories().length;
+  document.getElementById('footerCount').textContent = `${MODULES.length} Modules · ${getCategories().length} Topics`;
+
+  // last added date
+  const dates = MODULES.map(m => m.added).filter(Boolean).sort().reverse();
+  if (dates.length) {
+    const d = new Date(dates[0]);
+    document.getElementById('lastUpdated').textContent =
+      d.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  }
+}
+
+// ── Search debounce
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchTerm = e.target.value.trim();
+    renderCards();
+  }, 180);
+});
+
+// ── Init
+buildFilters();
+updateStats();
+renderCards();
+</script>
 </body>
 </html>
