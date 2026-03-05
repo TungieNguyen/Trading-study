@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semiotics in Art</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0e0e0f;
+  --surface: #161618;
+  --border: #2a2a2e;
+  --text: #e8e4dc;
+  --muted: #7a7570;
+  --accent: #c9a84c;
+  --red: #c0392b;
+  --teal: #2a9d8f;
+  --lavender: #9b8ec4;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0;
+  background: rgba(14,14,15,0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0;
+  z-index: 100;
+  padding: 0 2rem;
+  overflow-x: auto;
+}
+.nav-item {
+  background: none; border: none;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-item:hover { color: var(--text); }
+.nav-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* HERO */
+.hero {
+  padding: 5rem 2rem 3rem;
+  max-width: 820px;
+  margin: 0 auto;
+  animation: fadeUp 0.7s ease both;
+}
+.hero-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 1rem;
+}
+.hero h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1.05;
+  margin-bottom: 1.5rem;
+}
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero p {
+  font-size: 0.8rem;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.8;
+  border-left: 2px solid var(--border);
+  padding-left: 1rem;
+}
+
+/* SECTIONS */
+section {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  border-top: 1px solid var(--border);
+}
+.section-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+}
+h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.9rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+p { color: rgba(232,228,220,0.8); margin-bottom: 1rem; font-size: 0.82rem; line-height: 1.9; }
+strong { color: var(--accent); font-weight: 400; }
+
+/* THE THREE CONCEPTS */
+.triad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+}
+@media (max-width: 600px) { .triad { grid-template-columns: 1fr; } }
+.triad-item {
+  background: var(--surface);
+  padding: 2rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.triad-item:hover { background: #1e1e21; }
+.triad-num {
+  font-size: 3rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--border);
+  position: absolute;
+  top: 0.5rem; right: 1rem;
+  line-height: 1;
+  user-select: none;
+}
+.triad-term {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+.triad-sub { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.75rem; }
+.triad-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.7; }
+.triad-example { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem; color: var(--accent); margin-top: 0.75rem; }
+
+/* MAGRITTE CASE STUDY */
+.painting-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 2.5rem;
+  margin: 2rem 0;
+}
+.painting-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-style: italic;
+  margin-bottom: 0.25rem;
+}
+.painting-meta { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 2rem; }
+
+/* SVG Magritte painting */
+.painting-svg-wrap {
+  background: #c8b89a;
+  display: flex; justify-content: center; align-items: center;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Layered sign breakdown */
+.sign-layers { display: flex; flex-direction: column; gap: 1px; background: var(--border); margin: 2rem 0; }
+.sign-layer {
+  background: var(--surface);
+  padding: 1.25rem 1.5rem;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.sign-layer:hover { background: #1e1e21; }
+.layer-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding-top: 3px;
+}
+.layer-content h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
+}
+.layer-content p { font-size: 0.75rem; color: var(--muted); margin-bottom: 0; }
+.layer-detail {
+  display: none;
+  grid-column: 1 / -1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+  color: rgba(232,228,220,0.7);
+  line-height: 1.8;
+  animation: fadeUp 0.3s ease;
+}
+.layer-detail.open { display: block; }
+
+/* DENOTATION / CONNOTATION */
+.dencon-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+}
+@media (max-width: 540px) { .dencon-grid { grid-template-columns: 1fr; } }
+.dencon-item {
+  background: var(--surface);
+  padding: 2rem 1.5rem;
+}
+.dencon-item h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem;
+  margin-bottom: 0.5rem;
+}
+.dencon-tag {
+  display: inline-block;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  margin-bottom: 0.75rem;
+}
+.tag-den { background: var(--teal); color: #fff; }
+.tag-con { background: var(--lavender); color: #fff; }
+.dencon-item ul { list-style: none; }
+.dencon-item ul li {
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border);
+  padding-left: 1rem;
+  position: relative;
+}
+.dencon-item ul li::before { content: '—'; position: absolute; left: 0; color: var(--border); }
+
+/* QUIZ */
+.quiz-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  margin: 2rem 0;
+}
+.quiz-q {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  font-style: italic;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.quiz-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.quiz-btn:hover { border-color: var(--accent); color: var(--text); }
+.quiz-btn.correct { background: rgba(42,157,143,0.15); border-color: var(--teal); color: var(--teal); }
+.quiz-btn.wrong { background: rgba(192,57,43,0.1); border-color: var(--red); color: var(--red); }
+.quiz-feedback {
+  display: none;
+  font-size: 0.75rem;
+  line-height: 1.8;
+  color: var(--muted);
+  padding: 1rem;
+  background: var(--bg);
+  border-left: 2px solid var(--accent);
+  margin-top: 0.75rem;
+}
+.quiz-feedback.show { display: block; }
+.quiz-next {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.65rem 1.25rem;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  display: none;
+  transition: opacity 0.2s;
+}
+.quiz-next:hover { opacity: 0.85; }
+.quiz-next.show { display: inline-block; }
+.quiz-score {
+  text-align: center;
+  padding: 2rem;
+  display: none;
+}
+.quiz-score.show { display: block; }
+.score-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4rem;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.score-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+
+/* BARTHES MYTH */
+.myth-diagram {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+  grid-template-rows: auto auto;
+  gap: 1px;
+  background: var(--border);
+  margin: 2rem 0;
+  align-items: stretch;
+}
+.myth-cell {
+  background: var(--surface);
+  padding: 1.5rem;
+  font-size: 0.75rem;
+}
+.myth-cell.highlight { background: #1a1a20; border: 1px solid var(--lavender); }
+.myth-arrow {
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--border);
+  font-size: 1.5rem;
+}
+.myth-label { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--lavender); margin-bottom: 0.4rem; }
+.myth-val { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; }
+.myth-desc { font-size: 0.72rem; color: var(--muted); margin-top: 0.4rem; line-height: 1.6; }
+
+/* FOOTER */
+.footer-note {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.8;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="nav-item active" onclick="scrollTo('hero')">Intro</button>
+  <button class="nav-item" onclick="scrollTo('saussure')">The Sign</button>
+  <button class="nav-item" onclick="scrollTo('magritte')">Case Study</button>
+  <button class="nav-item" onclick="scrollTo('dencon')">Denotation / Connotation</button>
+  <button class="nav-item" onclick="scrollTo('myth')">Myth (Barthes)</button>
+  <button class="nav-item" onclick="scrollTo('quiz')">Test Yourself</button>
+</nav>
+
+<div id="hero">
+<div class="hero">
+  <div class="hero-label">A Beginner's Guide</div>
+  <h1>Semiotics<br>& the Art of<br><em>Reading Images</em></h1>
+  <p>Semiotics is the study of signs — how meaning is made, not just what things look like. Applied to art, it asks: what are images actually saying, and how do they say it?</p>
+</div>
+</div>
+
+<!-- THE SIGN -->
+<section id="saussure">
+  <div class="section-label">Foundation</div>
+  <h2>The Sign: Saussure's Big Idea</h2>
+  <p>Ferdinand de Saussure (1857–1913) proposed that all communication works through <strong>signs</strong>. A sign is not a thing — it's a relationship between two parts. Understanding this is the key that unlocks semiotic analysis.</p>
+  <p>Roland Barthes later extended this to images: a photograph, a painting, an advertisement — all are systems of signs that can be "read" like a language.</p>
+
+  <div class="triad">
+    <div class="triad-item">
+      <div class="triad-num">1</div>
+      <div class="triad-sub">The whole unit</div>
+      <div class="triad-term">The Sign</div>
+      <div class="triad-desc">The complete unit of meaning — the pairing of a sound/image with a concept. A sign is always relational, never isolated.</div>
+      <div class="triad-example">The word "pipe" as a whole unit</div>
+    </div>
+    <div class="triad-item">
+      <div class="triad-num">2</div>
+      <div class="triad-sub">The form</div>
+      <div class="triad-term">Signifier</div>
+      <div class="triad-desc">The physical form the sign takes — the sounds, marks, or visual elements that carry the meaning. The "what you see or hear."</div>
+      <div class="triad-example">The painted image of a pipe</div>
+    </div>
+    <div class="triad-item">
+      <div class="triad-num">3</div>
+      <div class="triad-sub">The concept</div>
+      <div class="triad-term">Signified</div>
+      <div class="triad-desc">The mental concept or idea that the signifier evokes. Not the actual object — the idea of it that exists in our minds.</div>
+      <div class="triad-example">Our concept of "pipe-ness"</div>
+    </div>
+  </div>
+
+  <p>Crucially, Saussure argued the link between signifier and signified is <strong>arbitrary</strong> — there's nothing pipe-like about the letters P-I-P-E. The connection is a social convention, agreed upon by a culture. This means meanings can shift, be contested, or differ between cultures entirely.</p>
+</section>
+
+<!-- MAGRITTE CASE STUDY -->
+<section id="magritte">
+  <div class="section-label">Case Study</div>
+  <h2>Magritte's Trap: <em>The Treachery of Images</em></h2>
+
+  <div class="painting-block">
+    <div class="painting-title">La Trahison des images (The Treachery of Images)</div>
+    <div class="painting-meta">René Magritte · 1929 · Oil on canvas · Los Angeles County Museum of Art</div>
+
+    <!-- SVG recreation of Magritte painting -->
+    <div class="painting-svg-wrap">
+      <svg viewBox="0 0 500 300" width="100%" style="max-width:500px;display:block;" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background -->
+        <rect width="500" height="300" fill="#c8b89a"/>
+        <!-- Pipe bowl -->
+        <ellipse cx="220" cy="130" rx="60" ry="45" fill="#5c3a1e" stroke="#3d2510" stroke-width="2"/>
+        <ellipse cx="220" cy="120" rx="45" ry="32" fill="#2a1508"/>
+        <!-- Pipe stem -->
+        <path d="M270 148 Q340 165 390 158 Q420 155 430 152" stroke="#5c3a1e" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <path d="M270 148 Q340 165 390 158 Q420 155 430 152" stroke="#7a4e2d" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <!-- Pipe highlight -->
+        <ellipse cx="210" cy="112" rx="22" ry="14" fill="#6b4422" opacity="0.5"/>
+        <!-- Text -->
+        <text x="250" y="230" font-family="Georgia, serif" font-style="italic" font-size="28" fill="#2a1a08" text-anchor="middle">Ceci n'est pas une pipe.</text>
+        <!-- Thin rule lines like a schoolroom board -->
+        <line x1="40" y1="260" x2="460" y2="260" stroke="#b0a088" stroke-width="0.5" opacity="0.5"/>
+      </svg>
+    </div>
+
+    <p>This is arguably the most famous semiotic joke in art history. Magritte painted a meticulously realistic pipe, then wrote beneath it — in neat schoolroom cursive — <em>"Ceci n'est pas une pipe"</em>: <strong>"This is not a pipe."</strong></p>
+    <p>Is he wrong? Click through the layers below to see what semiotics reveals.</p>
+  </div>
+
+  <div class="sign-layers">
+    <div class="sign-layer" onclick="toggleLayer(this)">
+      <div class="layer-label" style="color:var(--teal)">Layer 01 — <br>What you see</div>
+      <div class="layer-content">
+        <h4>A painted pipe</h4>
+        <p>The image depicts a tobacco pipe with startling realism. Your brain immediately recognizes it. ↓ click to explore</p>
+        <div class="layer-detail">The <strong>signifier</strong> here is the arrangement of paint on canvas — curved shapes, brown tones, a certain silhouette — that trigger your mental concept of "pipe." The painting is so convincing that your first instinct is to accept it as representing reality. This is exactly the habit Magritte wants to disrupt.</div>
+      </div>
+    </div>
+    <div class="sign-layer" onclick="toggleLayer(this)">
+      <div class="layer-label" style="color:var(--lavender)">Layer 02 — <br>The text</div>
+      <div class="layer-content">
+        <h4>"This is not a pipe"</h4>
+        <p>The sentence contradicts what you see — or does it? ↓ click to explore</p>
+        <div class="layer-detail">Magritte is technically correct. <strong>You cannot stuff tobacco into this pipe. You cannot hold it.</strong> What you see is paint — a representation, a sign that refers to a pipe. The painting uses the pipe's signifier (visual form) without delivering the signified (the actual object). Writing confronts you with this gap. The text is a second sign system placed in tension with the image sign system.</div>
+      </div>
+    </div>
+    <div class="sign-layer" onclick="toggleLayer(this)">
+      <div class="layer-label" style="color:var(--accent)">Layer 03 — <br>The trap</div>
+      <div class="layer-content">
+        <h4>The image of language</h4>
+        <p>But here's the twist Magritte hid in plain sight. ↓ click to explore</p>
+        <div class="layer-detail">The sentence "Ceci n'est pas une pipe" is <em>also</em> not a pipe. It's marks on canvas — a painted representation of handwritten words. The word "pipe" in the sentence is a signifier, too, not the thing itself. Magritte has stacked sign upon sign, drawing our attention to the infinite regress of representation. <strong>Nothing in the painting is what it appears to be — including the denial.</strong></div>
+      </div>
+    </div>
+    <div class="sign-layer" onclick="toggleLayer(this)">
+      <div class="layer-label" style="color:var(--red)">Layer 04 — <br>The argument</div>
+      <div class="layer-content">
+        <h4>What Magritte is claiming</h4>
+        <p>The painting is a philosophical statement about representation itself. ↓ click to explore</p>
+        <div class="layer-detail">Magritte is arguing that images <em>always</em> betray their subjects — they are never the thing, only a sign of the thing. We habitually confuse the sign for the reality. This is the "treachery" of images: they appear transparent (showing us the world) while actually being opaque (constructions of meaning). Semiotics makes this betrayal visible. <strong>Every image is a translation, not a window.</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DENOTATION / CONNOTATION -->
+<section id="dencon">
+  <div class="section-label">Barthes</div>
+  <h2>Denotation & Connotation</h2>
+  <p>Roland Barthes extended Saussure's framework to popular culture and art. He introduced a two-level model of meaning. Take any image — say, an advertisement showing a woman in a red dress against a stark white background.</p>
+
+  <div class="dencon-grid">
+    <div class="dencon-item">
+      <span class="dencon-tag tag-den">Level 1</span>
+      <h3>Denotation</h3>
+      <p style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem">What the image <em>literally</em> shows — objective, descriptive, apparently neutral.</p>
+      <ul>
+        <li>A woman standing</li>
+        <li>She wears a red dress</li>
+        <li>The background is white</li>
+        <li>She is looking at the camera</li>
+        <li>Her posture is upright</li>
+      </ul>
+    </div>
+    <div class="dencon-item">
+      <span class="dencon-tag tag-con">Level 2</span>
+      <h3>Connotation</h3>
+      <p style="font-size:0.72rem;color:var(--muted);margin-bottom:1rem">What the image <em>culturally implies</em> — loaded with social, historical, emotional meaning.</p>
+      <ul>
+        <li>Red = passion, danger, desire</li>
+        <li>White background = purity, luxury, focus</li>
+        <li>Direct gaze = confidence, invitation</li>
+        <li>Upright posture = power, status</li>
+        <li>The combination = aspirational femininity</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>Barthes' crucial point: <strong>connotation disguises itself as denotation</strong>. We experience culturally loaded meanings as if they were simply "what's there." Semiotics pulls back that curtain — making the cultural work of images visible.</p>
+  <p>Applied to fine art: when Vermeer paints a woman reading a letter by a window, the denotation is simply that scene. The connotations — solitude, feminine interiority, the outside world glimpsed but inaccessible, the intimacy of private correspondence — are a cultural language that 17th-century Dutch viewers would have read fluently.</p>
+</section>
+
+<!-- MYTH -->
+<section id="myth">
+  <div class="section-label">Barthes — Mythologies (1957)</div>
+  <h2>When Connotation Becomes Myth</h2>
+  <p>Barthes introduced a third concept: <strong>myth</strong>. When a connotation becomes so naturalized that it seems inevitable — when culture passes itself off as nature — a myth is formed. Myth is ideology made invisible.</p>
+
+  <div class="myth-diagram">
+    <div class="myth-cell">
+      <div class="myth-label">Signifier (form)</div>
+      <div class="myth-val">Image of a soldier saluting a French flag</div>
+    </div>
+    <div class="myth-arrow">→</div>
+    <div class="myth-cell">
+      <div class="myth-label">Signified (concept)</div>
+      <div class="myth-val">"Soldier," "flag," "military"</div>
+      <div class="myth-desc">First-order sign: straightforward recognition</div>
+    </div>
+    <div class="myth-cell" style="grid-column:1/-1;background:#12121a;border-top:1px solid var(--lavender)">
+      <div class="myth-label" style="color:var(--lavender)">Myth (second order) — the whole first sign becomes a new signifier</div>
+      <div class="myth-val" style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text)">"France is a great multi-ethnic empire whose sons serve her faithfully regardless of background"</div>
+      <div class="myth-desc" style="margin-top:0.5rem">Barthes' actual example from Mythologies. The image naturalizes French imperialism — presenting colonial loyalty as organic and inevitable, rather than as a political construction.</div>
+    </div>
+  </div>
+
+  <p>In fine art, myth operates constantly. Landscapes painted as timeless and serene <strong>mythologize land ownership</strong> as natural. Heroic portraits mythologize power as deserved. Genre paintings of "happy peasants" mythologize class hierarchy as contentment.</p>
+  <p>The semiotic task is to <strong>demythologize</strong> — to ask: what naturalized political claim is this image making? What does it present as inevitable that is actually constructed?</p>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <div class="section-label">Test Yourself</div>
+  <h2>Apply the Concepts</h2>
+  <p>Four quick questions to check your understanding. Each one applies directly to real artworks.</p>
+
+  <div class="quiz-block" id="quizBlock">
+    <div id="quizInner"></div>
+  </div>
+</section>
+
+<div class="footer-note">
+  <strong style="color:var(--accent)">Key thinkers covered:</strong> Ferdinand de Saussure · Roland Barthes · René Magritte<br>
+  Further reading: Barthes, <em>Mythologies</em> (1957) · Barthes, <em>Image–Music–Text</em> (1977) · Berger, <em>Ways of Seeing</em> (1972)
+</div>
+
+<script>
+function scrollTo(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggleLayer(el) {
+  const detail = el.querySelector('.layer-detail');
+  detail.classList.toggle('open');
+}
+
+// QUIZ
+const questions = [
+  {
+    q: 'In Magritte\'s painting, the image of the pipe is the _____ and the concept of "pipe" in your mind is the _____.',
+    options: ['sign / symbol', 'signifier / signified', 'denotation / myth', 'connotation / code'],
+    correct: 1,
+    feedback: 'Correct! The painted image is the signifier (the form/vehicle), while the mental concept it triggers — your idea of what a pipe is — is the signified. Together, they form the sign.'
+  },
+  {
+    q: 'A photograph of a dove is described as "a bird with white feathers and wings spread." This is an example of:',
+    options: ['Connotation', 'Myth', 'Denotation', 'Signification'],
+    correct: 2,
+    feedback: 'Exactly. Denotation is the literal, descriptive level — what is objectively visible. "A bird with white feathers" describes without interpreting. Connotation would add: peace, purity, hope, the Holy Spirit — meanings that are culturally loaded.'
+  },
+  {
+    q: 'An advertisement shows a rugged man in wilderness drinking coffee alone at dawn. The implied message is "independence," "masculinity," and "authenticity." Barthes would call this:',
+    options: ['Denotation', 'The signifier', 'Myth', 'Iconography'],
+    correct: 2,
+    feedback: 'Right — this is myth in action. The image naturalizes a cultural construction (that this brand = authentic masculinity) as if it were simply what the image shows. Myth works by making ideology feel like common sense.'
+  },
+  {
+    q: 'Saussure argued the connection between a word and its meaning is:',
+    options: ['Natural and universal', 'Arbitrary and culturally agreed upon', 'Fixed in biology', 'Determined by grammar'],
+    correct: 1,
+    feedback: 'Yes. This is one of Saussure\'s most radical claims. There\'s nothing inherently "dog-like" about the word "dog" — speakers of French say "chien," Spanish speakers say "perro." The link is a social convention, not a natural fact. This means meanings are unstable and can change.'
+  }
+];
+
+let current = 0, score = 0;
+
+function renderQuestion() {
+  const q = questions[current];
+  const inner = document.getElementById('quizInner');
+  inner.innerHTML = `
+    <div style="font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">Question ${current+1} of ${questions.length}</div>
+    <div class="quiz-q">${q.q}</div>
+    <div class="quiz-options">
+      ${q.options.map((o,i) => `<button class="quiz-btn" onclick="answer(${i}, this)">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}
+    </div>
+    <div class="quiz-feedback" id="qFeedback"></div>
+    <button class="quiz-next" id="qNext" onclick="nextQ()">${current < questions.length-1 ? 'Next question →' : 'See results →'}</button>
+  `;
+}
+
+function answer(i, btn) {
+  const q = questions[current];
+  document.querySelectorAll('.quiz-btn').forEach(b => b.style.pointerEvents = 'none');
+  if (i === q.correct) {
+    btn.classList.add('correct');
+    score++;
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.quiz-btn')[q.correct].classList.add('correct');
+  }
+  const fb = document.getElementById('qFeedback');
+  fb.textContent = q.feedback;
+  fb.classList.add('show');
+  document.getElementById('qNext').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= questions.length) {
+    showScore();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showScore() {
+  const block = document.getElementById('quizBlock');
+  const msgs = ['Keep exploring — revisit the concepts above!', 'Good start — you\'re getting it!', 'Strong work — semiotics is clicking!', 'Excellent — you think like a semiotician!'];
+  block.innerHTML = `
+    <div class="quiz-score show">
+      <div class="score-num">${score}/${questions.length}</div>
+      <div class="score-label">${msgs[score]}</div>
+      <button class="quiz-next show" style="margin-top:1.5rem" onclick="restartQuiz()">Try again</button>
+    </div>
+  `;
+}
+
+function restartQuiz() {
+  current = 0; score = 0;
+  document.getElementById('quizBlock').innerHTML = '<div id="quizInner"></div>';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
