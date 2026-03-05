@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deconstruction: Reverse Chess</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f7f3ec;
+  --dark: #111009;
+  --mid: #2e2b24;
+  --muted: #7a7060;
+  --border: #d4c9b4;
+  --cream: #ede6d3;
+  --gold: #b8860b;
+  --red: #8b1a1a;
+  --green: #2d5a27;
+  --blue: #1a3a5c;
+  --accent: #c9921a;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--dark);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* === HERO === */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 2px solid var(--dark);
+}
+@media (max-width: 700px) { .hero { grid-template-columns: 1fr; min-height: auto; } }
+
+.hero-left {
+  padding: 80px 60px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@media (max-width: 700px) { .hero-left { padding: 50px 28px; border-right: none; border-bottom: 1px solid var(--border); } }
+
+.hero-label {
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.hero h1 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 2rem;
+}
+
+.hero h1 .accent { color: var(--accent); }
+.hero h1 .strike {
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+  opacity: 0.5;
+}
+
+.hero-desc {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.15rem;
+  color: var(--mid);
+  line-height: 1.75;
+  max-width: 400px;
+  border-left: 2px solid var(--accent);
+  padding-left: 1.25rem;
+}
+
+.hero-right {
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--dark);
+  color: #e8e0d0;
+}
+@media (max-width: 700px) { .hero-right { padding: 40px 28px; } }
+
+.chess-analogy {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: rgba(232,224,208,0.75);
+  margin-bottom: 2.5rem;
+}
+
+.chess-analogy strong { color: #e8e0d0; font-weight: 400; }
+.chess-analogy em { color: var(--accent); font-style: italic; }
+
+.direction-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: rgba(232,224,208,0.1);
+  border: 1px solid rgba(232,224,208,0.15);
+}
+
+.dir-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  background: #161410;
+  padding: 14px 18px;
+  gap: 14px;
+}
+
+.dir-arrow { font-size: 1rem; text-align: center; }
+.dir-up { color: var(--red); }
+.dir-down { color: var(--green); }
+
+.dir-text { font-size: 11px; line-height: 1.6; }
+.dir-text .label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.dir-text .val { color: #e8e0d0; }
+
+/* === MOVES SECTION === */
+.moves-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 60px;
+}
+@media (max-width: 700px) { .moves-section { padding: 50px 24px; } }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+}
+
+.section-num {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+
+.section-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Chess board moves */
+.moves-board {
+  position: relative;
+}
+
+.move-row {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 0;
+  margin-bottom: 2px;
+  cursor: pointer;
+}
+
+.move-num-col {
+  background: var(--dark);
+  color: var(--bg);
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 22px;
+}
+
+.move-num-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.move-num {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.move-piece {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.move-connector {
+  flex: 1;
+  width: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 6px auto 0;
+}
+
+.move-content {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--dark);
+  transition: all 0.2s;
+  overflow: hidden;
+}
+
+.move-row:hover .move-content { background: #e8e0ce; border-left-color: var(--accent); }
+.move-row.open .move-content { border-left-color: var(--accent); background: #fff; }
+
+.move-header {
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.move-title-block {}
+.move-action {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.move-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--dark);
+}
+
+.move-toggle {
+  font-size: 1.1rem;
+  color: var(--muted);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.move-row.open .move-toggle { transform: rotate(45deg); color: var(--accent); }
+
+.move-body {
+  display: none;
+  padding: 0 22px 22px;
+  animation: slideDown 0.3s ease;
+}
+.move-row.open .move-body { display: block; }
+
+.move-explanation {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem;
+  color: var(--mid);
+  line-height: 1.8;
+  margin-bottom: 1.25rem;
+}
+
+.move-key {
+  background: var(--dark);
+  color: var(--bg);
+  padding: 14px 18px;
+  margin-bottom: 1rem;
+}
+
+.move-key-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.move-key-q {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: rgba(232,224,208,0.9);
+  line-height: 1.6;
+}
+
+.move-example {
+  border: 1px solid var(--border);
+  padding: 14px 18px;
+}
+
+.move-ex-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.move-ex-before, .move-ex-after {
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+}
+
+.move-ex-before {
+  background: rgba(139,26,26,0.06);
+  border-left: 2px solid var(--red);
+  color: var(--red);
+}
+
+.move-ex-after {
+  background: rgba(45,90,39,0.06);
+  border-left: 2px solid var(--green);
+  color: var(--green);
+}
+
+.ex-tag {
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 3px;
+  opacity: 0.7;
+}
+
+/* === WALKTHROUGH === */
+.walkthrough {
+  background: var(--dark);
+  color: #e8e0d0;
+  padding: 80px 60px;
+  border-top: 2px solid var(--dark);
+}
+@media (max-width: 700px) { .walkthrough { padding: 50px 24px; } }
+
+.walkthrough-inner { max-width: 1100px; margin: 0 auto; }
+
+.walkthrough h2 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.walkthrough-sub {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  color: rgba(232,224,208,0.5);
+  margin-bottom: 3rem;
+}
+
+/* The painting subject */
+.painting-subject {
+  background: #1e1b16;
+  border: 1px solid rgba(232,224,208,0.1);
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+@media (max-width: 600px) { .painting-subject { grid-template-columns: 1fr; } }
+
+/* Simple SVG of a landscape painting */
+.painting-thumb { flex-shrink: 0; }
+
+.painting-info {}
+.painting-title-wt {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.3rem;
+  font-style: italic;
+  color: #e8e0d0;
+  margin-bottom: 4px;
+}
+.painting-meta-wt {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgba(232,224,208,0.4);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.painting-myth {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  color: rgba(232,224,208,0.6);
+  line-height: 1.7;
+  border-left: 2px solid var(--accent);
+  padding-left: 1rem;
+}
+
+/* Steps */
+.wt-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: rgba(232,224,208,0.08);
+}
+
+.wt-step {
+  background: #161410;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 16px;
+  align-items: start;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-left: 3px solid transparent;
+}
+.wt-step:hover { background: #1e1b16; }
+.wt-step.revealed { border-left-color: var(--accent); background: #1a1815; }
+
+.wt-step-num {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(232,224,208,0.2);
+  padding-top: 2px;
+  transition: color 0.2s;
+}
+.wt-step.revealed .wt-step-num { color: var(--accent); }
+
+.wt-step-body {}
+.wt-step-move {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(232,224,208,0.3);
+  margin-bottom: 4px;
+  transition: color 0.2s;
+}
+.wt-step.revealed .wt-step-move { color: var(--accent); }
+
+.wt-step-q {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem;
+  color: rgba(232,224,208,0.5);
+  font-style: italic;
+  line-height: 1.6;
+  transition: color 0.2s;
+}
+.wt-step.revealed .wt-step-q { color: rgba(232,224,208,0.85); }
+
+.wt-step-answer {
+  display: none;
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(232,224,208,0.55);
+  line-height: 1.75;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+}
+.wt-step.revealed .wt-step-answer { display: block; }
+
+.wt-conclusion {
+  margin-top: 2px;
+  background: var(--accent);
+  padding: 20px 24px;
+  display: none;
+}
+.wt-conclusion.show { display: block; }
+.wt-conclusion-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(17,16,9,0.6);
+  margin-bottom: 6px;
+}
+.wt-conclusion-text {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.1rem;
+  color: var(--dark);
+  line-height: 1.7;
+}
+
+/* === SUMMARY TABLE === */
+.summary {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 60px;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 700px) { .summary { padding: 50px 24px; } }
+
+.summary h2 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  margin-bottom: 2rem;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+}
+
+.summary-table th {
+  background: var(--dark);
+  color: var(--bg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 400;
+}
+
+.summary-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table tr:nth-child(even) td { background: var(--cream); }
+
+.td-move {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.td-name { font-weight: 400; color: var(--dark); }
+.td-chess { color: var(--muted); font-style: italic; font-family: 'Crimson Pro', serif; font-size: 0.95rem; }
+.td-question { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.95rem; color: var(--mid); }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-label">Semiotics · Deconstruction · Method</div>
+    <h1>Playing<br>Chess<br><span class="accent">Back<span class="strike">wards</span></span></h1>
+    <p class="hero-desc">
+      Deconstruction is not destruction. It is the disciplined reversal of the argument an image made without declaring itself an argument — excavating hidden premises from apparent conclusions, move by move.
+    </p>
+  </div>
+  <div class="hero-right">
+    <p class="chess-analogy">
+      In chess, a grandmaster can look at a final position and <em>replay the game backwards</em> — each move revealing the decision that made the next inevitable.<br><br>
+      <strong>Deconstruction is the same discipline applied to images.</strong><br><br>
+      You start at checkmate — the naturalized meaning that feels obvious, neutral, simply true — and you reverse-engineer every move that produced it. The hidden premises surface one by one.
+    </p>
+    <div class="direction-diagram">
+      <div class="dir-row">
+        <div class="dir-arrow dir-up">↑</div>
+        <div class="dir-text">
+          <div class="label">Essay Writing</div>
+          <div class="val">Build upward — premise → argument → conclusion</div>
+        </div>
+      </div>
+      <div class="dir-row">
+        <div class="dir-arrow dir-down">↓</div>
+        <div class="dir-text">
+          <div class="label">Deconstruction</div>
+          <div class="val">Reverse downward — conclusion → argument → hidden premise</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THE MOVES -->
+<div class="moves-section">
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">The Seven Backward Moves</span>
+  </div>
+
+  <div class="moves-board" id="movesBoard"></div>
+</div>
+
+<!-- WALKTHROUGH -->
+<div class="walkthrough">
+  <div class="walkthrough-inner">
+    <div class="section-head" style="border-color:rgba(232,224,208,0.15)">
+      <span class="section-num" style="color:rgba(232,224,208,0.3)">02</span>
+      <span class="section-title">Live Walkthrough — Apply All 7 Moves</span>
+    </div>
+
+    <div class="painting-subject">
+      <!-- SVG landscape painting -->
+      <div class="painting-thumb">
+        <svg viewBox="0 0 200 140" width="200" height="140" xmlns="http://www.w3.org/2000/svg" style="display:block;border:1px solid rgba(232,224,208,0.1)">
+          <rect width="200" height="140" fill="#87CEEB"/>
+          <rect y="85" width="200" height="55" fill="#4a7c3f"/>
+          <rect y="90" width="200" height="50" fill="#3d6b34"/>
+          <!-- Hills -->
+          <ellipse cx="50" cy="90" rx="70" ry="30" fill="#5a8a4a"/>
+          <ellipse cx="160" cy="88" rx="60" ry="25" fill="#4e7d41"/>
+          <!-- Farmhouse -->
+          <rect x="80" y="68" width="30" height="22" fill="#c8a87a"/>
+          <polygon points="75,68 115,68 95,52" fill="#8b4513"/>
+          <!-- Field rows -->
+          <line x1="0" y1="108" x2="200" y2="108" stroke="#3a6030" stroke-width="1.5" opacity="0.4"/>
+          <line x1="0" y1="116" x2="200" y2="116" stroke="#3a6030" stroke-width="1.5" opacity="0.4"/>
+          <line x1="0" y1="124" x2="200" y2="124" stroke="#3a6030" stroke-width="1.5" opacity="0.4"/>
+          <!-- Sun -->
+          <circle cx="160" cy="28" r="14" fill="#f5c842" opacity="0.9"/>
+          <!-- Clouds -->
+          <ellipse cx="60" cy="22" rx="28" ry="10" fill="white" opacity="0.8"/>
+          <ellipse cx="45" cy="20" rx="18" ry="9" fill="white" opacity="0.8"/>
+        </svg>
+      </div>
+      <div class="painting-info">
+        <div class="painting-title-wt">Idyllic English Pastoral Landscape</div>
+        <div class="painting-meta-wt">circa 1820 · Oil on canvas · Genre: Landscape</div>
+        <div class="painting-myth">Apparent conclusion: <em>"This is simply a beautiful, timeless scene of the English countryside — peaceful, natural, eternal."</em><br>Click through each move below to deconstruct it.</div>
+      </div>
+    </div>
+
+    <div class="wt-steps" id="wtSteps"></div>
+    <div class="wt-conclusion" id="wtConclusion">
+      <div class="wt-conclusion-label">Hidden Premise — Fully Excavated</div>
+      <div class="wt-conclusion-text">What looked like "a timeless, natural scene" is actually an argument: that enclosure of common land is natural and beautiful, that class hierarchy is part of the landscape itself, and that agricultural labor need not appear in a civilized view of England. The painting didn't announce any of this. It didn't need to — that's what makes myth powerful.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY TABLE -->
+<div class="summary">
+  <h2>The 7 Moves — Quick Reference</h2>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Move</th>
+        <th>Name</th>
+        <th>Chess Equivalent</th>
+        <th>Deconstructive Question</th>
+      </tr>
+    </thead>
+    <tbody id="summaryBody"></tbody>
+  </table>
+</div>
+
+<script>
+const moves = [
+  {
+    num: '01',
+    piece: '♔',
+    action: 'Locate the Checkmate',
+    title: 'Name the Apparent Conclusion',
+    explanation: 'Before you can reverse the game, you must name what the image has made you feel is simply true — not argued for, just obvious. This is the "checkmate": the final position that feels natural and inevitable. Write it out as a statement.',
+    keyQ: 'What is this image asking me to accept without question? What does it present as simply "how things are"?',
+    beforeLabel: 'Vague starting point',
+    before: '"This is a beautiful landscape."',
+    afterLabel: 'Sharpened checkmate statement',
+    after: '"The English countryside is eternal, peaceful, and naturally hierarchical — landlords and farms belong to the same timeless order."',
+  },
+  {
+    num: '02',
+    piece: '♛',
+    action: 'Strip the Naturalness',
+    title: 'Ask: Who Made This Choice?',
+    explanation: 'Nothing in an image is accidental. The painter chose what to include, what to exclude, which angle, which light, which moment. Denaturalizing means treating every element as a decision — then asking who made it, and why it was made this way rather than another way.',
+    keyQ: 'What was left out? What angle was chosen — and who does that angle favor? What would this look like from a different position?',
+    beforeLabel: 'Naturalized reading',
+    before: '"The composition shows a wide, open countryside."',
+    afterLabel: 'Denaturalized reading',
+    after: '"The painter stood at a distance — a landowner\'s view, not a laborer\'s view. No workers appear. The fields look empty and peaceful because human toil was edited out."',
+  },
+  {
+    num: '03',
+    piece: '♜',
+    action: 'Find the Binary',
+    title: 'Identify What is Suppressed',
+    explanation: 'Every image constructs meaning partly by suppression — by what it hides, marginalizes, or renders invisible. Derrida showed that meaning works through opposites: presence/absence, civilization/nature, order/chaos. One term is always elevated by silencing the other. Find the silenced term.',
+    keyQ: 'What is conspicuously absent? What would disturb this image if it appeared? What does the image need to hide to make its argument work?',
+    beforeLabel: 'What is shown',
+    before: '"Peaceful fields, a farmhouse, gentle hills, sunlight."',
+    afterLabel: 'What is suppressed',
+    after: '"Agricultural labor, poverty, the Enclosure Acts that removed peasants from common land, the economic relations that the "natural" scene rests on."',
+  },
+  {
+    num: '04',
+    piece: '♝',
+    action: 'Trace the Connotations',
+    title: 'Unpack the Sign System',
+    explanation: 'Apply Barthes\' two levels. List every significant element and its denotation (what it literally is), then excavate its connotation (what it culturally implies). The connotations are the hidden moves — the cultural luggage that arrives with the signifier without announcing itself.',
+    keyQ: 'What does each element connote in this cultural context? What assumptions must I already hold for this image to feel beautiful rather than disturbing?',
+    beforeLabel: 'Denotation only',
+    before: '"A sun, green hills, a stone farmhouse, ploughed fields."',
+    afterLabel: 'Connotations excavated',
+    after: '"Sun = prosperity and divine favor. Stone farmhouse = permanence, rightful ownership. Ploughed fields = productivity, civilization taming nature. Green hills = England itself as a natural entity, not a political construction."',
+  },
+  {
+    num: '05',
+    piece: '♞',
+    action: 'The Knight\'s Jump',
+    title: 'Ask: Who Benefits?',
+    explanation: 'The knight\'s move in chess is unexpected — it jumps over other pieces. In deconstruction, this is the political jump: suddenly asking not "what does this mean?" but "whose interests does this meaning serve?" Whose power does this naturalized image reinforce? Who would be threatened if it were destabilized?',
+    keyQ: 'If this myth were widely believed — if everyone accepted this as simply "how things are" — who gains? Whose authority does it legitimize? Who loses if it is questioned?',
+    beforeLabel: 'Aesthetic question',
+    before: '"Why is this painting beautiful?"',
+    afterLabel: 'Political question',
+    after: '"This painting\'s myth of timeless natural order served the landed gentry in 1820 — it made enclosure, land ownership, and class hierarchy appear as features of the landscape rather than recent, contested political acts."',
+  },
+  {
+    num: '06',
+    piece: '♟',
+    action: 'The Pawn\'s History',
+    title: 'Historicize — When Was This "Timeless"?',
+    explanation: 'Myth presents itself as eternal and universal. Deconstruction insists on historicizing — placing the image back into its specific moment. "Timeless" always means "timely for someone." Find the historical pressure that produced this particular myth at this particular moment.',
+    keyQ: 'When exactly was this made? What was happening politically, economically, socially at that moment? What anxieties or conflicts does this myth resolve — or conceal?',
+    beforeLabel: 'Myth claims',
+    before: '"The English countryside has always looked like this — it is eternal."',
+    afterLabel: 'Historical reality',
+    after: '"Painted circa 1820 — peak of the Enclosure Acts, when common land was being systematically privatized, displacing rural populations. The "timeless" pastoral landscape is a direct response to that contested, violent political process."',
+  },
+  {
+    num: '07',
+    piece: '♙',
+    action: 'State the Hidden Premise',
+    title: 'Write Out What Was Never Said',
+    explanation: 'This is the final move: articulating the hidden premise that the image relied on but never declared. This is the move from demythologizing back to critical statement — the point where you, like a prosecutor, produce the argument the image was making all along, in plain language.',
+    keyQ: 'Complete this sentence: "For this image to work as it does, the viewer must already accept that ___." Now write that premise out fully. That is what was hidden.',
+    beforeLabel: 'What the image says',
+    before: '"This is simply a beautiful English landscape."',
+    afterLabel: 'The hidden premise',
+    after: '"The natural order of the English landscape — including who owns it, who works it invisibly, and who views it from a distance — is eternal, benign, and not a subject for political debate."',
+  }
+];
+
+const wtData = [
+  { move: 'Move 01 — Name the Checkmate', q: 'What is this painting asking me to accept as simply true?', answer: 'The apparent conclusion: "The English countryside is timeless, peaceful, naturally beautiful — this is just how it is and always has been." That feeling of inevitability is the myth we are about to reverse-engineer.' },
+  { move: 'Move 02 — Strip the Naturalness', q: 'Whose perspective did the painter choose, and what does that choice hide?', answer: 'The painter stands at a distance — the elevated vantage of a landowner surveying his property. No field workers appear. The "naturalness" of this choice conceals that it is a class position: you see England as a landlord sees it, not as a laborer bends over it.' },
+  { move: 'Move 03 — Find What Is Suppressed', q: 'What would disturb this image if it appeared?', answer: 'The Enclosure Acts. Agricultural poverty. Evicted peasants. The ploughed fields were recently common land, legally fenced off. If those facts appeared in the frame, the painting\'s argument collapses. Their absence is not neutral — it is the argument.' },
+  { move: 'Move 04 — Unpack the Connotations', q: 'What does each element carry culturally?', answer: 'The stone farmhouse connotes permanence and rightful possession. Sunlight connotes divine favor. Open fields connote civilization\'s benign ordering of nature. The connotations collectively say: this arrangement is good, natural, and blessed. None of this was stated. All of it was felt.' },
+  { move: 'Move 05 — Ask Who Benefits', q: 'Whose power does this naturalized image legitimize?', answer: 'The landed gentry of early 19th-century England — the very class that passed the Enclosure Acts, owned the land depicted, and commissioned such paintings. The myth that the countryside is naturally theirs, naturally beautiful, naturally orderly, directly serves their political authority.' },
+  { move: 'Move 06 — Historicize', q: 'What was happening in England in 1820 that this myth resolves?', answer: 'The Enclosure Acts were peak controversy. Urban industrialization was creating new anxieties about what England "really was." The pastoral landscape myth answered both: it said England is fundamentally rural, orderly, landed — not industrial, not contested, not changing. It was ideological reassurance painted in oils.' },
+  { move: 'Move 07 — State the Hidden Premise', q: 'Complete: "For this painting to work as it does, I must already accept that..."', answer: '"...the current distribution of English land — who owns it, who works it invisibly, who has the right to view it from a distance — is part of the natural order rather than a product of recent, violent, contested political acts." That is the premise the painting hid inside beauty.' },
+];
+
+// Render moves
+const board = document.getElementById('movesBoard');
+moves.forEach((m, i) => {
+  const row = document.createElement('div');
+  row.className = 'move-row';
+  row.innerHTML = `
+    <div class="move-num-col">
+      <div class="move-num-inner">
+        <div class="move-num">${m.num}</div>
+        <div class="move-piece">${m.piece}</div>
+        <div class="move-connector"></div>
+      </div>
+    </div>
+    <div class="move-content">
+      <div class="move-header">
+        <div class="move-title-block">
+          <div class="move-action">${m.action}</div>
+          <div class="move-title">${m.title}</div>
+        </div>
+        <div class="move-toggle">+</div>
+      </div>
+      <div class="move-body">
+        <p class="move-explanation">${m.explanation}</p>
+        <div class="move-key">
+          <div class="move-key-label">The Deconstructive Question</div>
+          <div class="move-key-q">${m.keyQ}</div>
+        </div>
+        <div class="move-example">
+          <div class="move-ex-label">Example — Pastoral Landscape Painting</div>
+          <div class="move-ex-before"><span class="ex-tag">Before this move</span>${m.before}</div>
+          <div class="move-ex-after"><span class="ex-tag">After this move</span>${m.after}</div>
+        </div>
+      </div>
+    </div>`;
+  row.querySelector('.move-header').onclick = () => {
+    row.classList.toggle('open');
+  };
+  board.appendChild(row);
+});
+
+// Render walkthrough
+const wtContainer = document.getElementById('wtSteps');
+let revealedCount = 0;
+wtData.forEach((s, i) => {
+  const step = document.createElement('div');
+  step.className = 'wt-step';
+  step.innerHTML = `
+    <div class="wt-step-num">0${i+1}</div>
+    <div class="wt-step-body">
+      <div class="wt-step-move">${s.move}</div>
+      <div class="wt-step-q">${s.q}</div>
+      <div class="wt-step-answer">${s.answer}</div>
+    </div>`;
+  step.onclick = () => {
+    if (!step.classList.contains('revealed')) {
+      step.classList.add('revealed');
+      revealedCount++;
+      if (revealedCount === wtData.length) {
+        document.getElementById('wtConclusion').classList.add('show');
+      }
+    } else {
+      step.classList.remove('revealed');
+    }
+  };
+  wtContainer.appendChild(step);
+});
+
+// Render summary
+const tbody = document.getElementById('summaryBody');
+const summaryData = [
+  ['01', 'Name the Conclusion', 'Locate checkmate position', 'What is this image asking me to accept without question?'],
+  ['02', 'Denaturalize', 'Ask what move created this position', 'Whose choice was this? Who does this framing favor?'],
+  ['03', 'Find the Suppressed', 'Identify the sacrificed piece', 'What is absent? What had to be hidden for this to work?'],
+  ['04', 'Unpack Connotations', 'Trace the attack pattern', 'What cultural baggage arrives with each signifier?'],
+  ['05', 'Ask Who Benefits', 'The knight\'s jump — political surprise', 'Whose power does this naturalized meaning serve?'],
+  ['06', 'Historicize', 'Restore the pawn\'s opening', 'When was this "timeless"? What crisis does it resolve?'],
+  ['07', 'State the Hidden Premise', 'Replay the decisive blunder', 'Complete: "For this to work, I must already accept that..."'],
+];
+summaryData.forEach(r => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="td-move">${r[0]}</td><td class="td-name">${r[1]}</td><td class="td-chess">${r[2]}</td><td class="td-question">${r[3]}</td>`;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
