@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rally Reverse-Engineering — Semiotic Price Action</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0b0c0e;
+  --surface:#111318;
+  --panel:#161a1f;
+  --border:#252932;
+  --text:#dde2ec;
+  --muted:#525e72;
+  --dim:#3a4250;
+  --bull:#26a65b;
+  --bear:#e03c3c;
+  --gap:#c9921a;
+  --explosive:#7b5ea7;
+  --signal:#1a8fc9;
+  --accent:#c9921a;
+  --cream:#dde2ec;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;overflow-x:hidden;}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(11,12,14,0.97);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:0;
+  padding:0 2rem;overflow-x:auto;
+}
+.ni{
+  background:none;border:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted);padding:.85rem 1.1rem;
+  cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .2s;white-space:nowrap;
+}
+.ni:hover{color:var(--text);}
+.ni.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* HERO */
+.hero{
+  display:grid;grid-template-columns:1fr 1fr;
+  min-height:88vh;border-bottom:1px solid var(--border);
+}
+@media(max-width:720px){.hero{grid-template-columns:1fr;min-height:auto;}}
+.hero-l{
+  padding:80px 56px;
+  display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--border);
+}
+@media(max-width:720px){.hero-l{padding:50px 24px;border-right:none;border-bottom:1px solid var(--border);}}
+.eyebrow{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:1.5rem;}
+.hero h1{
+  font-family:'Unbounded',sans-serif;
+  font-size:clamp(1.6rem,3.5vw,2.8rem);
+  font-weight:700;line-height:1.1;
+  letter-spacing:-.03em;margin-bottom:1.5rem;
+}
+.hero h1 .g{color:var(--gap);}
+.hero h1 .b{color:var(--bull);}
+.hero-desc{
+  font-family:'Crimson Pro',serif;
+  font-size:1.1rem;color:rgba(221,226,236,.65);
+  line-height:1.8;max-width:420px;
+  border-left:2px solid var(--border);padding-left:1.25rem;
+  margin-bottom:2rem;
+}
+.hero-r{
+  padding:60px 56px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+@media(max-width:720px){.hero-r{padding:40px 24px;}}
+
+/* SEMIOTIC CHAIN */
+.chain{display:flex;flex-direction:column;gap:1px;background:var(--border);}
+.chain-item{
+  background:var(--surface);
+  padding:16px 20px;
+  display:grid;grid-template-columns:28px 1fr;gap:14px;align-items:start;
+}
+.chain-icon{font-size:1.1rem;padding-top:2px;text-align:center;}
+.chain-label{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.chain-val{font-family:'Crimson Pro',serif;font-size:1rem;color:var(--text);line-height:1.5;}
+.chain-sub{font-size:10px;color:var(--muted);margin-top:3px;}
+.chain-arrow{
+  background:var(--bg);
+  padding:6px 20px;
+  font-size:11px;color:var(--dim);
+  text-align:center;letter-spacing:.15em;
+}
+
+/* SECTION WRAPPER */
+.sec{max-width:1100px;margin:0 auto;padding:70px 56px;}
+@media(max-width:720px){.sec{padding:50px 24px;}}
+.sec-head{
+  display:flex;align-items:baseline;gap:1rem;
+  border-bottom:1px solid var(--border);
+  padding-bottom:.75rem;margin-bottom:2.5rem;
+}
+.sec-num{font-size:9px;letter-spacing:.2em;color:var(--muted);}
+.sec-title{font-family:'Unbounded',sans-serif;font-size:.85rem;font-weight:400;letter-spacing:-.01em;}
+
+/* ======= CHART CANVAS ======= */
+.chart-wrap{
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:1.5rem;
+  margin-bottom:2rem;
+}
+.chart-top{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;
+}
+.chart-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+.chart-legend{display:flex;gap:1rem;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+
+/* Annotation labels on chart */
+.chart-svg-wrap{position:relative;}
+.ann-label{
+  position:absolute;
+  font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--bg);border:1px solid;padding:3px 7px;
+  pointer-events:none;line-height:1.2;
+}
+
+/* ======= MOVES BOARD ======= */
+.moves{display:flex;flex-direction:column;gap:2px;}
+.move{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:3px solid var(--dim);
+  cursor:pointer;
+  transition:border-color .2s;
+}
+.move:hover{border-left-color:var(--accent);}
+.move.open{border-left-color:var(--accent);background:var(--panel);}
+.move-hd{
+  padding:16px 20px;
+  display:grid;grid-template-columns:44px 1fr 24px;
+  gap:12px;align-items:center;
+}
+.move-n{
+  font-family:'Unbounded',sans-serif;
+  font-size:.7rem;font-weight:700;color:var(--dim);
+  transition:color .2s;
+}
+.move.open .move-n{color:var(--accent);}
+.move-info{}
+.move-action{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.move-title{font-family:'Unbounded',sans-serif;font-size:.72rem;font-weight:400;letter-spacing:-.01em;}
+.move-tog{color:var(--muted);font-size:1rem;transition:transform .3s;text-align:right;}
+.move.open .move-tog{transform:rotate(45deg);color:var(--accent);}
+.move-body{display:none;padding:0 20px 20px;animation:fd .3s ease;}
+.move.open .move-body{display:block;}
+
+.move-explain{
+  font-family:'Crimson Pro',serif;
+  font-size:1.05rem;color:rgba(221,226,236,.7);
+  line-height:1.85;margin-bottom:1.25rem;
+}
+
+/* Sign breakdown */
+.sign-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:1rem;}
+@media(max-width:560px){.sign-grid{grid-template-columns:1fr;}}
+.sign-cell{background:var(--surface);padding:14px 16px;}
+.sign-cell-label{font-size:8px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px;}
+.sign-cell-val{font-family:'Crimson Pro',serif;font-size:.98rem;line-height:1.6;color:rgba(221,226,236,.75);}
+.sign-cell-val strong{color:var(--text);font-weight:400;}
+
+/* Question box */
+.q-box{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-left:2px solid var(--accent);
+  padding:14px 18px;
+  margin-bottom:1rem;
+}
+.q-label{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;}
+.q-text{font-family:'Crimson Pro',serif;font-style:italic;font-size:1rem;color:rgba(221,226,236,.8);line-height:1.6;}
+
+/* Red/green evidence */
+.evidence{display:flex;flex-direction:column;gap:1px;}
+.ev-row{display:grid;grid-template-columns:90px 1fr;gap:0;}
+.ev-label{
+  font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  padding:10px 12px;display:flex;align-items:center;
+}
+.ev-bull{background:rgba(38,166,91,.12);color:var(--bull);}
+.ev-bear{background:rgba(224,60,60,.1);color:var(--bear);}
+.ev-gap{background:rgba(201,146,26,.1);color:var(--gap);}
+.ev-text{
+  font-size:11px;line-height:1.65;
+  padding:10px 14px;
+  background:var(--panel);color:rgba(221,226,236,.65);
+}
+
+/* Module link */
+.mod-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--border);
+  padding:5px 10px;margin-top:.75rem;
+  text-decoration:none;transition:all .2s;cursor:pointer;
+}
+.mod-link:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ======= PATTERN LIBRARY ======= */
+.pattern-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:2rem;overflow-x:auto;}
+.ptab{
+  background:none;border:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);padding:.75rem 1.1rem;
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .2s;white-space:nowrap;
+}
+.ptab:hover{color:var(--text);}
+.ptab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.ppanel{display:none;}
+.ppanel.active{display:grid;grid-template-columns:1fr 1fr;gap:2rem;}
+@media(max-width:640px){.ppanel.active{grid-template-columns:1fr;}}
+
+.pattern-card{background:var(--panel);border:1px solid var(--border);padding:1.5rem;}
+.pc-label{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem;}
+.pc-name{font-family:'Unbounded',sans-serif;font-size:.72rem;font-weight:400;margin-bottom:1rem;}
+.pc-chart{margin-bottom:1rem;}
+.pc-sig{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;display:inline-block;margin-bottom:.75rem;}
+.pc-sig-bull{background:rgba(38,166,91,.15);color:var(--bull);border:1px solid rgba(38,166,91,.3);}
+.pc-sig-bear{background:rgba(224,60,60,.1);color:var(--bear);border:1px solid rgba(224,60,60,.2);}
+.pc-sig-neutral{background:rgba(201,146,26,.1);color:var(--gap);border:1px solid rgba(201,146,26,.25);}
+.pc-rows{display:flex;flex-direction:column;gap:1px;background:var(--border);}
+.pc-row{background:var(--surface);display:grid;grid-template-columns:80px 1fr;gap:0;}
+.pc-row-l{font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:9px 10px;color:var(--muted);border-right:1px solid var(--border);}
+.pc-row-r{font-size:11px;padding:9px 12px;color:rgba(221,226,236,.7);line-height:1.5;}
+
+/* ======= WALKTHROUGH ======= */
+.wt-wrap{background:var(--surface);border:1px solid var(--border);}
+.wt-scenario{
+  padding:1.5rem 1.75rem;
+  border-bottom:1px solid var(--border);
+  background:var(--panel);
+}
+.wt-sc-label{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+.wt-sc-name{font-family:'Crimson Pro',serif;font-size:1.2rem;font-style:italic;margin-bottom:.5rem;}
+.wt-sc-myth{font-size:11px;color:var(--muted);line-height:1.65;border-left:2px solid var(--dim);padding-left:.75rem;}
+
+.wt-steps{display:flex;flex-direction:column;gap:1px;background:var(--border);}
+.wt-step{
+  background:var(--surface);
+  display:grid;grid-template-columns:48px 1fr;gap:0;
+  cursor:pointer;
+  border-left:3px solid transparent;
+  transition:all .2s;
+}
+.wt-step:hover{background:var(--panel);}
+.wt-step.rev{border-left-color:var(--accent);background:var(--panel);}
+.wt-step-n{
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:16px 0 0;
+  font-family:'Unbounded',sans-serif;font-size:.65rem;font-weight:700;
+  color:var(--dim);transition:color .2s;
+}
+.wt-step.rev .wt-step-n{color:var(--accent);}
+.wt-step-body{padding:14px 18px 14px 0;}
+.wt-step-move{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.wt-step-q{
+  font-family:'Crimson Pro',serif;font-style:italic;
+  font-size:1rem;color:rgba(221,226,236,.45);line-height:1.5;
+  transition:color .2s;
+}
+.wt-step.rev .wt-step-q{color:rgba(221,226,236,.85);}
+.wt-step-ans{
+  display:none;
+  margin-top:10px;font-size:11px;
+  color:rgba(221,226,236,.55);line-height:1.75;
+  font-family:'Crimson Pro',serif;font-size:.98rem;
+}
+.wt-step.rev .wt-step-ans{display:block;}
+
+.wt-verdict{
+  display:none;
+  padding:1.5rem 1.75rem;
+  background:rgba(201,146,26,.08);
+  border-top:1px solid var(--accent);
+}
+.wt-verdict.show{display:block;}
+.wt-vl{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;}
+.wt-vt{font-family:'Crimson Pro',serif;font-size:1.05rem;color:rgba(221,226,236,.8);line-height:1.75;}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:1px;background:var(--border);margin-top:2rem;}
+.cl-item{
+  background:var(--surface);
+  display:grid;grid-template-columns:40px 1fr auto;gap:12px;
+  align-items:center;padding:12px 16px;cursor:pointer;
+  transition:background .15s;
+}
+.cl-item:hover{background:var(--panel);}
+.cl-item.checked{background:#0e1a12;}
+.cl-box{
+  width:18px;height:18px;border:1.5px solid var(--dim);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;transition:all .2s;flex-shrink:0;
+}
+.cl-item.checked .cl-box{background:var(--bull);border-color:var(--bull);color:#fff;}
+.cl-text{font-size:11px;line-height:1.55;color:rgba(221,226,236,.7);}
+.cl-item.checked .cl-text{color:var(--muted);text-decoration:line-through;}
+.cl-mod{font-size:8px;color:var(--dim);letter-spacing:.08em;text-align:right;line-height:1.3;}
+
+.progress{height:2px;background:var(--border);margin-bottom:1.5rem;}
+.progress-fill{height:100%;background:var(--bull);transition:width .4s ease;}
+.prog-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+
+@keyframes fd{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="ni active" onclick="navTo('hero',this)">Intro</button>
+  <button class="ni" onclick="navTo('moves',this)">7 Moves</button>
+  <button class="ni" onclick="navTo('patterns',this)">Pattern Library</button>
+  <button class="ni" onclick="navTo('walkthrough',this)">Live Walkthrough</button>
+  <button class="ni" onclick="navTo('checklist',this)">Pre-Trade Checklist</button>
+</nav>
+
+<!-- ===== HERO ===== -->
+<div id="hero" class="hero">
+  <div class="hero-l">
+    <div class="eyebrow">Semiotic Price Action · Daily Chart · Swing Trading</div>
+    <h1>Reverse-<br>Engineer<br>the <span class="g">Rally</span></h1>
+    <p class="hero-desc">
+      A rally doesn't begin with the explosive candle. That candle is the checkmate — the final visible move. Everything that made it possible happened before. This framework reads backward from the sign to the hidden premise.
+    </p>
+    <div style="font-size:10px;color:var(--muted);line-height:1.7;max-width:420px;">
+      Connected to: <span style="color:var(--gap)">Module 02</span> (TA as sign systems) · <span style="color:var(--gap)">Module 03</span> (Gaps & HTF Structure) · <span style="color:var(--gap)">Module 04</span> (Supply/Demand Zones)
+    </div>
+  </div>
+  <div class="hero-r">
+    <div style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;">The Semiotic Chain of a Rally</div>
+    <div class="chain">
+      <div class="chain-item">
+        <div class="chain-icon" style="color:var(--gap)">◈</div>
+        <div>
+          <div class="chain-label">Signifier</div>
+          <div class="chain-val">The Gap on the Daily Chart</div>
+          <div class="chain-sub">The form — what you literally see. Untradeable by small players to fabricate.</div>
+        </div>
+      </div>
+      <div class="chain-arrow">↓ signifies</div>
+      <div class="chain-item">
+        <div class="chain-icon" style="color:var(--explosive)">⚡</div>
+        <div>
+          <div class="chain-label">Connotation</div>
+          <div class="chain-val">Explosive Candle — Institutional Commitment</div>
+          <div class="chain-sub">The cultural meaning: size + gap together = someone large declared direction.</div>
+        </div>
+      </div>
+      <div class="chain-arrow">↓ mythologizes into</div>
+      <div class="chain-item">
+        <div class="chain-icon" style="color:var(--bull)">▲</div>
+        <div>
+          <div class="chain-label">Myth (Hidden Premise)</div>
+          <div class="chain-val">Accumulation is complete. The path of least resistance is up.</div>
+          <div class="chain-sub">What had to be true before the candle was possible — the excavated premise.</div>
+        </div>
+      </div>
+      <div class="chain-arrow">↓ produces</div>
+      <div class="chain-item">
+        <div class="chain-icon" style="color:var(--signal)">→</div>
+        <div>
+          <div class="chain-label">Apparent Conclusion</div>
+          <div class="chain-val">The Rally</div>
+          <div class="chain-sub">What retail sees as "the move starting." Institutions declared this earlier.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 7 MOVES ===== -->
+<div id="moves" class="sec">
+  <div class="sec-head">
+    <span class="sec-num">01</span>
+    <span class="sec-title">The 7 Backward Moves — Reading Price Action Like Deconstruction</span>
+  </div>
+  <div class="moves" id="movesBoard"></div>
+</div>
+
+<!-- ===== PATTERN LIBRARY ===== -->
+<div id="patterns" class="sec" style="border-top:1px solid var(--border);">
+  <div class="sec-head">
+    <span class="sec-num">02</span>
+    <span class="sec-title">Pattern Sign Library — Gap & Explosive Candle Combinations</span>
+  </div>
+  <div class="pattern-tabs" id="patternTabs"></div>
+  <div id="patternPanels"></div>
+</div>
+
+<!-- ===== WALKTHROUGH ===== -->
+<div id="walkthrough" class="sec" style="border-top:1px solid var(--border);">
+  <div class="sec-head">
+    <span class="sec-num">03</span>
+    <span class="sec-title">Live Walkthrough — Reverse-Engineer a Daily Chart Rally Setup</span>
+  </div>
+  <div class="wt-wrap">
+    <div class="wt-scenario">
+      <div class="wt-sc-label">Scenario — Daily Chart</div>
+      <div class="wt-sc-name">Stock gaps up on earnings, forms explosive bullish candle, retests gap, holds. What does this mean?</div>
+      <div class="wt-sc-myth">Apparent conclusion retail reads: <em>"Strong earnings = buy the momentum."</em> Click each backward move to excavate what actually happened.</div>
+    </div>
+    <div class="wt-steps" id="wtSteps"></div>
+    <div class="wt-verdict" id="wtVerdict">
+      <div class="wt-vl">Hidden Premise — Fully Excavated</div>
+      <div class="wt-vt">The rally was not caused by earnings. Earnings were the <em>public catalyst</em> that gave institutions cover to exit accumulation. Smart money had been building a position in the base for weeks. The gap was their declaration. The explosive candle was the commitment sign. The retest was the last manipulation move — shaking out retail who bought the gap open — before the sustained rally. You didn't need the earnings report. You needed to read the gap structure.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CHECKLIST ===== -->
+<div id="checklist" class="sec" style="border-top:1px solid var(--border);">
+  <div class="sec-head">
+    <span class="sec-num">04</span>
+    <span class="sec-title">Pre-Trade Checklist — Confirming a Rally Setup</span>
+  </div>
+  <div class="prog-label">Confirmed signals — <span id="clCount">0</span> of <span id="clTotal">0</span></div>
+  <div class="progress"><div class="progress-fill" id="clBar" style="width:0%"></div></div>
+  <div class="checklist" id="checklistEl"></div>
+</div>
+
+<div style="height:80px;"></div>
+
+<script>
+// ===== MOVES DATA =====
+const moves = [
+  {
+    num:'M01', action:'Locate the Checkmate',
+    title:'Name What Retail Is Reacting To',
+    explain:'Before reversing, name the apparent conclusion — the sign that has made retail feel a rally is "obvious." This is usually an explosive candle, a gap open, or a breakout above resistance. Write it as a statement: "Price gapped up and closed strong. A rally is beginning." That feeling of obviousness is the myth you are about to dismantle.',
+    q:'What is the single visible sign that is making this feel like a rally setup? Name it precisely.',
+    signs:[
+      {l:'Signifier', c:'var(--gap)', v:'Large gap up on daily open + bullish body engulfing prior day range'},
+      {l:'Retail Reads It As', c:'var(--bull)', v:'Breakout confirmed, momentum entering, buy signal'},
+      {l:'What It Actually Is', c:'var(--muted)', v:'A sign — not yet confirmed as direction. Could be distribution or accumulation exit.'},
+      {l:'Module Link', c:'var(--explosive)', v:'Module 02: TA patterns as sign systems — the self-fulfilling prophecy loop'},
+    ]
+  },
+  {
+    num:'M02', action:'Strip the Naturalness',
+    title:'Who Created This Gap? What Did It Cost?',
+    explain:'Not all gaps are equal signs. A gap on low volume costs almost nothing to create and can be faded. A gap on massive volume above a multi-week base is structurally expensive — small players cannot fabricate it. Stripping naturalness means asking: could this gap be manufactured as a trap, or does its cost make it a genuine institutional declaration?',
+    q:'What was the volume on the gap day? Is this gap above or below a prior consolidation base? Could a small player manufacture this sign?',
+    signs:[
+      {l:'Cheap Gap', c:'var(--bear)', v:'Low volume, no prior base, occurs mid-trend — high manipulation probability'},
+      {l:'Expensive Gap', c:'var(--bull)', v:'Heavy volume, breaks above multi-week base — cost prohibits fabrication as trap'},
+      {l:'HTF Context', c:'var(--gap)', v:'Module 03: gap on daily that aligns with weekly demand zone = indexical signal, not symbolic'},
+      {l:'Denaturalize', c:'var(--muted)', v:'"This gap opened strong" → "Who had enough size to create this gap, and why now?"'},
+    ]
+  },
+  {
+    num:'M03', action:'Find the Suppressed',
+    title:'What Is Absent From the Candle Story?',
+    explain:'The explosive candle tells you what happened at the close. It suppresses everything that happened inside: the wick rejections, the intraday fade attempts, the stop-hunt below the open. Read what the daily candle hides. A bullish explosive candle that opened, dipped hard intraday, then closed near highs tells a completely different story than one that opened and never looked back.',
+    q:'What does the wick structure reveal? Was there an intraday stop-hunt below the gap before the close? What was suppressed inside the single candle body?',
+    signs:[
+      {l:'Candle Body', c:'var(--bull)', v:'What is shown — direction and magnitude of move'},
+      {l:'Lower Wick', c:'var(--gap)', v:'What is suppressed — liquidity grab below, retail stops triggered before institutions pushed up'},
+      {l:'Upper Wick', c:'var(--bear)', v:'What is suppressed — distribution pressure, sellers still present above'},
+      {l:'Module Link', c:'var(--explosive)', v:'Module 02: stop hunts as semiotic manipulation — the sign is designed to trigger a response'},
+    ]
+  },
+  {
+    num:'M04', action:'Trace the Connotations',
+    title:'Unpack the Full Sign System — Base + Gap + Candle Together',
+    explain:'Each element carries connotation. But semiotics teaches that signs gain power in combination — the system matters more than any single sign. A gap alone is weak. An explosive candle alone is weak. A tight multi-week base + gap through resistance + explosive candle closing near highs = a sign system with layered connotation: accumulation complete, direction declared, weak hands cleared.',
+    q:'List every sign element present. What does each connote individually? What does their combination connote that none could produce alone?',
+    signs:[
+      {l:'Tight Base', c:'var(--gap)', v:'Connotation: supply absorbed, smart money accumulated, no supply left to stop a move up'},
+      {l:'Gap Through Resistance', c:'var(--bull)', v:'Connotation: institutions bypassed the order cluster — they did not want to trade at that level'},
+      {l:'Explosive Close', c:'var(--explosive)', v:'Connotation: buyers controlled the entire session, no serious distribution at close'},
+      {l:'System Together', c:'var(--signal)', v:'Hidden premise visible: accumulation is complete, the gap was the declaration, rally is structurally supported'},
+    ]
+  },
+  {
+    num:'M05', action:"The Knight's Jump",
+    title:'Ask: Who Needed Retail To Buy Here?',
+    explain:'This is the political jump — the unexpected question. Institutions cannot exit a large position into thin air. They need liquidity: retail buyers taking the other side. Ask whether the explosive candle is designed to attract retail buyers so institutions can distribute into that demand — or whether institutional demand is genuine and retail is riding the coat-tails. The answer changes everything.',
+    q:'Is this gap + explosive candle creating a retail FOMO entry — or is it a genuine declaration that needs no further manipulation to work?',
+    signs:[
+      {l:'Distribution Sign', c:'var(--bear)', v:'Explosive candle on gap up, but price immediately stalls, next day gap fades — retail bought, institutions sold into them'},
+      {l:'Accumulation Sign', c:'var(--bull)', v:'Explosive candle gaps up, retests gap zone on low volume, holds, then continues — institutions defended their position'},
+      {l:'Module Link', c:'var(--explosive)', v:'Module 02: reflexivity loop — the pattern creates the behavior that fulfills the pattern, until it doesn\'t'},
+      {l:'Key Test', c:'var(--gap)', v:'Does price return to the gap and hold (real), or immediately fill the gap (manufactured)?'},
+    ]
+  },
+  {
+    num:'M06', action:"Historicize",
+    title:'Where Does This Gap Sit in the Larger Structure?',
+    explain:'A gap on the daily chart does not exist in isolation. Its meaning is determined by where it sits in the HTF structure: is this a breakaway gap launching from a base? A runaway gap mid-trend confirming continuation? Or an exhaustion gap at the end of an extended move where volume is climactic? The same candle formation means opposite things depending on structural position.',
+    q:'Zoom out to the weekly. Where in the trend structure is this gap occurring? Base breakout, mid-trend, or extended exhaustion?',
+    signs:[
+      {l:'Breakaway Gap', c:'var(--bull)', v:'From multi-week base on weekly chart — highest probability rally signal. Demand zone just created below.'},
+      {l:'Runaway Gap', c:'var(--signal)', v:'Mid-trend, confirms existing direction — continuation likely but base formation already behind you'},
+      {l:'Exhaustion Gap', c:'var(--bear)', v:'Extended trend, climactic volume, wide range — fade candidate, not rally entry'},
+      {l:'Module Link', c:'var(--gap)', v:'Module 03: HTF structure ladder — timeframe determines who creates the signal and its manipulation cost'},
+    ]
+  },
+  {
+    num:'M07', action:'State the Hidden Premise',
+    title:'Write the Institutional Argument in Plain Language',
+    explain:'This is the final backward move. After running all six prior moves, you now have enough to articulate what had to be true before this explosive candle was possible. Not what retail sees ("strong momentum"). The actual structural argument institutions made with their capital. State it as a complete sentence. That sentence is your trade thesis — and it is far more durable than "the candle looks bullish."',
+    q:'Complete: "For this gap + explosive candle to produce a sustained rally, the market must already have accepted that ___."',
+    signs:[
+      {l:'Weak Thesis', c:'var(--muted)', v:'"Price gapped up and closed strong, so it will probably go higher."'},
+      {l:'Strong Thesis', c:'var(--bull)', v:'"Supply was fully absorbed in the 4-week base. The gap bypassed resistance — institutional cost prohibits faking it. The retest held the gap zone on low volume. Accumulation is structurally complete. The path of least resistance is up until the next weekly supply zone."'},
+      {l:'Module Link', c:'var(--explosive)', v:'Module 04: supply/demand zone anatomy — zone created by the gap is now the demand reference for re-entries'},
+      {l:'The Premise', c:'var(--gap)', v:'Hidden premise made explicit: institutions committed capital at the base, the gap was their public declaration, and the rally is not an event — it is the working-out of an argument already made in price.'},
+    ]
+  }
+];
+
+// ===== PATTERN LIBRARY =====
+const patterns = [
+  {
+    tab:'Breakaway Gap',
+    cards:[
+      {
+        label:'Pattern 01', name:'Base-to-Gap Launch',
+        sig:'bull', sigText:'Strong Bullish',
+        svg: drawPattern('base_gap'),
+        rows:[
+          ['Structure','Multi-week tight consolidation base on daily → gap above resistance on strong volume'],
+          ['Signifier','The gap itself — price bypasses the resistance level entirely'],
+          ['Connotation','Institutions refused to trade at resistance — they bought the entire supply zone away'],
+          ['Hidden Premise','Accumulation complete. No supply remains to halt the move above the base.'],
+          ['Entry','Re-entry on first retest of gap zone (top of gap = new support)'],
+          ['Invalidation','Gap fills more than 50% on strong volume — premise broken'],
+        ]
+      },
+      {
+        label:'Pattern 02', name:'Explosive Candle From Base (No Gap)',
+        sig:'bull', sigText:'Bullish — Lower Conviction',
+        svg: drawPattern('explosive_no_gap'),
+        rows:[
+          ['Structure','Base formation → wide-range bullish candle closing near highs, no gap'],
+          ['Signifier','The candle range and close — but no overnight gap premium'],
+          ['Connotation','Buyers aggressive intraday but did not force an opening gap — slightly less institutional'],
+          ['Hidden Premise','Accumulation likely complete but easier to manufacture than gap breakout'],
+          ['Entry','Close above base high + confirmation next session'],
+          ['Invalidation','Next session immediately reverses below base high'],
+        ]
+      }
+    ]
+  },
+  {
+    tab:'Gap-to-Explosive',
+    cards:[
+      {
+        label:'Pattern 03', name:'Gap Up + Explosive Continuation',
+        sig:'bull', sigText:'Very Strong Bullish',
+        svg: drawPattern('gap_explosive'),
+        rows:[
+          ['Structure','Day 1: gap up. Day 2: explosive candle continuing in gap direction from the gap zone'],
+          ['Signifier','Two-day sequence — gap declares direction, explosive candle confirms defense'],
+          ['Connotation','Institutions defended the gap open (day 1) and added to position (day 2) — double commitment sign'],
+          ['Hidden Premise','No ambiguity: direction has been declared twice. Demand at gap level is institutional size.'],
+          ['Entry','Day 2 close, or pullback to day 1 gap zone held on low volume'],
+          ['Invalidation','Day 2 closes below day 1 gap open'],
+        ]
+      },
+      {
+        label:'Pattern 04', name:'Gap Up → Retest → Explosive Hold',
+        sig:'bull', sigText:'Highest Conviction',
+        svg: drawPattern('gap_retest_explosive'),
+        rows:[
+          ['Structure','Gap up → retest gap zone 1-3 sessions later on declining volume → explosive candle off the zone'],
+          ['Signifier','The full three-act sequence: declaration (gap), test (retest), commitment (explosive hold)'],
+          ['Connotation','The manipulation move (retest) shook out retail. Institutions absorbed the selling. Explosive candle = accumulation at retest is complete.'],
+          ['Hidden Premise','Smart money built position both at base and at gap retest. Two layers of demand. Rally has structural support.'],
+          ['Entry','Explosive candle off retest zone — this is the highest-probability entry in the framework'],
+          ['Invalidation','Retest closes below gap with expanding volume — gap was not defended'],
+        ]
+      }
+    ]
+  },
+  {
+    tab:'Exhaustion Gap',
+    cards:[
+      {
+        label:'Pattern 05', name:'Climactic Gap — Distribution',
+        sig:'bear', sigText:'Bearish Signal',
+        svg: drawPattern('exhaustion'),
+        rows:[
+          ['Structure','Extended trend → massive gap up on climactic volume → explosive candle but immediately reverses next session'],
+          ['Signifier','The gap + candle looks identical to Pattern 03 — this is the manipulation danger'],
+          ['Connotation','Institutions distributed into retail FOMO — the explosive candle attracted buyers; institutions sold into them'],
+          ['Hidden Premise','The rally is over. The gap was a distribution event, not accumulation. HTF structure shows extended move with no base.'],
+          ['Differentiation','Volume is climactic (highest of move), no prior base, gap fills within 2-3 sessions'],
+          ['Module Link','Module 02: the same pattern becomes its opposite at exhaustion — sign meaning is structural, not absolute'],
+        ]
+      },
+      {
+        label:'Pattern 06', name:'Gap Fill = Bearish Confirmation',
+        sig:'bear', sigText:'Bearish — Short Signal',
+        svg: drawPattern('gap_fill'),
+        rows:[
+          ['Structure','Gap up → fails to hold → returns to fill entire gap within 2-5 sessions'],
+          ['Signifier','The fill itself — the gap zone was not defended'],
+          ['Connotation','No institutional demand at gap level. The gap was manufactured or climactic.'],
+          ['Hidden Premise','Smart money used the gap as distribution. Retail bought the gap; institutions sold into that demand.'],
+          ['Entry','Short on gap fill confirmation, or fade the gap on Day 1 if exhaustion signs are present'],
+          ['Invalidation','Price fills gap then immediately reclaims gap zone with volume — failed fill, bullish'],
+        ]
+      }
+    ]
+  }
+];
+
+// ===== WALKTHROUGH =====
+const wtSteps = [
+  {move:'M01 — Name the Checkmate', q:'What is retail reacting to?', ans:'Stock gaps up 6% on earnings, forms a wide bullish candle closing near highs. Retail reads: "earnings beat + gap up + strong close = buy the rally." That apparent conclusion is the checkmate. We now reverse-engineer it.'},
+  {move:'M02 — Strip the Naturalness', q:'Who created this gap and what did it cost?', ans:'Volume on gap day is 3× average. Prior 5-week base on daily is tight and low-volume. The gap breaks above a 3-month resistance zone. This gap is structurally expensive — not fakeable as a trap. Institutional footprint confirmed.'},
+  {move:'M03 — Find the Suppressed', q:'What did the daily candle hide?', ans:'The daily candle shows a strong close. But intraday: price gapped up, immediately dipped back into prior resistance (stop hunt), then reversed and closed near highs. The daily body suppressed the stop-hunt. Retail longs placed at the open got stopped before the real move.'},
+  {move:'M04 — Unpack the Connotations', q:'What does the base + gap + candle system say together?', ans:'5-week base = supply absorbed. Gap above 3-month resistance = institutions bypassed the order cluster. Intraday stop-hunt + explosive close = weak hands cleared, institutions loaded at the dip. System together: accumulation complete, weak hands cleared, direction declared.'},
+  {move:'M05 — Ask Who Needed Retail To Buy', q:'Is this real demand or distribution into FOMO?', ans:'Next session: price pulls back to gap zone on falling volume, holds. Institutions defended the gap level. If this were distribution, the gap would fill on expanding volume. The defense of the gap zone is the sign that institutional demand is genuine, not a liquidity trap.'},
+  {move:'M06 — Historicize in Structure', q:'Where in the weekly structure is this gap?', ans:'Weekly chart shows 4-month accumulation range. This is a breakaway gap from the base — not mid-trend, not exhaustion. Weekly volume confirms. The structural position is maximum bullish: base → breakaway gap → explosive hold. Module 03\'s HTF ladder says this is the highest-quality signal.'},
+  {move:'M07 — State the Hidden Premise', q:'What had to be true for this rally to work?', ans:'Hidden premise: "Institutions accumulated throughout the 4-month base, absorbing all available supply. Earnings were the public catalyst, but not the cause. The gap was their declaration. The retest was the final manipulation move. The rally is the working-out of an accumulation argument made weeks ago in price."'}
+];
+
+// ===== CHECKLIST =====
+const checklistItems = [
+  {text:'Multi-week tight base visible on daily chart (low volatility consolidation)', mod:'Mod 04'},
+  {text:'Gap breaks above prior resistance or supply zone — not mid-range', mod:'Mod 03'},
+  {text:'Gap day volume ≥ 1.5× average (expensive gap = institutional footprint)', mod:'Mod 03'},
+  {text:'Explosive candle closes in top 25% of its range', mod:'Mod 02'},
+  {text:'Intraday wick below open (stop-hunt present — weak hands cleared)', mod:'Mod 02'},
+  {text:'Weekly chart confirms: breakaway from base, not exhaustion gap', mod:'Mod 03'},
+  {text:'Retest of gap zone occurs on declining volume (institutions defending)', mod:'Mod 04'},
+  {text:'Retest holds — price does not fill gap by more than 30%', mod:'Mod 04'},
+  {text:'Explosive candle off retest zone confirms re-entry signal', mod:'Mod 05'},
+  {text:'Weekly supply zone identified — defines profit target ceiling', mod:'Mod 03'},
+  {text:'No climactic volume signature (exhaustion gap eliminated)', mod:'Mod 02'},
+  {text:'Hidden premise written out: structural argument is complete and coherent', mod:'All'},
+];
+
+// ===== DRAW PATTERNS (SVG) =====
+function drawPattern(type) {
+  const W=200, H=120;
+  let candles = '';
+  if(type==='base_gap') {
+    // base candles then gap up explosive
+    const base = [[30,70,60,55,72],[50,68,58,53,70],[70,66,56,52,68],[90,65,58,54,67],[110,63,55,51,65]];
+    base.forEach(([x,open,close,low,high])=>{
+      const bull=close<open;
+      const col=bull?'#26a65b':'#e03c3c';
+      candles+=`<line x1="${x+5}" y1="${low}" x2="${x+5}" y2="${high}" stroke="${col}" stroke-width="1.5"/>`;
+      candles+=`<rect x="${x}" y="${Math.min(open,close)}" width="10" height="${Math.abs(open-close)||2}" fill="${col}"/>`;
+    });
+    // gap + explosive
+    candles+=`<rect x="0" y="58" width="${W}" height="1" fill="#252932" opacity="0.5"/>`;
+    candles+=`<line x1="145" y1="30" x2="145" y2="55" stroke="#c9921a" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+    candles+=`<rect x="135" y="30" width="10" height="22" fill="#c9921a" opacity="0.9"/>`;
+    candles+=`<line x1="140" y1="25" x2="140" y2="30" stroke="#c9921a" stroke-width="1.5"/>`;
+    candles+=`<line x1="140" y1="52" x2="140" y2="58" stroke="#c9921a" stroke-width="1.5"/>`;
+    candles+=`<text x="138" y="15" font-family="JetBrains Mono" font-size="7" fill="#c9921a" text-anchor="middle">GAP</text>`;
+    candles+=`<line x1="125" y1="52" x2="135" y2="38" stroke="#c9921a" stroke-width="1" stroke-dasharray="2,2"/>`;
+  } else if(type==='explosive_no_gap') {
+    const base = [[20,75,65,61,78],[40,74,67,63,76],[60,73,65,62,75],[80,72,64,60,74],[100,70,65,62,72]];
+    base.forEach(([x,open,close,low,high])=>{
+      candles+=`<line x1="${x+5}" y1="${low}" x2="${x+5}" y2="${high}" stroke="#7a7060" stroke-width="1.5"/>`;
+      candles+=`<rect x="${x}" y="${Math.min(open,close)}" width="10" height="${Math.abs(open-close)||2}" fill="#7a7060"/>`;
+    });
+    candles+=`<line x1="135" y1="32" x2="135" y2="68" stroke="#26a65b" stroke-width="1.5"/>`;
+    candles+=`<rect x="128" y="32" width="14" height="34" fill="#26a65b"/>`;
+    candles+=`<line x1="135" y1="27" x2="135" y2="32" stroke="#26a65b" stroke-width="1.5"/>`;
+    candles+=`<line x1="135" y1="68" x2="135" y2="72" stroke="#26a65b" stroke-width="1.5"/>`;
+  } else if(type==='gap_explosive') {
+    // day1 gap candle, day2 explosive
+    candles+=`<text x="50" y="12" font-family="JetBrains Mono" font-size="7" fill="${'#c9921a'}" text-anchor="middle">GAP DAY</text>`;
+    candles+=`<line x1="50" y1="50" x2="50" y2="75" stroke="#c9921a" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+    candles+=`<line x1="45" y1="42" x2="45" y2="50" stroke="#26a65b" stroke-width="1.5"/>`;
+    candles+=`<rect x="38" y="42" width="14" height="20" fill="#26a65b"/>`;
+    candles+=`<line x1="45" y1="62" x2="45" y2="68" stroke="#26a65b" stroke-width="1.5"/>`;
+    // day2 explosive from gap zone
+    candles+=`<text x="140" y="12" font-family="JetBrains Mono" font-size="7" fill="#7b5ea7" text-anchor="middle">EXPLOSIVE</text>`;
+    candles+=`<line x1="140" y1="22" x2="140" y2="45" stroke="#7b5ea7" stroke-width="1.5"/>`;
+    candles+=`<rect x="133" y="22" width="14" height="30" fill="#7b5ea7"/>`;
+    candles+=`<line x1="140" y1="52" x2="140" y2="60" stroke="#7b5ea7" stroke-width="1.5"/>`;
+    candles+=`<line x1="59" y1="55" x2="133" y2="40" stroke="#c9921a" stroke-width="1" stroke-dasharray="3,2"/>`;
+  } else if(type==='gap_retest_explosive') {
+    // gap, retest doji, explosive
+    candles+=`<text x="35" y="10" font-family="JetBrains Mono" font-size="6" fill="#c9921a" text-anchor="middle">GAP</text>`;
+    candles+=`<line x1="35" y1="45" x2="35" y2="75" stroke="#c9921a" stroke-width="1" stroke-dasharray="2,2"/>`;
+    candles+=`<rect x="28" y="38" width="14" height="22" fill="#c9921a"/>`;
+    candles+=`<line x1="35" y1="33" x2="35" y2="38" stroke="#c9921a" stroke-width="1.5"/>`;
+    // retest
+    candles+=`<text x="90" y="10" font-family="JetBrains Mono" font-size="6" fill="#7a7060" text-anchor="middle">RETEST</text>`;
+    candles+=`<line x1="90" y1="43" x2="90" y2="65" stroke="#7a7060" stroke-width="1.5"/>`;
+    candles+=`<rect x="84" y="56" width="12" height="4" fill="#7a7060"/>`;
+    // explosive
+    candles+=`<text x="155" y="10" font-family="JetBrains Mono" font-size="6" fill="#26a65b" text-anchor="middle">HOLD</text>`;
+    candles+=`<line x1="155" y1="22" x2="155" y2="60" stroke="#26a65b" stroke-width="1.5"/>`;
+    candles+=`<rect x="148" y="22" width="14" height="32" fill="#26a65b"/>`;
+    candles+=`<line x1="155" y1="54" x2="155" y2="60" stroke="#26a65b" stroke-width="1.5"/>`;
+    candles+=`<line x1="45" y1="58" x2="148" y2="38" stroke="#26a65b" stroke-width="1" stroke-dasharray="3,2" opacity="0.5"/>`;
+  } else if(type==='exhaustion') {
+    // uptrend then massive gap + reversal
+    [[15,85,75,72,87],[35,75,65,62,77],[55,66,55,52,68],[75,56,45,42,58]].forEach(([x,o,c,l,h])=>{
+      candles+=`<line x1="${x+5}" y1="${l}" x2="${x+5}" y2="${h}" stroke="#26a65b" stroke-width="1.5"/>`;
+      candles+=`<rect x="${x}" y="${Math.min(o,c)}" width="10" height="${Math.abs(o-c)||2}" fill="#26a65b"/>`;
+    });
+    candles+=`<text x="130" y="10" font-family="JetBrains Mono" font-size="6" fill="#e03c3c" text-anchor="middle">EXHAUSTION</text>`;
+    candles+=`<line x1="130" y1="18" x2="130" y2="50" stroke="#e03c3c" stroke-width="1" stroke-dasharray="2,2"/>`;
+    candles+=`<rect x="122" y="18" width="16" height="30" fill="#c9921a" opacity="0.7"/>`;
+    candles+=`<line x1="130" y1="48" x2="130" y2="70" stroke="#e03c3c" stroke-width="2"/>`;
+    candles+=`<rect x="122" y="45" width="16" height="25" fill="#e03c3c"/>`;
+    candles+=`<line x1="130" y1="70" x2="130" y2="80" stroke="#e03c3c" stroke-width="1.5"/>`;
+  } else if(type==='gap_fill') {
+    candles+=`<text x="40" y="10" font-family="JetBrains Mono" font-size="6" fill="#c9921a" text-anchor="middle">GAP UP</text>`;
+    candles+=`<rect x="32" y="30" width="14" height="22" fill="#c9921a"/>`;
+    candles+=`<line x1="39" y1="25" x2="39" y2="30" stroke="#c9921a" stroke-width="1.5"/>`;
+    candles+=`<line x1="39" y1="52" x2="39" y2="62" stroke="#c9921a" stroke-width="1" stroke-dasharray="2,2"/>`;
+    [[75,35,50,33,52],[105,50,65,48,66],[135,65,72,63,74]].forEach(([x,o,c,l,h])=>{
+      candles+=`<line x1="${x+5}" y1="${l}" x2="${x+5}" y2="${h}" stroke="#e03c3c" stroke-width="1.5"/>`;
+      candles+=`<rect x="${x}" y="${Math.min(o,c)}" width="10" height="${Math.abs(o-c)||2}" fill="#e03c3c"/>`;
+    });
+    candles+=`<text x="140" y="82" font-family="JetBrains Mono" font-size="7" fill="#e03c3c" text-anchor="middle">GAP FILLED</text>`;
+    candles+=`<line x1="53" y1="58" x2="75" y2="45" stroke="#e03c3c" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;background:#0b0c0e;border:1px solid #252932;" xmlns="http://www.w3.org/2000/svg">${candles}</svg>`;
+}
+
+// ===== RENDER MOVES =====
+const board = document.getElementById('movesBoard');
+moves.forEach((m,i)=>{
+  const el = document.createElement('div');
+  el.className='move';
+  el.innerHTML=`
+    <div class="move-hd">
+      <div class="move-n">${m.num}</div>
+      <div class="move-info">
+        <div class="move-action">${m.action}</div>
+        <div class="move-title">${m.title}</div>
+      </div>
+      <div class="move-tog">+</div>
+    </div>
+    <div class="move-body">
+      <p class="move-explain">${m.explain}</p>
+      <div class="q-box">
+        <div class="q-label">Deconstructive Question</div>
+        <div class="q-text">${m.q}</div>
+      </div>
+      <div class="sign-grid">
+        ${m.signs.map(s=>`<div class="sign-cell">
+          <div class="sign-cell-label" style="color:${s.c}">${s.l}</div>
+          <div class="sign-cell-val">${s.v}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  el.querySelector('.move-hd').onclick=()=>el.classList.toggle('open');
+  board.appendChild(el);
+});
+
+// ===== RENDER PATTERNS =====
+const tabsEl=document.getElementById('patternTabs');
+const panelsEl=document.getElementById('patternPanels');
+patterns.forEach((p,i)=>{
+  const tb=document.createElement('button');
+  tb.className='ptab'+(i===0?' active':'');
+  tb.textContent=p.tab;
+  tb.onclick=()=>{
+    document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.ppanel').forEach(t=>t.classList.remove('active'));
+    tb.classList.add('active');
+    document.getElementById('pp'+i).classList.add('active');
+  };
+  tabsEl.appendChild(tb);
+  const pan=document.createElement('div');
+  pan.id='pp'+i;
+  pan.className='ppanel'+(i===0?' active':'');
+  pan.innerHTML=p.cards.map(c=>`
+    <div class="pattern-card">
+      <div class="pc-label">${c.label}</div>
+      <div class="pc-name">${c.name}</div>
+      <div class="pc-chart">${c.svg}</div>
+      <span class="pc-sig pc-sig-${c.sig}">${c.sigText}</span>
+      <div class="pc-rows">
+        ${c.rows.map(r=>`<div class="pc-row">
+          <div class="pc-row-l">${r[0]}</div>
+          <div class="pc-row-r">${r[1]}</div>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+  panelsEl.appendChild(pan);
+});
+
+// ===== RENDER WALKTHROUGH =====
+const wtEl=document.getElementById('wtSteps');
+let revealed=0;
+wtSteps.forEach((s,i)=>{
+  const el=document.createElement('div');
+  el.className='wt-step';
+  el.innerHTML=`
+    <div class="wt-step-n">0${i+1}</div>
+    <div class="wt-step-body">
+      <div class="wt-step-move">${s.move}</div>
+      <div class="wt-step-q">${s.q}</div>
+      <div class="wt-step-ans">${s.ans}</div>
+    </div>`;
+  el.onclick=()=>{
+    if(!el.classList.contains('rev')){
+      el.classList.add('rev');
+      revealed++;
+      if(revealed===wtSteps.length) document.getElementById('wtVerdict').classList.add('show');
+    } else {
+      el.classList.remove('rev');
+    }
+  };
+  wtEl.appendChild(el);
+});
+
+// ===== RENDER CHECKLIST =====
+const clEl=document.getElementById('checklistEl');
+document.getElementById('clTotal').textContent=checklistItems.length;
+checklistItems.forEach(item=>{
+  const el=document.createElement('div');
+  el.className='cl-item';
+  el.innerHTML=`<div class="cl-box"></div><div class="cl-text">${item.text}</div><div class="cl-mod">${item.mod}</div>`;
+  el.onclick=()=>{
+    el.classList.toggle('checked');
+    el.querySelector('.cl-box').textContent=el.classList.contains('checked')?'✓':'';
+    const done=document.querySelectorAll('.cl-item.checked').length;
+    document.getElementById('clCount').textContent=done;
+    document.getElementById('clBar').style.width=`${(done/checklistItems.length)*100}%`;
+  };
+  clEl.appendChild(el);
+});
+
+function navTo(id,btn){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
